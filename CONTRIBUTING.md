@@ -47,7 +47,7 @@ The best way to get started on contributing to Minerva is to take on an issue. S
 
 The repo follows the branch naming convention of `{name}/{issue_num}-{description}`, e.g. `cwijesek/10-flesh-out-readme`
 
-- `{name}` is whatever that can be used to identify that the branch belongs to you, e.g. your name. This is commonly the WatIAM username (the combination of your first intial, possibly some numbers, and the first few letters of your last name that comes before `@uwaterloo.ca` in your email) of the branch owner.
+- `{name}` is the part of the branch name that identifies its author. The recommended identifier is the author's WatIAM username (the combination of your first intial, possibly some numbers, and the first few letters of your last name that comes before `@uwaterloo.ca` in your email).
 - `{issue_num}` is the issue number of the issue that you are trying to fix or implement. If this branch is not associated with an issue, then you do not need to specify anything for this (e.g., just `cwijesek/flesh-out-readme` is fine)
 - `{description}` is a short description of what this branch is fixing/implementing. Be sure to keep it short, as good practice is to keep the entire branch name under 30-40 characters.
 
