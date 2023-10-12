@@ -2,6 +2,7 @@
   "name": "minerva-rewrite",
   "scripts": {
     "build": "webpack",
+    "start": "ts-node src/index.ts",
     "format": "prettier --write 'src/**/*.{ts,tsx}' && eslint --fix 'src/**/*.{ts,tsx}'",
     "test": "jest"
   },
