@@ -76,7 +76,7 @@ When you have written up your code and are ready to get it reviewed, merged to `
 - Assign yourself as the assignee for the PR.
 - Assign the `minerva-reviewers` Team as a reviewer for your PR. This will assign everyone working on Minerva as a reviewer to the PR and is good for keeping everyone in the loop about what's going on. Additionally, if desired, assign others as reviewers to the PR if you want them specifically to review it or if the reviewer is not in the `minerva-reviewers` team.
 - Make sure to link the PR to the relevant issue, if possible. The easiest way is [by using keywords in the PR description](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword), e.g. you can link the PR to Issue 103 by writing "closes #103" somewhere in the description.
-- Since your task is now in a review state, make sure to move the project status of the issue that this PR is linked to from "In Progress" to "Needs Review".
+- Since your task is now in a review state, make sure to move the project status of the issue that this PR is linked to from "In Progress" to "Needs Review". If this project is not linked to an issue, add the PR to the "Software Master Project" Project and set its status accordingly.
 
 ### Merging PRs
 
