@@ -66,6 +66,8 @@ Alternatively, you can test your code by simply committing and pushing your code
 Minerva's functionality can be tested before it is deployed to production by deploying it to our development Slack environment, which you can gain access to by following the steps outlined in the [Minerva Developer Onboarding Guide](https://docs.google.com/document/d/1Ln9ldKIFPOmMxLfW3iFzAfW-HCECqbwqHC7oJxRYEqo/edit#heading=h.140h72nwd7xz).
 Before making your deployment, ensure that others are not currently using the development environment for their own testing, as only one instance of Minerva can be deployed at a time. Deploying to Dev can be done by running the `yarn run deploy-dev` command, which will force-push your code to the `development` branch. When code is pushed to this branch, a GitHub Actions workflow will build and deploy your code. If this workflow fails, you might have issues in your code that you will need to fix before trying again.
 
+Once the application has been deployed to development, you should test Minerva's functionality in the Development Slack. Ensure that not only your new functionality works as intended, but also that existing functionality still works.
+
 ### Publishing PRs
 
 When you have written up your code and are ready to get it reviewed, merged to `main`, and deployed to production, then you can [open a PR for your branch](https://github.com/waterloo-rocketry/minerva-rewrite/compare). Here's a few things that you should make sure to do when creating your PR:
@@ -74,4 +76,8 @@ When you have written up your code and are ready to get it reviewed, merged to `
 - Assign yourself as the assignee for the PR.
 - Assign the `minerva-reviewers` Team as a reviewer for your PR. This will assign everyone working on Minerva as a reviewer to the PR and is good for keeping everyone in the loop about what's going on. Additionally, if desired, assign others as reviewers to the PR if you want them specifically to review it or if the reviewer is not in the `minerva-reviewers` team.
 - Make sure to link the PR to the relevant issue, if possible. The easiest way is [by using keywords in the PR description](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword), e.g. you can link the PR to Issue 103 by writing "closes #103" somewhere in the description.
-- Since your task is now in a review state, make sure to move the project status of the issue that this PR is linked to from "In Progress" to "Needs Review".
+- Since your task is now in a review state, make sure to move the project status of the issue that this PR is linked to from "In Progress" to "Needs Review". If this project is not linked to an issue, add the PR to the "Software Master Project" Project and set its status accordingly.
+
+### Merging PRs
+
+Once your PR has passed all unit tests, been successfully deployed to the dev environment, and has been reviewed and approved, you can merge it to `main`. Merge using the "Squash and Merge" option so that all the commits from your branch are "squashed" into one commit containing all the changes. Once your branch is merged, GitHub Actions will automatically deploy the new changes into production. [Monitor the status of the deploy](https://github.com/waterloo-rocketry/minerva/actions/workflows/deploy_production.yml) while this is happening in case the job fails and the application needs to be fixed.
