@@ -27,7 +27,6 @@ jobs:
       
       - name: Install dependencies
         run: yarn install
-        working-directory: ../minerva-rewrite/
       
       - name: Run unit tests
         run: yarn test --passWithNoTests
