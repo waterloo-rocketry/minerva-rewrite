@@ -1,9 +1,11 @@
 name: Unit Test
 
 on: 
-  push:
-    branches:
-      - 'main'
+    push:
+      branches-ignore:
+        - 'main'
+        - 'development'
+    pull_request:
 
 jobs:
   test:
@@ -25,8 +27,8 @@ jobs:
       
       - name: Install dependencies
         run: yarn install
-        working-directory: ../minerva/
+        working-directory: ../minerva-rewrite/
       
       - name: Run unit tests
         run: yarn test
-        working-directory: ../minerva/
+        working-directory: ../minerva-rewrite/
