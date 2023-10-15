@@ -5,7 +5,6 @@ on:
       branches-ignore:
         - 'main'
         - 'development'
-    pull_request:
 
 jobs:
   test:
@@ -30,4 +29,3 @@ jobs:
       
       - name: Run unit tests
         run: yarn test --passWithNoTests
-        working-directory: ../minerva-rewrite/
