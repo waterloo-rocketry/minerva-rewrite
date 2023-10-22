@@ -5,8 +5,9 @@
       "plugin:prettier/recommended"
     ],
     "plugins": ["@typescript-eslint", "prettier"],
+    "ignorePatterns": ["/dist/*", "/node_modules/*"],
     "rules": {
       "prettier/prettier": "error"
     }
-  }
+}
   
