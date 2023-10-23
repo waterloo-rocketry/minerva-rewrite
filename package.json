@@ -27,6 +27,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@slack/bolt": "^3.14.0"
+    "@slack/bolt": "^3.14.0",
+    "dotenv": "^16.3.1"
   }
 }
