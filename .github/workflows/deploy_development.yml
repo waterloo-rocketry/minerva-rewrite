@@ -41,8 +41,9 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_KEY }}
-          source: dist/*
+          source: dist/
           target: ~/minerva-dev/
+          strip_components: 1
       - name: Start pm2 process
         uses: appleboy/ssh-action@master
         with:
