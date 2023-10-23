@@ -2,8 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'minerva-dev',
-      script: './bundle.js | rtail --id minerva-dev',
-      node_args: '-r dotenv/config',
+      script: 'node ./bundle.js | rtail --id minerva-dev',
       time: true,
       instances: 1,
       autorestart: true,
