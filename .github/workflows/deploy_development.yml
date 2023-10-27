@@ -53,4 +53,3 @@ jobs:
           script: |
             cd ~/minerva-dev
             pm2 start ecosystem.config.js
-            
