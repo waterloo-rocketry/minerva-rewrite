@@ -4,6 +4,7 @@
     "build": "webpack",
     "start": "ts-node src/index.ts",
     "format": "prettier --write 'src/**/*.{ts,tsx}' && eslint --fix 'src/**/*.{ts,tsx}'",
+    "deploy-dev": "git push -f origin +@:development && echo 'View deployment at https://github.com/waterloo-rocketry/minerva-rewrite/deployments?environment=development#activity-log'",
     "test": "jest"
   },
   "packageManager": "yarn@3.6.4",
@@ -26,6 +27,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@slack/bolt": "^3.14.0"
+    "@slack/bolt": "^3.14.0",
+    "dotenv": "^16.3.1"
   }
 }

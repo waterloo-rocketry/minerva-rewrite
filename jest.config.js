@@ -147,6 +147,9 @@ const config = {
   // The test environment that will be used for testing
   testEnvironment: 'node',
 
+  // Pass tests if no tests found
+  passWithNoTests: true,
+
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},
 

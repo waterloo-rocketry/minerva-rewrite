@@ -1,0 +1,56 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches: [ development ]
+
+jobs:
+  deploy:
+    name: Deploy Process
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Set up Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: Install Dependencies
+        run: corepack enable && yarn install --immutable
+      - name: Run unit tests
+        run: yarn test
+      - name: Build
+        run: yarn build
+      - name: Generate .env file
+        run: |
+          touch .env
+          echo GOOGLE_ACCOUNT_CLIENT=${{ secrets.GOOGLE_ACCOUNT_CLIENT }} >> .env
+          echo GOOGLE_ACCOUNT_SECRET=${{ secrets.GOOGLE_ACCOUNT_SECRET }} >> .env
+          echo GOOGLE_ACCOUNT_TOKEN=${{ secrets.GOOGLE_ACCOUNT_TOKEN }} >> .env
+          echo SLACK_APP_TOKEN=${{ secrets.SLACK_APP_TOKEN }} >> .env
+          echo SLACK_OAUTH_TOKEN=${{ secrets.SLACK_OAUTH_TOKEN }} >> .env
+          echo SLACK_SIGNING_SECRET=${{ secrets.SLACK_SIGNING_SECRET }} >> .env
+      - name: Move files to dist
+        run: |
+          mv .env ./dist/
+          mv ecosystem.config.js ./dist/
+      - name: Copy files to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_KEY }}
+          source: dist/
+          target: ~/minerva-dev/
+          strip_components: 1
+      - name: Start pm2 process
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_KEY }}
+          script: |
+            cd ~/minerva-dev
+            pm2 start ecosystem.config.js
+
