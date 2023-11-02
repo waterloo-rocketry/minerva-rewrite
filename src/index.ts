@@ -5,33 +5,32 @@ import { config } from 'dotenv';
 
 config();
 
-// Set up OAuth2 client
-const auth = new OAuth2Client({
-  clientId: process.env.GOOGLE_ACCOUNT_CLIENT,
-  clientSecret: process.env.GOOGLE_ACCOUNT_SECRET,
-  redirectUri: 'https://developers.google.com/oauthplayground',
-});
+async function main() {
+  // Set up OAuth2 client
+  const auth = new OAuth2Client({
+    clientId: process.env.GOOGLE_ACCOUNT_CLIENT,
+    clientSecret: process.env.GOOGLE_ACCOUNT_SECRET,
+    redirectUri: 'https://developers.google.com/oauthplayground',
+  });
 
-auth.setCredentials({
-  refresh_token: process.env.GOOGLE_ACCOUNT_TOKEN,
-});
+  auth.setCredentials({
+    refresh_token: process.env.GOOGLE_ACCOUNT_TOKEN,
+  });
 
-(async () => {
   const result = await calendar.events.list({
     auth: auth,
     calendarId: 'primary',
     timeMin: new Date().toISOString(),
-    maxResults: 1,
+    maxResults: 10,
     singleEvents: true,
     orderBy: 'startTime',
   });
-  if (!result.data.items) {
-    console.log('No upcoming events found.');
-    return;
-  } else {
-    console.log(result.data.items[0].summary);
-  }
-})();
 
-console.log('Done!');
-while (true) {}
+  console.log(result.data.items);
+
+  console.log('Done!');
+
+  while (true) {}
+}
+
+main();
