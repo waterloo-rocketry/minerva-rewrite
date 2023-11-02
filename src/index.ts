@@ -25,7 +25,12 @@ auth.setCredentials({
     singleEvents: true,
     orderBy: 'startTime',
   });
-  console.log(result);
+  if (!result.data.items) {
+    console.log('No upcoming events found.');
+    return;
+  } else {
+    console.log(result.data.items[0].summary);
+  }
 })();
 
 console.log('Done!');
