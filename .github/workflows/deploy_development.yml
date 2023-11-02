@@ -32,7 +32,7 @@ jobs:
           echo SLACK_APP_TOKEN=${{ secrets.SLACK_APP_TOKEN }} >> .env
           echo SLACK_OAUTH_TOKEN=${{ secrets.SLACK_OAUTH_TOKEN }} >> .env
           echo SLACK_SIGNING_SECRET=${{ secrets.SLACK_SIGNING_SECRET }} >> .env
-          echo COMMIT_HASH=${{ github.sha }} >> .env
+          echo COMMIT_SHA=${{ github.sha }} >> .env
       - name: Move files to dist
         run: |
           mv .env ./dist/

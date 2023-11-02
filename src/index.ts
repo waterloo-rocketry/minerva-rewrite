@@ -1,5 +1,13 @@
+import { config } from 'dotenv';
+
+config();
+
 console.log(
-  `Application minerva-dev (re)started. Deployed commit: ${process.env.COMMIT_HASH}`,
+`
+##############################################################################################
+Application minerva-dev (re)started. Deployed commit: ${process.env.COMMIT_SHA}
+##############################################################################################
+`,
 );
 
 console.log('There is nothing here yet.');
