@@ -3,7 +3,7 @@ import { config } from 'dotenv';
 config();
 
 console.log(
-`
+  `
 ##############################################################################################
 Application minerva-dev (re)started. Deployed commit: ${process.env.COMMIT_SHA}
 ##############################################################################################
