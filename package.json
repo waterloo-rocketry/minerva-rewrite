@@ -28,6 +28,8 @@
   },
   "dependencies": {
     "@slack/bolt": "^3.14.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "google-auth-library": "^9.2.0",
+    "googleapis": "^128.0.0"
   }
 }
