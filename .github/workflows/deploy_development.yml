@@ -2,7 +2,7 @@ name: Deploy to Development
 
 on:
   push:
-    branches: [ development ]
+    branches: [development]
 
 jobs:
   deploy:
@@ -28,6 +28,7 @@ jobs:
           echo GOOGLE_ACCOUNT_CLIENT=${{ secrets.GOOGLE_ACCOUNT_CLIENT }} >> .env
           echo GOOGLE_ACCOUNT_SECRET=${{ secrets.GOOGLE_ACCOUNT_SECRET }} >> .env
           echo GOOGLE_ACCOUNT_TOKEN=${{ secrets.GOOGLE_ACCOUNT_TOKEN }} >> .env
+          echo GOOGLE_ACCOUNT_OAUTH_REDIRECT=${{ secrets.GOOGLE_ACCOUNT_OAUTH_REDIRECT }} >> .env
           echo SLACK_APP_TOKEN=${{ secrets.SLACK_APP_TOKEN }} >> .env
           echo SLACK_OAUTH_TOKEN=${{ secrets.SLACK_OAUTH_TOKEN }} >> .env
           echo SLACK_SIGNING_SECRET=${{ secrets.SLACK_SIGNING_SECRET }} >> .env
@@ -53,4 +54,3 @@ jobs:
           script: |
             cd ~/minerva-dev
             pm2 start ecosystem.config.js
-
