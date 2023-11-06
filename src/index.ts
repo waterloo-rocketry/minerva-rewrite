@@ -11,14 +11,39 @@ const app = new App({
   // You may remove the 'port' option if you're using only socketMode and no HTTP
 });
 
-app.message('hello', async ({ message, say }) => {
+app.message('Hello', async ({ message, say }) => {
   // Check if 'message' is properly typed, as 'user' might not be a direct property.
   // If 'message' is of type 'MessageEvent', it should have a 'user' property.
   if ('user' in message) {
-    await say(`Hey there <@${message.user}>!`);
+    await say({
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `Hey there <@${message.user}>!`,
+          },
+          accessory: {
+            type: 'button',
+            text: {
+              type: 'plain_text',
+              text: 'Click Me',
+            },
+            action_id: 'button_click',
+          },
+        },
+      ],
+      text: `Hey there <@${message.user}>!`,
+    });
   } else {
     console.error('The message event did not have a user property.');
   }
+});
+
+app.action('button_click', async ({ body, ack, say }) => {
+  // Acknowledge the action
+  await ack();
+  await say(`<@${body.user.id}> clicked the button`);
 });
 
 (async () => {
