@@ -15,9 +15,5 @@ const app = new App({
   const port = process.env.PORT || 3000; // Use a port from the environment or default to 3000
   await app.start(port);
 
-  console.log(`⚡️ Bolt app is running on port!`);
+  console.log(`⚡️ Bolt app is running on port ${port}!`);
 })();
-
-console.log('There is nothing here yet.');
-console.error('This is an error.');
-
