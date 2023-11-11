@@ -45,12 +45,24 @@ jobs:
           source: dist/
           target: ~/minerva-dev/
           strip_components: 1
-      - name: Start pm2 process
+      - name: Start pm2 process and check status
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_KEY }}
           script: |
+            # Install jq if it is not already installed
+            if ! command -v jq > /dev/null; then
+              sudo apt-get update && sudo apt-get install -y jq
+            fi
+
             cd ~/minerva-dev
-            pm2 start ecosystem.config.js
+            pm2 start ecosystem.config.js || exit 1
+            while true; do
+              if pm2 jlist | jq -e 'map(select(.pm2_env.status != "online"))' > /dev/null; then
+                echo "PM2 application crashed!"
+                exit 1
+              fi
+              sleep 5
+            done
