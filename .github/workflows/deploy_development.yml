@@ -15,7 +15,7 @@ jobs:
       - name: Set up Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: '18.x'
       - name: Install Dependencies
         run: corepack enable && yarn install --immutable
       - name: Run unit tests
@@ -42,27 +42,51 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_KEY }}
-          source: dist/
-          target: ~/minerva-dev/
+          source: 'dist/'
+          target: '~/minerva-dev-new/'
           strip_components: 1
-      - name: Start pm2 process and check status
+      - name: PM2 process handling and rollback mechanism
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_KEY }}
           script: |
+            # Backup current deployment
+            if [ -d "~/minerva-dev" ]; then
+              mv ~/minerva-dev ~/minerva-dev-backup
+            fi
+
+            # Move new deployment to active directory
+            mv ~/minerva-dev-new ~/minerva-dev
+
             # Install jq if it is not already installed
             if ! command -v jq > /dev/null; then
               sudo apt-get update && sudo apt-get install -y jq
             fi
 
             cd ~/minerva-dev
-            pm2 start ecosystem.config.js || exit 1
-            while true; do
-              if pm2 jlist | jq -e 'map(select(.pm2_env.status != "online"))' > /dev/null; then
-                echo "PM2 application crashed!"
-                exit 1
-              fi
-              sleep 5
-            done
+            pm2 start ecosystem.config.js || ROLLBACK=true
+
+            # Check if new deployment is successful
+            if [ "$ROLLBACK" != true ]; then
+              while true; do
+                if pm2 jlist | jq -e 'map(select(.pm2_env.status != "online"))' > /dev/null; then
+                  echo "PM2 application crashed!"
+                  ROLLBACK=true
+                  break
+                fi
+                sleep 5
+              done
+            fi
+
+            # Rollback to previous deployment if new deployment fails
+            if [ "$ROLLBACK" = true ]; then
+              echo "Rolling back to previous deployment"
+              rm -rf ~/minerva-dev
+              mv ~/minerva-dev-backup ~/minerva-dev
+              exit 1
+            else
+              echo "Deployment successful, removing backup"
+              rm -rf ~/minerva-dev-backup
+            fi
