@@ -52,9 +52,12 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_KEY }}
           script: |
-            # Backup current deployment
+            # Ensure backup directory exists
+            mkdir -p ~/minerva-dev-backup
+
+            # Backup current deployment, if it exists
             if [ -d "~/minerva-dev" ]; then
-              mv ~/minerva-dev ~/minerva-dev-backup
+              mv ~/minerva-dev/* ~/minerva-dev-backup/
             fi
 
             # Move new deployment to active directory
@@ -84,7 +87,7 @@ jobs:
             if [ "$ROLLBACK" = true ]; then
               echo "Rolling back to previous deployment"
               rm -rf ~/minerva-dev
-              mv ~/minerva-dev-backup ~/minerva-dev
+              mv ~/minerva-dev-backup/* ~/minerva-dev/
               exit 1
             else
               echo "Deployment successful, removing backup"
