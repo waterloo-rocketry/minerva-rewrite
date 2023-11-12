@@ -52,17 +52,6 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_KEY }}
           script: |
-            # Ensure backup directory exists
-            mkdir -p ~/minerva-dev-backup
-
-            # Backup current deployment, if it exists
-            if [ -d "~/minerva-dev" ]; then
-              mv ~/minerva-dev/* ~/minerva-dev-backup/
-            fi
-
-            # Move new deployment to active directory
-            mv ~/minerva-dev-new ~/minerva-dev
-
             # Install jq if it is not already installed
             if ! command -v jq > /dev/null; then
               sudo apt-get update && sudo apt-get install -y jq
@@ -83,10 +72,23 @@ jobs:
               done
             fi
 
+            # Ensure backup directory exists
+            mkdir -p ~/minerva-dev-backup
+            ls ~/minerva-dev-backup
+
+            # Backup current deployment, if it exists
+            if [ -d "~/minerva-dev" ]; then
+              mv ~/minerva-dev/* ~/minerva-dev-backup/
+            fi
+
+            # Move new deployment to active directory
+            mv ~/minerva-dev-new ~/minerva-dev
+
             # Rollback to previous deployment if new deployment fails
             if [ "$ROLLBACK" = true ]; then
               echo "Rolling back to previous deployment"
               rm -rf ~/minerva-dev
+              ls ~
               mv ~/minerva-dev-backup/* ~/minerva-dev/
               exit 1
             else
