@@ -33,9 +33,11 @@ corepack enable # Set up Yarn
 yarn install
 ```
 
-### (VSCode Users) Installing Recommended Extensions
+### (VSCode Users) Setting up VSCode for development
 
 If you use Visual Studio Code as your IDE, this codebase provides recommended extensions that will be useful in developing Minerva. When you first open the codebase, you should be prompted to install the extensions recommended by this project by a pop-up. If this does not appear, go to the extensions tab, search for `@recommended`, and install the extensions that show up.
+
+To allow the TypeScript extension to work with Yarn for things such as dependency resolution, you will need to specify the TypeScript version that Yarn provides. If you have the extension installed, upon opening the repository using VSCode you will be notified that "This workspace contains a TypeScript version" and asked if you would "like to use the workspace TypeScript version". Click on "Allow" and VSCode will get this set up for you. If such a message does not pop up, open any `.ts` file in the repo, open up your command palette (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>) and run the "TypeScript: Select TypeScript version..." command. From here, select "Use Workspace Version".
 
 ## Contributing Code
 
