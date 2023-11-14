@@ -57,7 +57,6 @@ jobs:
               echo "Installing jq..."
               sudo apt-get update && sudo apt-get install -y jq
             fi
-      
             echo "Changing directory to ~/minerva-dev"
             cd ~/minerva-dev
       
@@ -66,10 +65,10 @@ jobs:
       
             # Check if PM2 started the application successfully
             echo "Checking PM2 process status..."
-            while true; do
-              if pm2 jlist | jq -e 'map(select(.pm2_env.status != "online"))' > /dev/null; then
-                echo "PM2 application crashed!"
-                exit 1
-              fi
-              sleep 5
-            done
+            if pm2 jlist | jq -e 'any(.pm2_env.status == "online")' > /dev/null; then
+              echo "PM2 application is running."
+              exit 0
+            else
+              echo "PM2 application is not running!"
+              exit 1
+            fi
