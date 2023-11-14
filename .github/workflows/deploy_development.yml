@@ -45,58 +45,23 @@ jobs:
           source: 'dist/'
           target: '~/minerva-dev-new/'
           strip_components: 1
-      - name: PM2 process handling and rollback mechanism
+      - name: PM2 process handling
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_KEY }}
           script: |
-            # Ensure backup directory exists
-            mkdir -p ~/minerva-dev-backup
-
-            # Backup current deployment, if it exists and is not empty
-            if [ -d "~/minerva-dev" ] && [ "$(ls -A ~/minerva-dev)" ]; then
-              echo "Backing up current deployment..."
-              mv ~/minerva-dev/* ~/minerva-dev-backup/
-            else
-              echo "~/minerva-dev is empty or does not exist. No backup created."
-            fi
-
-            # Move new deployment to active directory
-            mv ~/minerva-dev-new ~/minerva-dev
-
             # Install jq if it is not already installed
             if ! command -v jq > /dev/null; then
               sudo apt-get update && sudo apt-get install -y jq
             fi
-
             cd ~/minerva-dev
-            pm2 start ecosystem.config.js || ROLLBACK=true
-
-            # Check if new deployment is successful
-            if [ "$ROLLBACK" != true ]; then
-              while true; do
-                if pm2 jlist | jq -e 'map(select(.pm2_env.status != "online"))' > /dev/null; then
-                  echo "PM2 application crashed!"
-                  ROLLBACK=true
-                  break
-                fi
-                sleep 5
-              done
-            fi
-
-            # Rollback to previous deployment if new deployment fails
-            if [ "$ROLLBACK" = true ]; then
-              echo "Rolling back to previous deployment"
-              if [ -d "~/minerva-dev-backup" ] && [ "$(ls -A ~/minerva-dev-backup)" ]; then
-                rm -rf ~/minerva-dev
-                mv ~/minerva-dev-backup/* ~/minerva-dev/
-              else
-                echo "No backup available to rollback."
+            pm2 start ecosystem.config.js || exit 1
+            while true; do
+              if pm2 jlist | jq -e 'map(select(.pm2_env.status != "online"))' > /dev/null; then
+                echo "PM2 application crashed!"
+                exit 1
               fi
-              exit 1
-            else
-              echo "Deployment successful, removing backup"
-              rm -rf ~/minerva-dev-backup
-            fi
+              sleep 5
+            done
