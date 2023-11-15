@@ -72,3 +72,4 @@ jobs:
               echo "PM2 application is not running!"
               exit 1
             fi
+            
