@@ -45,7 +45,7 @@ jobs:
           source: dist/
           target: ~/minerva-dev/
           strip_components: 1
-      - name: Start pm2 process
+      - name: Start pm2 process and monitor startup
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}
@@ -53,4 +53,20 @@ jobs:
           key: ${{ secrets.REMOTE_KEY }}
           script: |
             cd ~/minerva-dev
-            pm2 start ecosystem.config.js
+      
+            echo "Starting the application with PM2."
+            pm2 start ecosystem.config.js 
+
+            echo "Waiting for the application to stabilize."
+            sleep 10 
+
+            # Check if PM2 started the application successfully
+            echo "Checking PM2 process status..."
+            if pm2 jlist | jq -e 'any(.pm2_env.status == "online")' > /dev/null; then
+              echo "PM2 application is running."
+              exit 0
+            else
+              echo "PM2 application has failed to start."
+              exit 1
+            fi
+            
