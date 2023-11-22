@@ -15,7 +15,7 @@ jobs:
       - name: Set up Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: 18.x
       - name: Install Dependencies
         run: corepack enable && yarn install --immutable
       - name: Run unit tests
@@ -42,34 +42,31 @@ jobs:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_KEY }}
-          source: 'dist/'
-          target: '~/minerva-dev-new/'
+          source: dist/
+          target: ~/minerva-dev/
           strip_components: 1
-      - name: PM2 process handling
+      - name: Start pm2 process and monitor startup
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_KEY }}
           script: |
-            # Install jq if it is not already installed
-            if ! command -v jq > /dev/null; then
-              echo "Installing jq..."
-              sudo apt-get update && sudo apt-get install -y jq
-            fi
-            echo "Changing directory to ~/minerva-dev"
             cd ~/minerva-dev
       
-            echo "Starting the application with PM2"
-            pm2 start ecosystem.config.js || exit 1
-      
+            echo "Starting the application with PM2."
+            pm2 start ecosystem.config.js 
+
+            echo "Waiting for the application to stabilize."
+            sleep 10 
+
             # Check if PM2 started the application successfully
             echo "Checking PM2 process status..."
             if pm2 jlist | jq -e 'any(.pm2_env.status == "online")' > /dev/null; then
               echo "PM2 application is running."
               exit 0
             else
-              echo "PM2 application is not running!"
+              echo "PM2 application has failed to start."
               exit 1
             fi
             
