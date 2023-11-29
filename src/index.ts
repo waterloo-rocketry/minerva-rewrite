@@ -5,7 +5,7 @@ import { config } from 'dotenv';
 
 config();
 
-async function main() {
+async function main(eventId: string, updatedFields: object) {
   // Set up OAuth2 client
   const auth = new OAuth2Client({
     clientId: process.env.GOOGLE_ACCOUNT_CLIENT,
@@ -17,7 +17,8 @@ async function main() {
     refresh_token: process.env.GOOGLE_ACCOUNT_TOKEN,
   });
 
-  const result = await calendar.events.list({
+  // Returns next 10 events. Commonly used data in result.data.items
+  const getNextEvents = await calendar.events.list({
     auth: auth,
     calendarId: 'primary',
     timeMin: new Date().toISOString(),
@@ -26,8 +27,22 @@ async function main() {
     orderBy: 'startTime',
   });
 
-  console.log(result.data.items);
+  const getEventById = await calendar.events.get({
+    auth: auth,
+    calendarId: 'primary',
+    eventId: eventId,
+  });
 
+  const updateEventById = await calendar.events.patch({
+    auth: auth,
+    calendarId: 'primary',
+    eventId: eventId,
+    requestBody: updatedFields,
+  });
+
+  console.log(getNextEvents.data.items);
+  console.log(getEventById.data);
+  console.log(updateEventById.data);
   console.log('Done!');
 
   while (true) {}
