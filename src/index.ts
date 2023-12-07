@@ -2,6 +2,7 @@ import { App } from '@slack/bolt';
 import * as environment from './utils/env';
 import registerListeners from './listeners';
 
+
 // Initialize app
 const app = new App({
   token: environment.slackBotToken,

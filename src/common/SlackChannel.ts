@@ -6,4 +6,8 @@ export default class SlackChannel {
     this.name = name;
     this.id = id;
   }
+
+  equals(other: SlackChannel): boolean {
+    return this.name === other.name && this.id === other.id;
+  }
 }
