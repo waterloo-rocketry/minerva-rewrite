@@ -1,0 +1,32 @@
+{
+  "kind": "calendar#event",
+  "etag": "\"3403926459898000\"",
+  "id": "0brs1b22ndrcg4gfltgg58dhri",
+  "status": "confirmed",
+  "htmlLink": "https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRldkBt",
+  "created": "2023-12-02T19:33:17.000Z",
+  "updated": "2023-12-07T15:33:49.949Z",
+  "summary": "Minerva Testing",
+  "description": "This is a test event.<i><br></i>---<br>channels: general, airframe<br>meetingLink: <a href=\"https://developers.google.com/calendar/api/v3/reference/events\"><u>https://developers.google.com/calendar/api/v3/reference/events</u></a>",
+  "creator": {
+    "email": "wenxu2002@gmail.com"
+  },
+  "organizer": {
+    "email": "uwaterloo.rocketry.dev@gmail.com",
+    "self": true
+  },
+  "start": {
+    "dateTime": "2023-12-07T14:00:00-05:00",
+    "timeZone": "America/Toronto"
+  },
+  "end": {
+    "dateTime": "2023-12-07T15:00:00-05:00",
+    "timeZone": "America/Toronto"
+  },
+  "iCalUID": "0brs1b22ndrcg4gfltgg58dhri@google.com",
+  "sequence": 1,
+  "reminders": {
+    "useDefault": true
+  },
+  "eventType": "default"
+}

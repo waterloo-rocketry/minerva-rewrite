@@ -1,5 +1,5 @@
 import { App } from '@slack/bolt';
-import SlackChannel from '../common/SlackChannel';
+import SlackChannel from '../classes/SlackChannel';
 import { defaultSlackChannels } from '../common/constants';
 
 export function filterSlackChannelFromName(
