@@ -1,1 +1,1 @@
-export const defaultSlackChannels = ['general', 'airframe', 'propulsion'];
+export const defaultSlackChannels = ["general", "airframe", "propulsion"];

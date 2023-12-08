@@ -7,8 +7,7 @@
     "plugins": ["@typescript-eslint", "prettier"],
     "ignorePatterns": ["/dist/*", "/node_modules/*"],
     "rules": {
-      "prettier/prettier": "error",
-      "max-len": ["error", { "code": 120 }]
+      "prettier/prettier": "error"
     }
 }
   
