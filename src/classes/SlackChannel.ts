@@ -1,5 +1,14 @@
+/**
+ * Class representing a slack channel
+ */
 export default class SlackChannel {
+  /**
+   * The name of the channel
+   */
   name: string;
+  /**
+   * The id of the channel
+   */
   id: string;
 
   constructor(name: string, id: string) {

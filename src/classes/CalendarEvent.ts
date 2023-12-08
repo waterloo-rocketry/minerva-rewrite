@@ -2,15 +2,37 @@ import { calendar_v3 } from "googleapis";
 import SlackChannel from "../classes/SlackChannel";
 import { MinervaEventMetadata, parseDescription } from "../utils/calendarDescription";
 
+/**
+ * Class representing a google calendar event
+ */
 export default class CalendarEvent {
+  /**
+   * The title of the event
+   */
   title: string;
+  /**
+   * The description of the event
+   */
   description?: string;
+  /**
+   * The metadata of the event that minerva uses. This includes the main channel, additional channels, and meeting link
+   */
   minervaEventMetadata?: MinervaEventMetadata;
+  /**
+   * The location of the event
+   */
   location?: string;
+  /**
+   * The start time of the event
+   */
   start: Date;
+  /**
+   * The end time of the event
+   */
   end: Date;
 
   // Constructor takes a Google Calendar event object
+  // Also takes a list of workspace channels so they don't have to be fetched every time
   constructor(event: calendar_v3.Schema$Event, workspaceChannels: SlackChannel[]) {
     if (event.summary == undefined) throw new Error("Event summary is undefined");
     this.title = event.summary;
