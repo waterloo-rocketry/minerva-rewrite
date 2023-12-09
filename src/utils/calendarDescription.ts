@@ -50,7 +50,7 @@ export function splitDescription(description: string): {
   }
 
   // Remove the meeting link and channel lines from the description and then join the lines back together
-  const descriptionText = lines.slice(descriptionStartLineNumber).join("\n");
+  const descriptionText = lines.slice(descriptionStartLineNumber).join("\n").trim();
 
   return {
     descriptionText,

@@ -18,6 +18,15 @@ describe("utils/calendarDescription", () => {
         meetingLink: "https://example.com",
       });
     });
+    it("should split the description containing channel, meeting link, and a single line description text, with the description text being separated from the metadata by an empty line", () => {
+      const description = `#${slackChannels[0].name}\nhttps://example.com\n\nThis is a description`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description",
+        channelName: slackChannels[0].name,
+        meetingLink: "https://example.com",
+      });
+    });
     it("should split the description containing just a single line description text", () => {
       const description = `This is a description`;
       const result = splitDescription(description);
