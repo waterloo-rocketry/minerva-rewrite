@@ -12,7 +12,7 @@ import { defaultSlackChannels } from "../common/constants";
 export function filterSlackChannelFromName(name: string, channels: SlackChannel[]): SlackChannel | undefined {
   if (name == "default") throw new Error("`default` is not a valid channel name, as it is a group of channels");
   const channel = channels?.find((channel) => channel.name === name);
-  if (channel == undefined) throw new Error(`Could not find channel with name ${name}`);
+  if (channel == undefined) throw new Error(`could not find channel with name ${name}`);
 
   return channel;
 }
@@ -34,13 +34,13 @@ export function filterSlackChannelsFromNames(names: string[], channels: SlackCha
       const channel = channels.find((channel) => channel.name === name);
       // If a channel with a given name is not found, it logs an error and continues to the next name.
       if (channel == undefined) {
-        console.error(`Could not find channel with name ${name}`);
+        console.error(`could not find channel with name ${name}`);
         continue;
       }
 
       // If a channel has an undefined name or id, it logs an error and continues to the next channel.
       if (channel.name == undefined || channel.id == undefined) {
-        console.error(`Channel with name ${name} has undefined name or id. This should not happen.`);
+        console.error(`channel with name ${name} has undefined name or id. This should not happen.`);
         continue;
       }
 
@@ -77,7 +77,7 @@ export async function getAllSlackChannels(app: App): Promise<SlackChannel[]> {
 
   for (const channel of channels.channels ?? []) {
     if (channel.name == undefined || channel.id == undefined) {
-      console.error(`Channel with name ${channel.name} has undefined name or id. This should not happen.`);
+      console.error(`channel with name ${channel.name} has undefined name or id. This should not happen.`);
       continue;
     }
 

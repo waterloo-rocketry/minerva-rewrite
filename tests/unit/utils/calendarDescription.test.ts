@@ -156,11 +156,13 @@ describe("utils/calendarDescription", () => {
       });
     });
 
-    it("should throw an error if no channels are specified", () => {
+    it("should throw an error if the the channel specified does not exist", () => {
       const description = `#foodstuffs<br>This is a description<br>Yep it is.`;
-      expect(() => parseDescription(description, [])).toThrow("Could not find channel with name foodstuffs");
+      expect(() => parseDescription(description, [])).toThrow("could not find channel with name foodstuffs");
     });
-    it("should throw an error if the the channel specified does not exist", () => {});
-    it("should throw an error if the first channel specified is default", () => {});
+    it("should throw an error if no channel is specified", () => {
+      const description = `<a href="https://example.com">https://example.com</a><br>This is a description<br>Yep it is.`;
+      expect(() => parseDescription(description, slackChannels)).toThrow("channel name not specified");
+    });
   });
 });
