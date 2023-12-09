@@ -1,58 +1,94 @@
 import {
-  splitDescriptionAndYamlText,
+  splitDescription,
   replaceATagsWithHref,
   parseDescriptionFromHtml,
   parseDescription,
 } from "../../../src/utils/calendarDescription";
 
-import { slackChannels, defaultSlackChannels } from "../../fixtures/slackChannels";
+import { slackChannels } from "../../fixtures/slackChannels";
 
 describe("utils/calendarDescription", () => {
-  describe("splitDescriptionAndYamlText", () => {
-    it("should split and return the description and yaml text", () => {
-      const description = `This is a description
----
-foo: bar`;
-      const { descriptionText, yamlText } = splitDescriptionAndYamlText(description);
-      expect(descriptionText).toEqual("This is a description");
-      expect(yamlText).toEqual("foo: bar");
+  describe("splitDescription", () => {
+    it("should split the description containing channel, meeting link, and a single line description text", () => {
+      const description = `#${slackChannels[0].name}\nhttps://example.com\nThis is a description`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description",
+        channelName: slackChannels[0].name,
+        meetingLink: "https://example.com",
+      });
     });
-
-    it("should return just the description text if there is no yaml text", () => {
+    it("should split the description containing just a single line description text", () => {
       const description = `This is a description`;
-      const { descriptionText, yamlText } = splitDescriptionAndYamlText(description);
-      expect(descriptionText).toEqual("This is a description");
-      expect(yamlText).toBeUndefined();
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description",
+      });
     });
-
-    it("should return just yaml if there is no description text", () => {
-      const description = `---
-foo: bar`;
-      const { descriptionText, yamlText } = splitDescriptionAndYamlText(description);
-      expect(descriptionText).toEqual("");
-      expect(yamlText).toEqual("foo: bar");
+    it("should split the description containing just a multi line description text", () => {
+      const description = `This is a description\nWith multiple lines`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description\nWith multiple lines",
+      });
     });
-
-    it("should return empty string if the description is empty", () => {
+    it("should split the description containing channel, meeting link, and a multi line description text", () => {
+      const description = `#${slackChannels[0].name}\nhttps://example.com\nThis is a description\nWith multiple lines`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description\nWith multiple lines",
+        channelName: slackChannels[0].name,
+        meetingLink: "https://example.com",
+      });
+    });
+    it("should split the description containing just the channel and description text", () => {
+      const description = `#${slackChannels[0].name}\nThis is a description`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description",
+        channelName: slackChannels[0].name,
+      });
+    });
+    it("should split the description containing just channel and meeting link", () => {
+      const description = `#${slackChannels[0].name}\nhttps://example.com`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "",
+        channelName: slackChannels[0].name,
+        meetingLink: "https://example.com",
+      });
+    });
+    it("should split the description containing just the channel", () => {
+      const description = `#${slackChannels[0].name}`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "",
+        channelName: slackChannels[0].name,
+      });
+    });
+    it("should handle an empty description properly", () => {
       const description = ``;
-      const { descriptionText, yamlText } = splitDescriptionAndYamlText(description);
-      expect(descriptionText).toEqual("");
-      expect(yamlText).toBeUndefined();
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "",
+      });
     });
-
-    it("should return empty string if there is a yaml separator and nothing else", () => {
-      const description = `---`;
-      const { descriptionText, yamlText } = splitDescriptionAndYamlText(description);
-      expect(descriptionText).toEqual("");
-      expect(yamlText).toEqual("");
+    it("should handle description text that contains a line that starts with a `#` with the channel specified", () => {
+      const description = `#${slackChannels[0].name}\nThis is a description\n#sotruebestie`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description\n#sotruebestie",
+        channelName: slackChannels[0].name,
+      });
     });
-
-    it("should throw an error if there is multiple yaml separators", () => {
-      const description = `---
-foo: bar
----
-foo: bar`;
-      expect(() => splitDescriptionAndYamlText(description)).toThrow("Description contains multiple '---' lines");
+    it("should parse the metadata values even if they are out of order", () => {
+      const description = `https://example.com\n#${slackChannels[0].name}\nThis is a description`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description",
+        channelName: slackChannels[0].name,
+        meetingLink: "https://example.com",
+      });
     });
   });
   describe("replaceATagsWithHref", () => {
@@ -83,74 +119,39 @@ foo: bar`;
   });
   describe("parseDescription", () => {
     it("should parse the description when metadata exists", () => {
-      const description = `This is a description<br>---<br>channels: ${slackChannels[0].name}, ${slackChannels[1].name}, ${slackChannels[2].name}<br>meetingLink: <a href="https://example.com">https://example.com</a>`;
+      const description = `#${slackChannels[0].name}<br><a href="https://example.com">https://example.com</a><br>This is a description<br>Yep it is.`;
       const result = parseDescription(description, slackChannels);
-      expect(result.description).toEqual("This is a description");
-      expect(result.minervaEventMetadata).toEqual({
-        mainChannel: slackChannels[0],
-        additionalChannels: [slackChannels[1], slackChannels[2]],
-        meetingLink: "https://example.com",
+      expect(result).toEqual({
+        description: "This is a description\nYep it is.",
+        minervaEventMetadata: {
+          channel: slackChannels[0],
+          meetingLink: "https://example.com",
+        },
       });
     });
     it("should parse the description when metadata does not exist", () => {
-      const description = `This is a description`;
+      const description = `This is a description<br>Yep it is.`;
       const result = parseDescription(description, slackChannels);
-      expect(result.description).toEqual("This is a description");
-      expect(result.minervaEventMetadata).toBeUndefined();
+      expect(result).toEqual({
+        description: "This is a description\nYep it is.",
+      });
     });
     it("should parse the description when there is no meeting link in the metadata", () => {
-      const description = `This is a description<br>---<br>channels: ${slackChannels[0].name}, ${slackChannels[1].name}, ${slackChannels[2].name}`;
+      const description = `#${slackChannels[0].name}<br>This is a description<br>Yep it is.`;
       const result = parseDescription(description, slackChannels);
-      expect(result.description).toEqual("This is a description");
-      expect(result.minervaEventMetadata).toEqual({
-        mainChannel: slackChannels[0],
-        additionalChannels: [slackChannels[1], slackChannels[2]],
-        meetingLink: undefined,
+      expect(result).toEqual({
+        description: "This is a description\nYep it is.",
+        minervaEventMetadata: {
+          channel: slackChannels[0],
+        },
       });
     });
-    it("should parse the description when there is only a single channel in the metadata", () => {
-      const description = `This is a description<br>---<br>channels: ${slackChannels[0].name}<br>meetingLink: <a href="https://example.com">https://example.com</a>`;
-      const result = parseDescription(description, slackChannels);
-      expect(result.description).toEqual("This is a description");
-      expect(result.minervaEventMetadata).toEqual({
-        mainChannel: slackChannels[0],
-        additionalChannels: [],
-        meetingLink: "https://example.com",
-      });
-    });
-    it("should parse the description when channels includes default with no overlap with others", () => {
-      const description = `This is a description<br>---<br>channels: ${slackChannels[1].name}, default<br>meetingLink: <a href="https://example.com">https://example.com</a>`;
-      const result = parseDescription(description, slackChannels);
-      expect(result.description).toEqual("This is a description");
-      expect(result.minervaEventMetadata).toEqual({
-        mainChannel: slackChannels[1],
-        additionalChannels: [...defaultSlackChannels],
-        meetingLink: "https://example.com",
-      });
-    });
-    it("should parse the description when channels includes default with overlap with others", () => {
-      const description = `This is a description<br>---<br>channels: ${slackChannels[0].name}, default<br>meetingLink: <a href="https://example.com">https://example.com</a>`;
-      const result = parseDescription(description, slackChannels);
-      expect(result.description).toEqual("This is a description");
-      expect(result.minervaEventMetadata).toEqual({
-        mainChannel: slackChannels[0],
-        additionalChannels: [...defaultSlackChannels.slice(1)],
-        meetingLink: "https://example.com",
-      });
-    });
+
     it("should throw an error if no channels are specified", () => {
-      const description = `This is a description<br>---<br>meetingLink: <a href="https://example.com">https://example.com</a>`;
-      expect(() => parseDescription(description, slackChannels)).toThrow(
-        "nothing specified for `channels` in metadata",
-      );
+      const description = `#foodstuffs<br>This is a description<br>Yep it is.`;
+      expect(() => parseDescription(description, [])).toThrow("Could not find channel with name foodstuffs");
     });
-    it("should throw an error if the only channel specified is default", () => {
-      const description = `This is a description<br>---<br>channels: default<br>meetingLink: <a href="https://example.com">https://example.com</a>`;
-      expect(() => parseDescription(description, slackChannels)).toThrow("main channel cannot be `default`");
-    });
-    it("should throw an error if the first channel specified is default", () => {
-      const description = `This is a description<br>---<br>channels: default, ${slackChannels[0].name}<br>meetingLink: <a href="https://example.com">https://example.com</a>`;
-      expect(() => parseDescription(description, slackChannels)).toThrow("main channel cannot be `default`");
-    });
+    it("should throw an error if the the channel specified does not exist", () => {});
+    it("should throw an error if the first channel specified is default", () => {});
   });
 });

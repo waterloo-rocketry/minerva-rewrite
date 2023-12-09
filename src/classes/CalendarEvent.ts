@@ -1,6 +1,6 @@
 import { calendar_v3 } from "googleapis";
 import SlackChannel from "../classes/SlackChannel";
-import { MinervaEventMetadata, parseDescription } from "../utils/calendarDescription";
+import { EventMetadata, parseDescription } from "../utils/calendarDescription";
 
 /**
  * Class representing a google calendar event
@@ -17,7 +17,7 @@ export default class CalendarEvent {
   /**
    * The metadata of the event that minerva uses. This includes the main channel, additional channels, and meeting link
    */
-  minervaEventMetadata?: MinervaEventMetadata;
+  minervaEventMetadata?: EventMetadata;
   /**
    * The location of the event
    */

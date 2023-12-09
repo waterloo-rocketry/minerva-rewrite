@@ -1,35 +1,16 @@
 import { convert } from "html-to-text";
-import yaml from "js-yaml";
 
 import SlackChannel from "../classes/SlackChannel";
-import { filterSlackChannelFromName, filterSlackChannelsFromNames } from "../utils/channels";
-
-/**
- * The representation of the YAML metadata in the description of a calendar event
- */
-export type EventYaml = {
-  /**
-   * The channels that event reminders should be posted to. The first channel is the main channel, and the rest are additional channels
-   */
-  channels: string;
-  /**
-   * The meeting link for the event, if it exists
-   */
-  meetingLink?: string;
-};
+import { filterSlackChannelFromName } from "../utils/channels";
 
 /**
  * The representation metadata of the event that minerva uses. This includes the main channel, additional channels, and meeting link
  */
-export type MinervaEventMetadata = {
+export type EventMetadata = {
   /**
-   * The main channel that event reminders should be posted to
+   * The channel that event reminders should be posted to
    */
-  mainChannel?: SlackChannel;
-  /**
-   * The additional channels that event reminders should be posted to
-   */
-  additionalChannels?: SlackChannel[];
+  channel?: SlackChannel;
   /**
    * The meeting link for the event, if it exists
    */
@@ -37,28 +18,45 @@ export type MinervaEventMetadata = {
 };
 
 /**
- * Split the description into the description text and the YAML text that contains the metadata
- * These are separated by a line containing only '---'
- * @param description The description of the event to split
- * @returns The description text and the YAML text
+ * Splits the given description into its components.
+ *
+ * @param description - The description to split.
+ * @returns An object containing the split components of the description.
  */
-export function splitDescriptionAndYamlText(description: string): {
+export function splitDescription(description: string): {
   descriptionText: string;
-  yamlText?: string;
+  channelName?: string;
+  meetingLink?: string;
 } {
-  // Description and YAML are separated by a line containing only '---'
-  // Since the `---` can be at the start or end of the description, we need optional newlines
-  const splitDescription = description.split(/\n?---\n?/);
-  if (splitDescription.length == 1) {
-    return { descriptionText: splitDescription[0] };
-  } else if (splitDescription.length == 2) {
-    return {
-      descriptionText: splitDescription[0],
-      yamlText: splitDescription[1],
-    };
-  } else {
-    throw new Error("Description contains multiple '---' lines");
+  // Split the description by line
+  const lines = description.split("\n");
+  // If there are multiple lines, the first 1-2 lines can contain the metadata
+  // Check the first two lines for this metadata
+  let descriptionStartLineNumber = 0;
+  let channelName: string | undefined;
+  let meetingLink: string | undefined;
+
+  for (let i = 0; i < Math.min(lines.length, 2); i++) {
+    // If one of the first two lines starts with `#`, it is the channel
+    if (lines[i].startsWith("#")) {
+      channelName = lines[i].replace("#", "").trim();
+      descriptionStartLineNumber = i + 1;
+    }
+    // If one of the first two lines is a valid URL it is the meeting link
+    else if (lines[i].startsWith("http")) {
+      meetingLink = lines[i].trim();
+      descriptionStartLineNumber = i + 1;
+    }
   }
+
+  // Remove the meeting link and channel lines from the description and then join the lines back together
+  const descriptionText = lines.slice(descriptionStartLineNumber).join("\n");
+
+  return {
+    descriptionText,
+    channelName,
+    meetingLink,
+  };
 }
 
 /**
@@ -101,43 +99,26 @@ export function parseDescriptionFromHtml(description: string): string {
 export function parseDescription(
   description: string,
   workspaceChannels: SlackChannel[],
-): { description: string; minervaEventMetadata?: MinervaEventMetadata } {
-  // Parse the description into plain text
+): { description: string; minervaEventMetadata?: EventMetadata } {
   const plainDescription = parseDescriptionFromHtml(description);
-  const { descriptionText, yamlText } = splitDescriptionAndYamlText(plainDescription);
+  const { descriptionText, channelName, meetingLink } = splitDescription(plainDescription);
 
-  if (yamlText != undefined) {
-    const yamlObject = yaml.load(yamlText) as EventYaml;
-    if (yamlObject != undefined) {
-      // Split the list of channels by `,` or `, ` or ` ,` or ` `
-      const channels = yamlObject.channels?.split(/,\s|\s|,/);
-      if (channels == undefined || channels.length == 0)
-        throw new Error("nothing specified for `channels` in metadata");
-      if (channels[0] == "default") throw new Error("main channel cannot be `default`");
-
-      const mainChannelName = channels[0];
-      // Channels after the first are additional channels
-      const additionalChannelNames = channels.slice(1);
-
-      const mainChannel = filterSlackChannelFromName(mainChannelName, workspaceChannels);
-
-      if (mainChannel == undefined) throw new Error(`channel ${mainChannelName} not found`);
-
-      let additionalChannels = filterSlackChannelsFromNames(additionalChannelNames, workspaceChannels);
-
-      // Remove the main channel from the additional channels if it is duplicated
-      additionalChannels = additionalChannels.filter((channel) => channel.name != mainChannel.name);
-
-      const meetingLink = yamlObject.meetingLink;
-      const minervaEventMetadata = {
-        mainChannel,
-        additionalChannels,
-        meetingLink,
-      };
-
-      return { description: descriptionText, minervaEventMetadata };
-    }
+  // Short-circuit if there is no metadata
+  if (channelName == undefined && meetingLink == undefined) {
+    return { description: descriptionText };
   }
 
-  return { description: descriptionText };
+  if (channelName == undefined) {
+    throw new Error("channel name not specified");
+  }
+
+  const channel = filterSlackChannelFromName(channelName, workspaceChannels);
+  if (channel == undefined) throw new Error(`channel ${channelName} not found`);
+
+  const minervaEventMetadata = {
+    channel,
+    meetingLink,
+  };
+
+  return { description: descriptionText, minervaEventMetadata };
 }
