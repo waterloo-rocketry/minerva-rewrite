@@ -1,9 +1,7 @@
 import { slackBotToken } from '../../utils/env';
 import { Middleware, SlackCommandMiddlewareArgs } from '@slack/bolt';
 
-const README_URL =
-  'https://github.com/waterloo-rocketry/minerva-rewrite/blob/main/README.md';
-const message = `For more information, check out this ${README_URL}!`;
+const message = `For more information, check out <https://github.com/waterloo-rocketry/minerva-rewrite/blob/main/README.md|minerva's README>.`;
 
 export const helpCommandHandler: Middleware<
   SlackCommandMiddlewareArgs
