@@ -1,8 +1,10 @@
+// commands/index.ts
 import { App } from '@slack/bolt';
+import { helpCommandHandler } from './helpCommand';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const register = (app: App) => {
-  //   app.command('/sample-command', sampleCommandCallback);
+  app.command('/help', helpCommandHandler);
+  // Other command registrations would go here
 };
 
 export default { register };
