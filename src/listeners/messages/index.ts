@@ -1,6 +1,9 @@
 import { App } from '@slack/bolt';
 import helloMessageCallback from './helloMessage';
-import { generateEmojiPair, seedMessageReactions } from '../events/slack-emojis';
+import {
+  generateEmojiPair,
+  seedMessageReactions,
+} from '../events/slack-emojis';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const register = (app: App) => {

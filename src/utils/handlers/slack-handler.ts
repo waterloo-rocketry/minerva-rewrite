@@ -8,10 +8,14 @@ export function addReactionToMessage(
   emoji: string,
   timestamp: string | number,
 ): Promise<WebAPICallResult> {
+  // Convert timestamp to string if it's a number
+  const timestampStr =
+    typeof timestamp === 'number' ? timestamp.toString() : timestamp;
+
   return web.reactions.add({
     channel,
     name: emoji,
-    timestamp,
+    timestamp: timestampStr,
   });
 }
 
@@ -19,7 +23,9 @@ export function addReactionToMessage(
 export async function getRandomEmoji(): Promise<string> {
   try {
     const result = await web.emoji.list();
-    // The result is a JSON object, convert it to an array for convenience
+    if (!result.emoji) {
+      throw new Error('No emojis found');
+    }
     const emojis: string[] = Object.keys(result.emoji);
     return emojis[Math.floor(Math.random() * emojis.length)];
   } catch (error) {
