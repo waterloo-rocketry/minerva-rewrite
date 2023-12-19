@@ -1,0 +1,33 @@
+{
+  "kind": "calendar#event",
+  "etag": "\"1111126459898000\"",
+  "id": "00000022ndrcg4gfltgg58dhri",
+  "status": "confirmed",
+  "htmlLink": "https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx",
+  "created": "2023-12-02T19:33:17.000Z",
+  "updated": "2023-12-07T15:33:49.949Z",
+  "location": "The Bay",
+  "summary": "Minerva Testing",
+  "description": "#general<br><a href=\"https://example.com\">https://example.com</a><br>This is a description<br>Yep it is.",
+  "creator": {
+    "email": "test.creator@gmail.com"
+  },
+  "organizer": {
+    "email": "test.organizer@gmail.com",
+    "self": true
+  },
+  "start": {
+    "dateTime": "2023-12-07T14:00:00-05:00",
+    "timeZone": "America/Toronto"
+  },
+  "end": {
+    "dateTime": "2023-12-07T15:00:00-05:00",
+    "timeZone": "America/Toronto"
+  },
+  "iCalUID": "0brs1b22ndrcg4gfxxxxxxxxxx@google.com",
+  "sequence": 1,
+  "reminders": {
+    "useDefault": true
+  },
+  "eventType": "default"
+}
