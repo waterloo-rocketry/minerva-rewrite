@@ -18,7 +18,7 @@ const app = new App({
 registerListeners(app);
 
 // Setup Google OAuth
-async function main(eventId: string, updatedFields: object) {
+async function main() {
   // Set up OAuth2 client
   const auth = new OAuth2Client({
     clientId: process.env.GOOGLE_ACCOUNT_CLIENT,
@@ -39,6 +39,8 @@ async function main(eventId: string, updatedFields: object) {
     orderBy: "startTime",
   });
   console.log(getNextEvents.data);
+
+  while (true) {}
 }
 
 // Start app
@@ -51,3 +53,5 @@ async function main(eventId: string, updatedFields: object) {
     throw error;
   }
 })();
+
+main();
