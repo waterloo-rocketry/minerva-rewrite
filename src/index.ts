@@ -3,6 +3,8 @@ import * as environment from "./utils/env";
 import registerListeners from "./listeners";
 import { OAuth2Client } from "google-auth-library";
 import { google } from "googleapis";
+import CalendarEvent from "./classes/CalendarEvent";
+import { getAllSlackChannels } from "./utils/channels";
 const calendar = google.calendar("v3");
 import { config } from "dotenv";
 
@@ -30,6 +32,7 @@ async function main() {
     refresh_token: process.env.GOOGLE_ACCOUNT_TOKEN,
   });
 
+  // Get info of next 10 events
   const getNextEvents = await calendar.events.list({
     auth: auth,
     calendarId: "primary",
@@ -38,7 +41,31 @@ async function main() {
     singleEvents: true,
     orderBy: "startTime",
   });
-  console.log(getNextEvents.data);
+
+  // Events data
+  const nextEvents = getNextEvents.data;
+
+  // Test if event start and end date is defined
+  if (nextEvents.items) {
+    nextEvents.items.forEach((event) => {
+      console.log("Event Start:", JSON.stringify(event.start));
+      console.log("Event End:", JSON.stringify(event.end));
+    });
+  } else {
+    console.log("No events found.");
+  }
+
+  // // Call getAllSlackChannels function
+  // const channelsPromise = getAllSlackChannels(app);
+
+  // // Wait for the channels to be fetched
+  // try {
+  //   const channels = await channelsPromise;
+  //   const calendarEvent1 = new CalendarEvent(nextEvents, channels);
+  //   console.log(calendarEvent1);
+  // } catch (error) {
+  //   console.error("Error fetching Slack channels:", error);
+  // }
 
   while (true) {}
 }
