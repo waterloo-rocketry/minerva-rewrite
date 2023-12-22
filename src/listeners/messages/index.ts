@@ -12,9 +12,9 @@ const register = (app: App) => {
   // Add a new message listener for reacting to messages with a certain pattern
   app.message('Nice to meet you', async ({ message, say }) => {
     try {
-      const emojis = await generateEmojiPair();
+      const emojis = await generateEmojiPair(app);
 
-      await seedMessageReactions(message.channel, emojis, message.ts);
+      await seedMessageReactions(app, message.channel, emojis, message.ts);
 
       await say(`Emoji reaction added to the message!`);
     } catch (error) {
