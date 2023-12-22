@@ -1,12 +1,25 @@
+import { App } from '@slack/bolt';
 import * as slack_handler from '../../utils/handlers/slack-handler';
 
-export async function generateEmojiPair(): Promise<string[]> {
-  const emoji1 = await slack_handler.getRandomEmoji();
+interface SlackAPIResponse {
+  ok: boolean;
+}
+
+function isSlackAPIResponse(object: unknown): object is SlackAPIResponse {
+  if (typeof object === 'object' && object !== null) {
+    return (
+      'ok' in object && typeof (object as SlackAPIResponse).ok === 'boolean'
+    );
+  }
+  return false;
+}
+
+export async function generateEmojiPair(app: App): Promise<string[]> {
+  const emoji1 = await slack_handler.getRandomEmoji(app);
   let emoji2: string;
 
-  // Make sure that the two reactions are not the same
   for (let i = 0; i < 5; i++) {
-    emoji2 = await slack_handler.getRandomEmoji();
+    emoji2 = await slack_handler.getRandomEmoji(app);
     if (emoji2 !== emoji1) {
       return [emoji1, emoji2];
     }
@@ -16,18 +29,26 @@ export async function generateEmojiPair(): Promise<string[]> {
 }
 
 export async function seedMessageReactions(
+  app: App,
   channel: string,
   emojis: string[],
   timestamp: string | number,
 ): Promise<void> {
   const response = await slack_handler.addReactionToMessage(
+    app,
     channel,
     emojis[0],
     timestamp,
   );
-  if (response.ok) {
+
+  if (isSlackAPIResponse(response) && response.ok) {
     setTimeout(async () => {
-      await slack_handler.addReactionToMessage(channel, emojis[1], timestamp);
+      await slack_handler.addReactionToMessage(
+        app,
+        channel,
+        emojis[1],
+        timestamp,
+      );
     }, 1000);
   }
 }

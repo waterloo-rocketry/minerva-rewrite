@@ -1,18 +1,17 @@
-import { WebClient, WebAPICallResult } from '@slack/web-api';
-
-const web = new WebClient('env.slackBotToken');
+import { App } from '@slack/bolt';
 
 // https://api.slack.com/methods/reactions.add
 export function addReactionToMessage(
+  app: App,
   channel: string,
   emoji: string,
   timestamp: string | number,
-): Promise<WebAPICallResult> {
+): Promise<unknown> {
   // Convert timestamp to string if it's a number
   const timestampStr =
     typeof timestamp === 'number' ? timestamp.toString() : timestamp;
 
-  return web.reactions.add({
+  return app.client.reactions.add({
     channel,
     name: emoji,
     timestamp: timestampStr,
@@ -20,9 +19,9 @@ export function addReactionToMessage(
 }
 
 // https://api.slack.com/methods/emoji.list
-export async function getRandomEmoji(): Promise<string> {
+export async function getRandomEmoji(app: App): Promise<string> {
   try {
-    const result = await web.emoji.list();
+    const result = await app.client.emoji.list();
     if (!result.emoji) {
       throw new Error('No emojis found');
     }
