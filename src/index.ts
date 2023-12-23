@@ -4,9 +4,8 @@ import registerListeners from "./listeners";
 import { OAuth2Client } from "google-auth-library";
 import { google } from "googleapis";
 import CalendarEvent from "./classes/CalendarEvent";
-import { getAllSlackChannels } from "./utils/channels";
+import { getAllSlackChannels, filterSlackChannelsFromNames } from "./utils/channels";
 const calendar = google.calendar("v3");
-import { config } from "dotenv";
 
 // Initialize app
 const app = new App({
@@ -32,11 +31,16 @@ async function main() {
     refresh_token: process.env.GOOGLE_ACCOUNT_TOKEN,
   });
 
-  // Get info of next 10 events
+  // Calculate the current time and the time 24 hours from now
+  const currentTime = new Date();
+  const next24Hours = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000); // Adding 24 hours in milliseconds
+
+  // Get info of all events from all channels in the next 24 hours
   const getNextEvents = await calendar.events.list({
     auth: auth,
     calendarId: "primary",
-    timeMin: new Date().toISOString(),
+    timeMin: currentTime.toISOString(),
+    timeMax: next24Hours.toISOString(),
     maxResults: 10,
     singleEvents: true,
     orderBy: "startTime",
@@ -45,27 +49,37 @@ async function main() {
   // Events data
   const nextEvents = getNextEvents.data;
 
-  // Test if event start and end date is defined
-  if (nextEvents.items) {
-    nextEvents.items.forEach((event) => {
-      console.log("Event Start:", JSON.stringify(event.start));
-      console.log("Event End:", JSON.stringify(event.end));
-    });
-  } else {
-    console.log("No events found.");
-  }
+  // Function to fetch all channels
+  const channels = await getAllSlackChannels(app);
 
-  // // Call getAllSlackChannels function
-  // const channelsPromise = getAllSlackChannels(app);
+  // Parsing all events from all channels in the next 24 hours into a list of CalendarEvents
+  const parseEvents = function () {
+    const events: CalendarEvent[] = [];
+    if (nextEvents.items) {
+      nextEvents.items.forEach((event) => {
+        const calendarEvent = new CalendarEvent(event, channels);
+        events.push(calendarEvent);
+      });
+    } else {
+      return "No events found.";
+    }
+    return events;
+  };
 
-  // // Wait for the channels to be fetched
-  // try {
-  //   const channels = await channelsPromise;
-  //   const calendarEvent1 = new CalendarEvent(nextEvents, channels);
-  //   console.log(calendarEvent1);
-  // } catch (error) {
-  //   console.error("Error fetching Slack channels:", error);
-  // }
+  // Parsing all events from specific channels in the next 24 hours into a list of CalendarEvents
+  const parseEventsOfChannels = function (channelNames: string[]) {
+    const filteredChannels = filterSlackChannelsFromNames(channelNames, channels);
+    const events: CalendarEvent[] = [];
+    if (nextEvents.items) {
+      nextEvents.items.forEach((event) => {
+        const calendarEvent = new CalendarEvent(event, filteredChannels);
+        events.push(calendarEvent);
+      });
+    } else {
+      return "No events found.";
+    }
+    return events;
+  };
 
   while (true) {}
 }
