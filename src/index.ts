@@ -2,12 +2,22 @@ import { App } from "@slack/bolt";
 import * as environment from "./utils/env";
 import registerListeners from "./listeners";
 import { OAuth2Client } from "google-auth-library";
-import { google } from "googleapis";
-import CalendarEvent from "./classes/CalendarEvent";
-import { getAllSlackChannels, filterSlackChannelsFromNames } from "./utils/channels";
-const calendar = google.calendar("v3");
+import { getEvents, parseEvents } from "./utils/googleCalendar";
+import { getAllSlackChannels } from "./utils/channels";
 
-// Initialize app
+// Set up Google OAuth2 client
+const auth = new OAuth2Client({
+  clientId: process.env.GOOGLE_ACCOUNT_CLIENT,
+  clientSecret: process.env.GOOGLE_ACCOUNT_SECRET,
+  redirectUri: process.env.GOOGLE_ACCOUNT_OAUTH_REDIRECT,
+});
+
+// Set up OAuth2 credentials
+auth.setCredentials({
+  refresh_token: process.env.GOOGLE_ACCOUNT_TOKEN,
+});
+
+// Set up Slack app
 const app = new App({
   token: environment.slackBotToken,
   signingSecret: environment.slackSigningSecret,
@@ -15,71 +25,21 @@ const app = new App({
   appToken: environment.slackAppToken,
 });
 
-// Register listeners
-registerListeners(app);
-
 // Setup Google OAuth
 async function main() {
-  // Set up OAuth2 client
-  const auth = new OAuth2Client({
-    clientId: process.env.GOOGLE_ACCOUNT_CLIENT,
-    clientSecret: process.env.GOOGLE_ACCOUNT_SECRET,
-    redirectUri: "https://developers.google.com/oauthplayground",
-  });
+  // Register listeners
+  registerListeners(app);
 
-  auth.setCredentials({
-    refresh_token: process.env.GOOGLE_ACCOUNT_TOKEN,
-  });
+  // Call the initialize function from googleCalendar.ts
+  const nextEvents = await getEvents();
 
-  // Calculate the current time and the time 24 hours from now
-  const currentTime = new Date();
-  const next24Hours = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000); // Adding 24 hours in milliseconds
-
-  // Get info of all events from all channels in the next 24 hours
-  const getNextEvents = await calendar.events.list({
-    auth: auth,
-    calendarId: "primary",
-    timeMin: currentTime.toISOString(),
-    timeMax: next24Hours.toISOString(),
-    maxResults: 10,
-    singleEvents: true,
-    orderBy: "startTime",
-  });
-
-  // Events data
-  const nextEvents = getNextEvents.data;
-
-  // Function to fetch all channels
+  // Fetch all channels
   const channels = await getAllSlackChannels(app);
 
-  // Parsing all events from all channels in the next 24 hours into a list of CalendarEvents
-  const parseEvents = function () {
-    const events: CalendarEvent[] = [];
-    if (nextEvents.items) {
-      nextEvents.items.forEach((event) => {
-        const calendarEvent = new CalendarEvent(event, channels);
-        events.push(calendarEvent);
-      });
-    } else {
-      return "No events found.";
-    }
-    return events;
-  };
+  // Parse events
+  const eventsToParse = await parseEvents(nextEvents, channels);
 
-  // Parsing all events from specific channels in the next 24 hours into a list of CalendarEvents
-  const parseEventsOfChannels = function (channelNames: string[]) {
-    const filteredChannels = filterSlackChannelsFromNames(channelNames, channels);
-    const events: CalendarEvent[] = [];
-    if (nextEvents.items) {
-      nextEvents.items.forEach((event) => {
-        const calendarEvent = new CalendarEvent(event, filteredChannels);
-        events.push(calendarEvent);
-      });
-    } else {
-      return "No events found.";
-    }
-    return events;
-  };
+  console.log(eventsToParse);
 
   while (true) {}
 }
