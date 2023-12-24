@@ -2,7 +2,7 @@ import { App } from "@slack/bolt";
 import * as environment from "./utils/env";
 import registerListeners from "./listeners";
 import { OAuth2Client } from "google-auth-library";
-import { getEvents, parseEvents } from "./utils/googleCalendar";
+import { getEvents, parseEvents, parseEventsOfChannels } from "./utils/googleCalendar";
 import { getAllSlackChannels } from "./utils/channels";
 
 // Set up Google OAuth2 client
@@ -17,7 +17,7 @@ auth.setCredentials({
   refresh_token: process.env.GOOGLE_ACCOUNT_TOKEN,
 });
 
-// Set up Slack app
+// Initialize app
 const app = new App({
   token: environment.slackBotToken,
   signingSecret: environment.slackSigningSecret,
@@ -39,7 +39,12 @@ async function main() {
   // Parse events
   const eventsToParse = await parseEvents(nextEvents, channels);
 
+  // Parse events by channels
+  const selectedChannels = ["general"];
+  const eventsToParseByChannels = await parseEventsOfChannels(nextEvents, selectedChannels, channels);
+
   console.log(eventsToParse);
+  console.log(eventsToParseByChannels);
 
   while (true) {}
 }

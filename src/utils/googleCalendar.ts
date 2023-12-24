@@ -1,7 +1,8 @@
 import { OAuth2Client } from "google-auth-library";
-import { google } from "googleapis";
+import { google, calendar_v3 } from "googleapis";
 import CalendarEvent from "../classes/CalendarEvent";
 import SlackChannel from "../classes/SlackChannel";
+import { filterSlackChannelsFromNames } from "./channels";
 
 const calendar = google.calendar("v3");
 
@@ -35,7 +36,7 @@ export async function getEvents() {
 }
 
 // Parsing all events from all channels in the next 24 hours into a list of CalendarEvents
-export async function parseEvents(nextEvents, channels: SlackChannel[]) {
+export async function parseEvents(nextEvents: calendar_v3.Schema$Events, channels: SlackChannel[]) {
   const events: CalendarEvent[] = [];
   if (nextEvents.items) {
     nextEvents.items.forEach((event) => {
@@ -48,17 +49,21 @@ export async function parseEvents(nextEvents, channels: SlackChannel[]) {
   return events;
 }
 
-// // Parsing all events from specific channels in the next 24 hours into a list of CalendarEvents
-// export async function parseEventsOfChannels(channelNames: string[], channels: SlackChannel[]) {
-//   const filteredChannels = filterSlackChannelsFromNames(channelNames, channels);
-//   const events: CalendarEvent[] = [];
-//   if (nextEvents.items) {
-//     nextEvents.items.forEach((event) => {
-//       const calendarEvent = new CalendarEvent(event, filteredChannels);
-//       events.push(calendarEvent);
-//     });
-//   } else {
-//     return "No events found.";
-//   }
-//   return events;
-// }
+// Parsing all events from specific channels in the next 24 hours into a list of CalendarEvents
+export async function parseEventsOfChannels(
+  nextEvents: calendar_v3.Schema$Events,
+  channelNames: string[],
+  channels: SlackChannel[],
+) {
+  const filteredChannels = filterSlackChannelsFromNames(channelNames, channels);
+  const events: CalendarEvent[] = [];
+  if (nextEvents.items) {
+    nextEvents.items.forEach((event) => {
+      const calendarEvent = new CalendarEvent(event, filteredChannels);
+      events.push(calendarEvent);
+    });
+  } else {
+    return "No events found.";
+  }
+  return events;
+}
