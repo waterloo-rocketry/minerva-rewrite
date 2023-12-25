@@ -37,9 +37,9 @@ export default class CalendarEvent {
     if (event.summary == undefined) throw new Error("Event summary is undefined");
     this.title = event.summary;
     if (event.start?.dateTime == undefined) throw new Error("Event start is undefined");
-    this.start = new Date(event.start?.dateTime);
+    this.start = new Date(event.start.dateTime);
     if (event.end?.dateTime == undefined) throw new Error("Event end is undefined");
-    this.end = new Date(event.end?.dateTime);
+    this.end = new Date(event.end.dateTime);
 
     this.location = event.location ?? undefined;
 

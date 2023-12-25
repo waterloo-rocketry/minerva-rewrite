@@ -26,12 +26,12 @@ const app = new App({
 });
 
 // Setup Google OAuth
-async function main() {
+async function main(): Promise<void> {
   // Register listeners
   registerListeners(app);
 
   // Call the initialize function from googleCalendar.ts
-  const nextEvents = await getEvents();
+  const nextEvents = await getEvents(auth);
 
   // Fetch all channels
   const channels = await getAllSlackChannels(app);
@@ -50,7 +50,7 @@ async function main() {
 }
 
 // Start app
-(async () => {
+(async (): Promise<void> => {
   try {
     await app.start();
     console.log(`⚡️ Bolt app is running!`);
