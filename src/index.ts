@@ -25,39 +25,32 @@ const app = new App({
   appToken: environment.slackAppToken,
 });
 
-// Setup Google OAuth
-async function main(): Promise<void> {
-  // Register listeners
-  registerListeners(app);
-
-  // Call the initialize function from googleCalendar.ts
-  const nextEvents = await getEvents(auth);
-
-  // Fetch all channels
-  const channels = await getAllSlackChannels(app);
-
-  // Parse events
-  const eventsToParse = await parseEvents(nextEvents, channels);
-
-  // Parse events by channels
-  const selectedChannels = ["general"];
-  const eventsToParseByChannels = await parseEventsOfChannels(nextEvents, selectedChannels, channels);
-
-  console.log(eventsToParse);
-  console.log(eventsToParseByChannels);
-
-  while (true) {}
-}
+// Register listeners
+registerListeners(app);
 
 // Start app
 (async (): Promise<void> => {
   try {
     await app.start();
     console.log(`⚡️ Bolt app is running!`);
+
+    // Call the initialize function from googleCalendar.ts
+    const nextEvents = await getEvents(auth);
+
+    // Fetch all channels
+    const channels = await getAllSlackChannels(app);
+
+    // Parse events
+    const eventsToParse = await parseEvents(nextEvents, channels);
+
+    // Parse events by channels
+    const selectedChannels = ["general"];
+    const eventsToParseByChannels = await parseEventsOfChannels(nextEvents, selectedChannels, channels);
+
+    console.log(eventsToParse);
+    console.log(eventsToParseByChannels);
   } catch (error) {
     console.error("Failed to start the Bolt app", error);
     throw error;
   }
 })();
-
-main();
