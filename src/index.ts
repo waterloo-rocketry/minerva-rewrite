@@ -2,8 +2,6 @@ import { App } from "@slack/bolt";
 import * as environment from "./utils/env";
 import registerListeners from "./listeners";
 import { OAuth2Client } from "google-auth-library";
-import { getEvents, parseEvents, parseEventsOfChannels } from "./utils/googleCalendar";
-import { getAllSlackChannels } from "./utils/channels";
 
 // Set up Google OAuth2 client
 const auth = new OAuth2Client({
@@ -33,22 +31,6 @@ registerListeners(app);
   try {
     await app.start();
     console.log(`⚡️ Bolt app is running!`);
-
-    // Call the initialize function from googleCalendar.ts
-    const nextEvents = await getEvents(auth);
-
-    // Fetch all channels
-    const channels = await getAllSlackChannels(app);
-
-    // Parse events
-    const eventsToParse = await parseEvents(nextEvents, channels);
-
-    // Parse events by channels
-    const selectedChannels = ["general"];
-    const eventsToParseByChannels = await parseEventsOfChannels(nextEvents, selectedChannels, channels);
-
-    console.log(eventsToParse);
-    console.log(eventsToParseByChannels);
   } catch (error) {
     console.error("Failed to start the Bolt app", error);
     throw error;

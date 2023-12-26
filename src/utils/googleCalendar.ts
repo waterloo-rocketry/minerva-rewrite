@@ -2,7 +2,6 @@ import { OAuth2Client } from "google-auth-library";
 import { google, calendar_v3 } from "googleapis";
 import CalendarEvent from "../classes/CalendarEvent";
 import SlackChannel from "../classes/SlackChannel";
-import { filterSlackChannelsFromNames } from "./channels";
 
 /**
  * Fetches all events in the next 24 hours from the Rocketry calendar.
@@ -55,19 +54,11 @@ export async function parseEvents(
  * @returns A promise that resolves to the list of parsed CalendarEvents.
  */
 export async function parseEventsOfChannels(
-  nextEvents: calendar_v3.Schema$Events,
+  calendarEvents: CalendarEvent[],
   channelNames: string[],
-  channels: SlackChannel[],
 ): Promise<CalendarEvent[]> {
-  const filteredChannels = filterSlackChannelsFromNames(channelNames, channels);
-  const events: CalendarEvent[] = [];
-  if (nextEvents.items) {
-    nextEvents.items.forEach((event) => {
-      const calendarEvent = new CalendarEvent(event, filteredChannels);
-      events.push(calendarEvent);
-    });
-  } else {
-    return [];
-  }
-  return events;
+  const filteredEvents = calendarEvents.filter((event) =>
+    channelNames.includes(event.minervaEventMetadata?.channel?.name ?? ""),
+  );
+  return filteredEvents;
 }
