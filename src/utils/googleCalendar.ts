@@ -48,9 +48,8 @@ export async function parseEvents(
 
 /**
  * Parses events from specified Slack channels in the next 24 hours into a list of CalendarEvents.
- * @param nextEvents The list of events to be parsed.
+ * @param calendarEvents The list of CalendarEvents to be filtered.
  * @param channelNames The names of SlackChannels to filter and associate with the events.
- * @param channels The array of all SlackChannels available.
  * @returns A promise that resolves to the list of parsed CalendarEvents.
  */
 export async function parseEventsOfChannels(
