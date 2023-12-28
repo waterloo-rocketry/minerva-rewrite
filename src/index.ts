@@ -5,14 +5,14 @@ import { OAuth2Client } from "google-auth-library";
 
 // Set up Google OAuth2 client
 const auth = new OAuth2Client({
-  clientId: process.env.GOOGLE_ACCOUNT_CLIENT,
-  clientSecret: process.env.GOOGLE_ACCOUNT_SECRET,
-  redirectUri: process.env.GOOGLE_ACCOUNT_OAUTH_REDIRECT,
+  clientId: environment.googleAccountClient,
+  clientSecret: environment.googleAccountSecret,
+  redirectUri: environment.googleAccountOauthRedirect,
 });
 
 // Set up OAuth2 credentials
 auth.setCredentials({
-  refresh_token: process.env.GOOGLE_ACCOUNT_TOKEN,
+  refresh_token: environment.googleAccountToken,
 });
 
 // Initialize app
@@ -30,7 +30,7 @@ registerListeners(app);
 (async (): Promise<void> => {
   try {
     await app.start();
-    console.log(`⚡️ Bolt app is running!`);
+    console.log("⚡️ Bolt app is running!");
   } catch (error) {
     console.error("Failed to start the Bolt app", error);
     throw error;

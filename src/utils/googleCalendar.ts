@@ -25,39 +25,40 @@ export async function getEvents(auth: OAuth2Client): Promise<calendar_v3.Schema$
 }
 
 /**
- * Parses events from all channels in the next 24 hours into a list of CalendarEvents.
- * @param nextEvents The list of events to be parsed.
+ * Parses events fetched from the Google API into a list of CalendarEvents.
+ * @param events The list of events to be parsed.
  * @param channels The array of SlackChannels to associate with the events.
  * @returns A promise that resolves to the list of parsed CalendarEvents.
  */
 export async function parseEvents(
-  nextEvents: calendar_v3.Schema$Events,
+  events: calendar_v3.Schema$Events,
   channels: SlackChannel[],
 ): Promise<CalendarEvent[]> {
-  const events: CalendarEvent[] = [];
-  if (nextEvents.items) {
-    nextEvents.items.forEach((event) => {
+  const eventsList: CalendarEvent[] = [];
+  if (events.items) {
+    events.items.forEach((event) => {
       const calendarEvent = new CalendarEvent(event, channels);
-      events.push(calendarEvent);
+      eventsList.push(calendarEvent);
     });
   } else {
     return [];
   }
-  return events;
+  return eventsList;
 }
 
 /**
- * Parses events from specified Slack channels in the next 24 hours into a list of CalendarEvents.
+ * Filters CalendarEvents into those only from specified Slack channels.
  * @param calendarEvents The list of CalendarEvents to be filtered.
  * @param channelNames The names of SlackChannels to filter and associate with the events.
- * @returns A promise that resolves to the list of parsed CalendarEvents.
+ * @returns The filtered list of CalendarEvents.
  */
-export async function parseEventsOfChannels(
-  calendarEvents: CalendarEvent[],
-  channelNames: string[],
-): Promise<CalendarEvent[]> {
-  const filteredEvents = calendarEvents.filter((event) =>
-    channelNames.includes(event.minervaEventMetadata?.channel?.name ?? ""),
-  );
+export function parseEventsOfChannels(calendarEvents: CalendarEvent[], channelNames: string[]): CalendarEvent[] {
+  const filteredEvents = calendarEvents.filter((event) => {
+    const metadata = event.minervaEventMetadata;
+    if (metadata && metadata.channel) {
+      return channelNames.includes(metadata.channel.name);
+    }
+    return false;
+  });
   return filteredEvents;
 }
