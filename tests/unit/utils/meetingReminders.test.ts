@@ -9,27 +9,27 @@ import CalendarEvent from "../../../src/classes/CalendarEvent";
 describe("utils/eventReminders", () => {
   describe("isTimeWithinBounds", () => {
     it("should return false if the time is below the lower bound", () => {
-      const result = isTimeWithinBounds(1000 - TIME_CHECK_INTERVAL / 2 - 1, 1000);
+      const result = isTimeWithinBounds(1000000 - TIME_CHECK_INTERVAL / 2 - 1, 1000000);
       expect(result).toBe(false);
     });
 
     it("should return false if the time is at the lower bound", () => {
-      const result = isTimeWithinBounds(1000 - TIME_CHECK_INTERVAL / 2, 1000);
+      const result = isTimeWithinBounds(1000000 - TIME_CHECK_INTERVAL / 2, 1000000);
       expect(result).toBe(false);
     });
 
     it("should return true if the time is within the bounds", () => {
-      const result = isTimeWithinBounds(1000, 1000);
+      const result = isTimeWithinBounds(1000000, 1000000);
       expect(result).toBe(true);
     });
 
     it("should return true if the time is at the upper bound", () => {
-      const result = isTimeWithinBounds(1000 + TIME_CHECK_INTERVAL / 2, 1000);
+      const result = isTimeWithinBounds(1000000 + TIME_CHECK_INTERVAL / 2, 1000000);
       expect(result).toBe(true);
     });
 
     it("should return false if the time is above the upper bound", () => {
-      const result = isTimeWithinBounds(1000 + TIME_CHECK_INTERVAL / 2 + 1, 1000);
+      const result = isTimeWithinBounds(1000000 + TIME_CHECK_INTERVAL / 2 + 1, 1000000);
       expect(result).toBe(false);
     });
   });
