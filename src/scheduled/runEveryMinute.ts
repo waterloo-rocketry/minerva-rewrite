@@ -1,5 +1,5 @@
 const runEveryMinute = async () => {
-  console.log("This runs every 10 seconds!");
+  console.log("This runs every minute!");
 };
 
 export default runEveryMinute;

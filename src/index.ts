@@ -2,6 +2,7 @@ import { App } from "@slack/bolt";
 import * as environment from "./utils/env";
 import registerListeners from "./listeners";
 import { OAuth2Client } from "google-auth-library";
+import scheduleTasks from "./scheduled";
 
 // Set up Google OAuth2 client
 const auth = new OAuth2Client({
@@ -27,7 +28,7 @@ const app = new App({
 registerListeners(app);
 
 // Schedule tasks
-scheduleTasks(app);
+scheduleTasks(app, auth);
 
 // Start app
 (async (): Promise<void> => {
