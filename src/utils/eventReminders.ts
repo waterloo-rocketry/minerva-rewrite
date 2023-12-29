@@ -37,12 +37,15 @@ export function remindUpcomingEvent(event: CalendarEvent, app: App): void {
   }
 
   const reminderType = getEventReminderType(event);
-  console.log(`Reminder type for ${event.title} is ${reminderType ?? "null"}.`);
+
   if (!reminderType) {
     return;
   }
 
   const reminderText = generateEventReminderText(event, reminderType);
+  console.log(
+    `Sending reminder for event ${event.title} at ${event.start} to #${event.minervaEventMetadata.channel.name}.`,
+  );
   postMessage(app, event.minervaEventMetadata.channel, reminderText);
 }
 
