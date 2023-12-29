@@ -1,4 +1,4 @@
-const runEveryMinute = async () => {
+const runEveryMinute = (): void => {
   console.log("This runs every minute!");
 };
 

@@ -5,7 +5,8 @@
     "start": "ts-node src/index.ts",
     "format": "prettier --write 'src/**/*.{ts,tsx}' && eslint --fix 'src/**/*.{ts,tsx}'",
     "deploy-dev": "git push -f origin +@:development && echo 'View deployment at https://github.com/waterloo-rocketry/minerva-rewrite/deployments?environment=development#activity-log'",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint . --fix --ext .js,.ts --ignore-pattern node_modules"
   },
   "packageManager": "yarn@3.6.4",
   "devDependencies": {

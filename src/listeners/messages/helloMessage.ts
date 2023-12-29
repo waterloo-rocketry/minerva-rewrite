@@ -1,34 +1,34 @@
-import { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
+import { AllMiddlewareArgs, SlackEventMiddlewareArgs } from "@slack/bolt";
 
 const helloMessageCallback = async ({
   message,
   say,
-}: AllMiddlewareArgs & SlackEventMiddlewareArgs<'message'>) => {
+}: AllMiddlewareArgs & SlackEventMiddlewareArgs<"message">): Promise<void> => {
   // Check if 'message' is properly typed, as 'user' might not be a direct property.
   // If 'message' is of type 'MessageEvent', it should have a 'user' property.
-  if ('user' in message) {
+  if ("user" in message) {
     await say({
       blocks: [
         {
-          type: 'section',
+          type: "section",
           text: {
-            type: 'mrkdwn',
+            type: "mrkdwn",
             text: `Hey there <@${message.user}>!`,
           },
           accessory: {
-            type: 'button',
+            type: "button",
             text: {
-              type: 'plain_text',
-              text: 'Click Me',
+              type: "plain_text",
+              text: "Click Me",
             },
-            action_id: 'button_click',
+            action_id: "button_click",
           },
         },
       ],
       text: `Hey there <@${message.user}>!`,
     });
   } else {
-    console.error('The message event did not have a user property.');
+    console.error("The message event did not have a user property.");
   }
 };
 

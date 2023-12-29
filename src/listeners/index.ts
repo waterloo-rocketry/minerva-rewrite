@@ -6,7 +6,7 @@ import messages from "./messages";
 import shortcuts from "./shortcuts";
 import views from "./views";
 
-const registerListeners = (app: App) => {
+const registerListeners = (app: App): void => {
   actions.register(app);
   commands.register(app);
   events.register(app);
