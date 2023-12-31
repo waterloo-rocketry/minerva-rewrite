@@ -2,6 +2,7 @@ import { App } from "@slack/bolt";
 import * as environment from "./utils/env";
 import registerListeners from "./listeners";
 import { OAuth2Client } from "google-auth-library";
+import { getAllSingleChannelGuests } from "./utils/guests";
 
 // Set up Google OAuth2 client
 const auth = new OAuth2Client({
@@ -31,6 +32,9 @@ registerListeners(app);
   try {
     await app.start();
     console.log("⚡️ Bolt app is running!");
+
+    const guests = await getAllSingleChannelGuests(app);
+    console.log(guests);
   } catch (error) {
     console.error("Failed to start the Bolt app", error);
     throw error;
