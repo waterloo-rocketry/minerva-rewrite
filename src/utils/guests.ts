@@ -1,5 +1,4 @@
 import { App } from "@slack/bolt";
-import { ConversationsMembersResponse } from "@slack/web-api";
 import SlackGuest from "../classes/SlackGuest";
 
 /**
@@ -32,13 +31,24 @@ export async function getAllSingleChannelGuests(app: App): Promise<SlackGuest[]>
   return guestsList;
 }
 
+/**
+ * Retrieves a list of SlackGuests of single channel guests in a specific channel.
+ * @param app The Slack Bolt app instance.
+ * @returns A promise that resolves to an array of SlackGuests of single channel guests in a specific channel.
+ */
 export async function getAllSingleChannelGuestsInChannel(
   app: App,
   channel: string,
-): Promise<ConversationsMembersResponse> {
+  singleChannelGuests: SlackGuest[],
+): Promise<SlackGuest[]> {
   const guestMembersInChannel = await app.client.conversations.members({
     channel: channel,
     limit: 500,
   });
-  return guestMembersInChannel;
+  const guestMembersInChannelList: string[] | undefined = guestMembersInChannel.members;
+  if (!guestMembersInChannelList) {
+    return [];
+  }
+  const filteredGuests = singleChannelGuests.filter((guest) => guestMembersInChannelList.includes(guest.id));
+  return filteredGuests;
 }
