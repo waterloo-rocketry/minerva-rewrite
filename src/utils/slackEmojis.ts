@@ -19,16 +19,15 @@ export function addReactionToMessage(
 }
 
 // https://api.slack.com/methods/emoji.list
-export async function getRandomEmoji(app: App): Promise<string> {
+export async function getAllEmoji(app: App): Promise<string[]> {
   try {
     const result = await app.client.emoji.list();
     if (!result.emoji) {
       throw new Error("No emojis found");
     }
-    const emojis: string[] = Object.keys(result.emoji);
-    return emojis[Math.floor(Math.random() * emojis.length)];
+    return Object.keys(result.emoji);
   } catch (error) {
-    console.error("Failed to get random emoji:", error);
+    console.error("Failed to get emoji:", error);
     throw error;
   }
 }
@@ -45,17 +44,16 @@ function isSlackAPIResponse(object: unknown): object is SlackAPIResponse {
 }
 
 export async function generateEmojiPair(app: App): Promise<string[]> {
-  const emoji1 = await getRandomEmoji(app);
-  let emoji2: string;
-
-  for (let i = 0; i < 5; i++) {
-    emoji2 = await getRandomEmoji(app);
-    if (emoji2 !== emoji1) {
-      return [emoji1, emoji2];
-    }
+  const emojis = await getAllEmoji(app);
+  if (emojis.length < 2) {
+    return ["white_check_mark", "x"];
   }
-
-  return ["white_check_mark", "x"];
+  const emoji1 = Math.floor(Math.random() * emojis.length);
+  let emoji2;
+  do {
+    emoji2 = Math.floor(Math.random() * emojis.length);
+  } while (emoji1 === emoji2); // Ensure the two emojis are different
+  return [emojis[emoji1], emojis[emoji2]];
 }
 
 export async function seedMessageReactions(
@@ -67,8 +65,6 @@ export async function seedMessageReactions(
   const response = await addReactionToMessage(app, channel, emojis[0], timestamp);
 
   if (isSlackAPIResponse(response) && response.ok) {
-    setTimeout(async () => {
-      await addReactionToMessage(app, channel, emojis[1], timestamp);
-    }, 1000);
+    await addReactionToMessage(app, channel, emojis[1], timestamp);
   }
 }
