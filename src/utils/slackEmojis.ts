@@ -1,4 +1,5 @@
 import { App } from "@slack/bolt";
+import { ReactionsAddResponse } from "@slack/web-api";
 
 // https://api.slack.com/methods/reactions.add
 export function addReactionToMessage(
@@ -6,7 +7,7 @@ export function addReactionToMessage(
   channel: string,
   emoji: string,
   timestamp: string | number,
-): Promise<unknown> {
+): Promise<ReactionsAddResponse> {
   // Convert timestamp to string if it's a number
   const timestampStr = typeof timestamp === "number" ? timestamp.toString() : timestamp;
 
