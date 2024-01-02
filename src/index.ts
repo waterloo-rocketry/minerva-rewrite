@@ -1,6 +1,19 @@
-import { App } from '@slack/bolt';
-import * as environment from './utils/env';
-import registerListeners from './listeners';
+import { App } from "@slack/bolt";
+import * as environment from "./utils/env";
+import registerListeners from "./listeners";
+import { OAuth2Client } from "google-auth-library";
+
+// Set up Google OAuth2 client
+const auth = new OAuth2Client({
+  clientId: environment.googleAccountClient,
+  clientSecret: environment.googleAccountSecret,
+  redirectUri: environment.googleAccountOauthRedirect,
+});
+
+// Set up OAuth2 credentials
+auth.setCredentials({
+  refresh_token: environment.googleAccountToken,
+});
 
 // Initialize app
 const app = new App({
@@ -14,12 +27,12 @@ const app = new App({
 registerListeners(app);
 
 // Start app
-(async () => {
+(async (): Promise<void> => {
   try {
     await app.start();
-    console.log(`⚡️ Bolt app is running!`);
+    console.log("⚡️ Bolt app is running!");
   } catch (error) {
-    console.error('Failed to start the Bolt app', error);
+    console.error("Failed to start the Bolt app", error);
     throw error;
   }
 })();

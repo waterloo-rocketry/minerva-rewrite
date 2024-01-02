@@ -1,13 +1,10 @@
 {
-    "parser": "@typescript-eslint/parser",
-    "extends": [
-      "plugin:@typescript-eslint/recommended",
-      "plugin:prettier/recommended"
-    ],
-    "plugins": ["@typescript-eslint", "prettier"],
-    "ignorePatterns": ["/dist/*", "/node_modules/*"],
-    "rules": {
-      "prettier/prettier": "error"
-    }
+  "parser": "@typescript-eslint/parser",
+  "extends": ["plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
+  "plugins": ["@typescript-eslint", "prettier"],
+  "ignorePatterns": ["/dist/*", "/node_modules/*"],
+  "rules": {
+    "prettier/prettier": "error",
+    "@typescript-eslint/explicit-function-return-type": ["error"]
+  }
 }
-  
