@@ -10,17 +10,17 @@ import { filterSlackChannelFromName, getAllSlackChannels } from "./channels";
  */
 export function determineUserType(user: Member): UserType {
   if (user.is_admin) {
-    return UserType.Admin;
+    return UserType.ADMIN;
   } else if (user.is_owner) {
-    return UserType.Owner;
+    return UserType.OWNER;
   } else if (user.is_restricted) {
-    return UserType.Restricted;
+    return UserType.RESTRICTED;
   } else if (user.is_bot) {
-    return UserType.Bot;
+    return UserType.BOT;
   } else if (user.is_ultra_restricted) {
-    return UserType.UltraRestricted;
+    return UserType.ULTRA_RESTRICTED;
   } else {
-    return UserType.Restricted;
+    return UserType.RESTRICTED;
   }
 }
 

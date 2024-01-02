@@ -2,11 +2,11 @@
  * Enum representing user types
  */
 export enum UserType {
-  Admin = "admin",
-  Owner = "owner",
-  Bot = "bot",
-  Restricted = "restricted",
-  UltraRestricted = "ultra_restricted",
+  ADMIN = "admin",
+  OWNER = "owner",
+  BOT = "bot",
+  RESTRICTED = "restricted",
+  ULTRA_RESTRICTED = "ultra_restricted",
 }
 
 /**
