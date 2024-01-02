@@ -32,8 +32,12 @@
   "dependencies": {
     "@slack/bolt": "^3.14.0",
     "@types/js-yaml": "^4.0.9",
+    "@types/moment-timezone": "^0.5.30",
+    "@types/node-schedule": "^2.1.5",
     "dotenv": "^16.3.1",
     "googleapis": "^129.0.0",
-    "html-to-text": "^9.0.5"
+    "html-to-text": "^9.0.5",
+    "moment-timezone": "^0.5.44",
+    "node-schedule": "^2.1.1"
   }
 }
