@@ -1,9 +1,9 @@
 // commands/index.ts
-import { App } from '@slack/bolt';
-import { helpCommandHandler } from './helpCommand';
+import { App } from "@slack/bolt";
+import { helpCommandHandler } from "./helpCommand";
 
 const register = (app: App) => {
-  app.command('/help', helpCommandHandler);
+  app.command("/help", helpCommandHandler);
   // Other command registrations would go here
 };
 

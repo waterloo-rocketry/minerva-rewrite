@@ -1,8 +1,8 @@
-import { App } from '@slack/bolt';
-import buttonClickCallback from './buttonClick';
+import { App } from "@slack/bolt";
+import buttonClickCallback from "./buttonClick";
 
 const register = (app: App) => {
-  app.action('button_click', buttonClickCallback);
+  app.action("button_click", buttonClickCallback);
 };
 
 export default { register };
