@@ -1,8 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: 'minerva-dev',
-      script: 'node ./bundle.js 2>&1 | rtail --id minerva-dev',
+      name: "minerva-dev",
+      script: "node ./bundle.js 2>&1 | rtail --id minerva-dev",
       time: true,
       instances: 1,
       autorestart: true,

@@ -37,7 +37,7 @@ export async function parseEvents(
   const eventsList: CalendarEvent[] = [];
   if (events.items) {
     events.items.forEach((event) => {
-      const calendarEvent = new CalendarEvent(event, channels);
+      const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(event, channels);
       eventsList.push(calendarEvent);
     });
   } else {
