@@ -18,7 +18,7 @@ export default class CalendarEvent {
   /**
    * A read-only URL to the event in Google Calendar
    */
-  url?: string;
+  url: string;
   /**
    * The metadata of the event that minerva uses. This includes the main channel, additional channels, and meeting link
    */
@@ -49,8 +49,10 @@ export default class CalendarEvent {
     const start = new Date(event.start.dateTime);
     if (event.end?.dateTime == undefined) throw new Error("Event end is undefined");
     const end = new Date(event.end.dateTime);
+    if (event.htmlLink == undefined) throw new Error("Event URL is undefined");
+    const url = event.htmlLink;
 
-    const parsedEvent = new CalendarEvent(title, start, end);
+    const parsedEvent = new CalendarEvent(title, start, end, url);
 
     parsedEvent.location = event.location ?? undefined;
     parsedEvent.url = event.htmlLink ?? undefined;
@@ -69,7 +71,7 @@ export default class CalendarEvent {
     title: string,
     start: Date,
     end: Date,
-    url?: string,
+    url: string,
     description?: string,
     location?: string,
     minervaEventMetadata?: EventMetadata,
