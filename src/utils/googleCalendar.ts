@@ -30,20 +30,18 @@ export async function getEvents(auth: OAuth2Client): Promise<calendar_v3.Schema$
  * @param channels The array of SlackChannels to associate with the events.
  * @returns A promise that resolves to the list of parsed CalendarEvents.
  */
-export async function parseEvents(
-  events: calendar_v3.Schema$Events,
-  channels: SlackChannel[],
-): Promise<CalendarEvent[]> {
+export function parseEvents(events: calendar_v3.Schema$Events, channels: SlackChannel[]): CalendarEvent[] {
   const eventsList: CalendarEvent[] = [];
   if (events.items) {
     events.items.forEach((event) => {
       const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(event, channels);
       eventsList.push(calendarEvent);
     });
+
+    return eventsList;
   } else {
     return [];
   }
-  return eventsList;
 }
 
 /**
