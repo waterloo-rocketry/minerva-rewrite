@@ -2,9 +2,11 @@ import {
   getEventReminderType,
   isTimeWithinBounds,
   EventReminderType,
+  generateEventReminderText,
   TIME_CHECK_INTERVAL,
 } from "../../../src/utils/eventReminders";
 import CalendarEvent from "../../../src/classes/CalendarEvent";
+import { slackChannels } from "../../fixtures/slackChannels";
 
 describe("utils/eventReminders", () => {
   describe("isTimeWithinBounds", () => {
@@ -40,6 +42,7 @@ describe("utils/eventReminders", () => {
       "Test event",
       new Date("2023-01-01T06:00:01.000Z"),
       new Date("2024-01-01T07:00:00.000Z"),
+      "https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx",
     );
 
     it("should return null if the event is more than 6h2m30s away", () => {
@@ -124,6 +127,149 @@ describe("utils/eventReminders", () => {
       event.start = new Date("2022-12-31T23:59:59.000Z");
       const result = getEventReminderType(event);
       expect(result).toBeNull();
+    });
+  });
+  describe("generateEventReminderText", () => {
+    let event: CalendarEvent;
+    beforeEach(() => {
+      event = new CalendarEvent(
+        "Test event",
+        new Date("2023-01-01T06:00:00.000Z"),
+        new Date("2024-01-01T07:00:00.000Z"),
+        "https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx",
+      );
+    });
+
+    it("should generate a reminder for 6 hours with the meeting link and location provided", () => {
+      jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
+      event.location = "Test location";
+      event.minervaEventMetadata = {
+        channels: [slackChannels[0]],
+        meetingLink: "https://example.com",
+      };
+      const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
+
+      expect(result).toBe(
+        `Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
+<https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
+Ways to attend:
+\t:office: In person @ Test location
+\t:globe_with_meridians: Online @ https://example.com`,
+      );
+    });
+
+    it("should generate a reminder for 5 minutes with the meeting link and location provided", () => {
+      jest.useFakeTimers().setSystemTime(new Date("2023-01-01T05:55:00.000Z").getTime());
+      event.location = "Test location";
+      event.minervaEventMetadata = {
+        channels: [slackChannels[0]],
+        meetingLink: "https://example.com",
+      };
+      const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
+
+      expect(result).toBe(
+        `Reminder: *Test event* is occurring in *5 minutes*
+<https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
+Ways to attend:
+\t:office: In person @ Test location
+\t:globe_with_meridians: Online @ https://example.com`,
+      );
+    });
+
+    it("should generate a reminder for 6 hours with no meeting link or location provided", () => {
+      jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
+      event.minervaEventMetadata = {
+        channels: [slackChannels[0]],
+      };
+      const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
+
+      expect(result).toBe(
+        `Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
+<https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
+Ways to attend:
+\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/bay_area`,
+      );
+    });
+
+    it("should generate a reminder for 5 minutes with no meeting link or location provided", () => {
+      jest.useFakeTimers().setSystemTime(new Date("2023-01-01T05:55:00.000Z").getTime());
+      event.minervaEventMetadata = {
+        channels: [slackChannels[0]],
+      };
+      const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
+
+      expect(result).toBe(
+        `Reminder: *Test event* is occurring in *5 minutes*
+<https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
+Ways to attend:
+\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/bay_area`,
+      );
+    });
+
+    it("should generate a reminder for 6 hours with only location provided", () => {
+      jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
+      event.location = "Test location";
+      event.minervaEventMetadata = {
+        channels: [slackChannels[0]],
+      };
+      const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
+
+      expect(result).toBe(
+        `Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
+<https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
+Ways to attend:
+\t:office: In person @ Test location
+\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/bay_area`,
+      );
+    });
+
+    it("should generate a reminder for 5 minutes with only location provided", () => {
+      jest.useFakeTimers().setSystemTime(new Date("2023-01-01T05:55:00.000Z").getTime());
+      event.minervaEventMetadata = {
+        channels: [slackChannels[0]],
+      };
+      event.location = "Test location";
+      const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
+
+      expect(result).toBe(
+        `Reminder: *Test event* is occurring in *5 minutes*
+<https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
+Ways to attend:
+\t:office: In person @ Test location
+\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/bay_area`,
+      );
+    });
+
+    it("should generate a reminder for 6 hours with only meeting link provided", () => {
+      jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
+      event.minervaEventMetadata = {
+        channels: [slackChannels[0]],
+        meetingLink: "https://example.com",
+      };
+      const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
+
+      expect(result).toBe(
+        `Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
+<https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
+Ways to attend:
+\t:globe_with_meridians: Online @ https://example.com`,
+      );
+    });
+
+    it("should generate a reminder for 5 minutes with only meeting link provided", () => {
+      jest.useFakeTimers().setSystemTime(new Date("2023-01-01T05:55:00.000Z").getTime());
+      event.minervaEventMetadata = {
+        channels: [slackChannels[0]],
+        meetingLink: "https://example.com",
+      };
+      const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
+
+      expect(result).toBe(
+        `Reminder: *Test event* is occurring in *5 minutes*
+<https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
+Ways to attend:
+\t:globe_with_meridians: Online @ https://example.com`,
+      );
     });
   });
 });
