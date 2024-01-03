@@ -31,23 +31,47 @@ export default class CalendarEvent {
    */
   end: Date;
 
-  // Constructor takes a Google Calendar event object
-  // Also takes a list of workspace channels so they don't have to be fetched every time
-  constructor(event: calendar_v3.Schema$Event, workspaceChannels: SlackChannel[]) {
+  /**
+   * Parses a google calendar event into a CalendarEvent object
+   * @param event The google calendar event to parse
+   * @param workspaceChannels The list of slack channels in the workspace. Used to create SlackChannel objects from the channel names in the event description
+   * @returns The parsed CalendarEvent object
+   */
+  static fromGoogleCalendarEvent(event: calendar_v3.Schema$Event, workspaceChannels: SlackChannel[]): CalendarEvent {
     if (event.summary == undefined) throw new Error("Event summary is undefined");
-    this.title = event.summary;
+    const title = event.summary;
     if (event.start?.dateTime == undefined) throw new Error("Event start is undefined");
-    this.start = new Date(event.start.dateTime);
+    const start = new Date(event.start.dateTime);
     if (event.end?.dateTime == undefined) throw new Error("Event end is undefined");
-    this.end = new Date(event.end.dateTime);
+    const end = new Date(event.end.dateTime);
 
-    this.location = event.location ?? undefined;
+    const parsedEvent = new CalendarEvent(title, start, end);
+
+    parsedEvent.location = event.location ?? undefined;
 
     if (event?.description != undefined) {
       const { description, minervaEventMetadata } = parseDescription(event.description, workspaceChannels);
 
-      this.description = description;
-      this.minervaEventMetadata = minervaEventMetadata;
+      parsedEvent.description = description;
+      parsedEvent.minervaEventMetadata = minervaEventMetadata;
     }
+
+    return parsedEvent;
+  }
+
+  constructor(
+    title: string,
+    start: Date,
+    end: Date,
+    description?: string,
+    location?: string,
+    minervaEventMetadata?: EventMetadata,
+  ) {
+    this.title = title;
+    this.start = start;
+    this.end = end;
+    this.description = description;
+    this.location = location;
+    this.minervaEventMetadata = minervaEventMetadata;
   }
 }
