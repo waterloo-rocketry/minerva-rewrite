@@ -1,21 +1,8 @@
 import { convert } from "html-to-text";
 
 import SlackChannel from "../classes/SlackChannel";
-import { filterSlackChannelFromName } from "../utils/channels";
-
-/**
- * The representation metadata of the event that minerva uses. This includes the main channel, additional channels, and meeting link
- */
-export type EventMetadata = {
-  /**
-   * The channel that event reminders should be posted to
-   */
-  channel: SlackChannel;
-  /**
-   * The meeting link for the event, if it exists
-   */
-  meetingLink?: string;
-};
+import { EventMetadata } from "../types/EventMetadata";
+import { filterSlackChannelFromName, filterDefaultSlackChannels } from "../utils/channels";
 
 /**
  * Splits the given description into its components.
@@ -112,11 +99,18 @@ export function parseDescription(
     throw new Error("channel name not specified");
   }
 
-  const channel = filterSlackChannelFromName(channelName, workspaceChannels);
-  if (channel == undefined) throw new Error(`channel ${channelName} not found`);
+  let channels;
+
+  if (channelName == "default") {
+    channels = filterDefaultSlackChannels(workspaceChannels);
+  } else {
+    const channel = filterSlackChannelFromName(channelName, workspaceChannels);
+    if (channel == undefined) throw new Error(`channel ${channelName} not found`);
+    channels = [channel];
+  }
 
   const minervaEventMetadata = {
-    channel,
+    channels,
     meetingLink,
   };
 

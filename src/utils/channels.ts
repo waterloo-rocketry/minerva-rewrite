@@ -86,3 +86,9 @@ export async function getAllSlackChannels(app: App): Promise<SlackChannel[]> {
 
   return res;
 }
+
+export async function getDefaultSlackChannels(app: App): Promise<SlackChannel[]> {
+  const allChannels = await getAllSlackChannels(app);
+  const defaultChannels = filterDefaultSlackChannels(allChannels);
+  return defaultChannels;
+}

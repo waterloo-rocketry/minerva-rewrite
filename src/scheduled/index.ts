@@ -4,8 +4,7 @@ import { App } from "@slack/bolt";
 import { OAuth2Client } from "google-auth-library";
 
 const scheduleTasks = (app: App, googleAuth: OAuth2Client): void => {
-  // Runs every five minutes
-  schedule.scheduleJob("*/5 * * *", () => checkForEvents(app, googleAuth));
+  schedule.scheduleJob("*/5 * * * *", () => checkForEvents(app, googleAuth)); // Runs every five minutes
 };
 
 export default scheduleTasks;
