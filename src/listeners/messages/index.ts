@@ -1,9 +1,12 @@
 import { App } from "@slack/bolt";
 import helloMessageCallback from "./helloMessage";
+<<<<<<< HEAD
 import { generateEmojiPair, seedMessageReactions } from "../../utils/slackEmojis";
+=======
+>>>>>>> 876a8abb602728144021a28928219c8a3d994356
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const register = (app: App) => {
+const register = (app: App): void => {
   app.message(/^(hi|hello|hey).*/, helloMessageCallback);
 
   // Add a new message listener for reacting to messages with a certain pattern

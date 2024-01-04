@@ -25,6 +25,7 @@ jobs:
       - name: Generate .env file
         run: |
           touch .env
+          echo NODE_ENV=development >> .env
           echo GOOGLE_ACCOUNT_CLIENT=${{ secrets.GOOGLE_ACCOUNT_CLIENT }} >> .env
           echo GOOGLE_ACCOUNT_SECRET=${{ secrets.GOOGLE_ACCOUNT_SECRET }} >> .env
           echo GOOGLE_ACCOUNT_TOKEN=${{ secrets.GOOGLE_ACCOUNT_TOKEN }} >> .env

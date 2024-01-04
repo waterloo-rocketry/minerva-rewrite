@@ -1,6 +1,13 @@
 import { AllMiddlewareArgs, SlackEventMiddlewareArgs } from "@slack/bolt";
 
+<<<<<<< HEAD
 const helloMessageCallback = async ({ message, say }: AllMiddlewareArgs & SlackEventMiddlewareArgs<"message">) => {
+=======
+const helloMessageCallback = async ({
+  message,
+  say,
+}: AllMiddlewareArgs & SlackEventMiddlewareArgs<"message">): Promise<void> => {
+>>>>>>> 876a8abb602728144021a28928219c8a3d994356
   // Check if 'message' is properly typed, as 'user' might not be a direct property.
   // If 'message' is of type 'MessageEvent', it should have a 'user' property.
   if ("user" in message) {
