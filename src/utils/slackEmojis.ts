@@ -1,5 +1,6 @@
 import { App } from "@slack/bolt";
 import { ReactionsAddResponse } from "@slack/web-api";
+import { getAllEmoji } from "./slack";
 
 // https://api.slack.com/methods/reactions.add
 /**
@@ -24,25 +25,6 @@ export function addReactionToMessage(
     name: emoji,
     timestamp: timestampStr,
   });
-}
-
-// https://api.slack.com/methods/emoji.list
-/**
- * Retrieves all custom emoji from a Slack workspace.
- * @param app The Slack App instance.
- * @returns A promise that resolves to an array of emoji names.
- */
-export async function getAllEmoji(app: App): Promise<string[]> {
-  try {
-    const result = await app.client.emoji.list();
-    if (!result.emoji) {
-      throw new Error("No emojis found");
-    }
-    return Object.keys(result.emoji);
-  } catch (error) {
-    console.error("Failed to get emoji:", error);
-    throw error;
-  }
 }
 
 /**

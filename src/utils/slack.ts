@@ -19,3 +19,22 @@ export function postMessage(app: App, channel: SlackChannel, text: string): void
     console.error(`Failed to post message to channel ${channel.name} with error ${error}`);
   }
 }
+
+// https://api.slack.com/methods/emoji.list
+/**
+ * Retrieves all custom emoji from a Slack workspace.
+ * @param app The Slack App instance.
+ * @returns A promise that resolves to an array of emoji names.
+ */
+export async function getAllEmoji(app: App): Promise<string[]> {
+  try {
+    const result = await app.client.emoji.list();
+    if (!result.emoji) {
+      throw new Error("No emojis found");
+    }
+    return Object.keys(result.emoji);
+  } catch (error) {
+    console.error("Failed to get emoji:", error);
+    throw error;
+  }
+}
