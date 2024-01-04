@@ -45,17 +45,6 @@ export async function getAllEmoji(app: App): Promise<string[]> {
   }
 }
 
-interface SlackAPIResponse {
-  ok: boolean;
-}
-
-function isSlackAPIResponse(object: unknown): object is SlackAPIResponse {
-  if (typeof object === "object" && object !== null) {
-    return "ok" in object && typeof (object as SlackAPIResponse).ok === "boolean";
-  }
-  return false;
-}
-
 /**
  * Generates a pair of unique, random emoji from the available set in a Slack workspace.
  * If there are not enough emojis, defaults to ["white_check_mark", "x"].
@@ -91,7 +80,7 @@ export async function seedMessageReactions(
 ): Promise<void> {
   const response = await addReactionToMessage(app, channel, emojis[0], timestamp);
 
-  if (isSlackAPIResponse(response) && response.ok) {
+  if (response.ok) {
     await addReactionToMessage(app, channel, emojis[1], timestamp);
   }
 }
