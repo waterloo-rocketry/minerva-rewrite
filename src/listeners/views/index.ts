@@ -1,7 +1,7 @@
-import { App } from '@slack/bolt';
+import { App } from "@slack/bolt";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const register = (app: App) => {
+const register = (app: App): void => {
   //   app.view('sample_view_id', sampleViewCallback);
 };
 

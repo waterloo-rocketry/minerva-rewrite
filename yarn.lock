@@ -1427,6 +1427,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/moment-timezone@npm:^0.5.30":
+  version: 0.5.30
+  resolution: "@types/moment-timezone@npm:0.5.30"
+  dependencies:
+    moment-timezone: "*"
+  checksum: 488b5880b346101f15e3f90267eb8d848ce20a41ea8b51305b1fee25f4fac57b93d553dc0de6f2eb8412be764bd74c9c347ed678c9a6d20d800a06c106b674f9
+  languageName: node
+  linkType: hard
+
+"@types/node-schedule@npm:^2.1.5":
+  version: 2.1.5
+  resolution: "@types/node-schedule@npm:2.1.5"
+  dependencies:
+    "@types/node": "*"
+  checksum: 7e0302126510d11ccacd2a59b46fede9c534fcd71cc3a089ebb5c72f90886eff04c58044a23ea85f0be1dfb17a058cf1c2264b0cd7f0c5fa8f78192325813bdb
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:*, @types/node@npm:>=12, @types/node@npm:>=12.0.0, @types/node@npm:>=18.0.0, @types/node@npm:^20.8.4":
   version: 20.8.10
   resolution: "@types/node@npm:20.8.10"
@@ -2648,6 +2666,15 @@ __metadata:
   version: 1.1.1
   resolution: "create-require@npm:1.1.1"
   checksum: a9a1503d4390d8b59ad86f4607de7870b39cad43d929813599a23714831e81c520bddf61bcdd1f8e30f05fd3a2b71ae8538e946eb2786dc65c2bbc520f692eff
+  languageName: node
+  linkType: hard
+
+"cron-parser@npm:^4.2.0":
+  version: 4.9.0
+  resolution: "cron-parser@npm:4.9.0"
+  dependencies:
+    luxon: ^3.2.1
+  checksum: 3cf248fc5cae6c19ec7124962b1cd84b76f02b9bc4f58976b3bd07624db3ef10aaf1548efcc2d2dcdab0dad4f12029d640a55ecce05ea5e1596af9db585502cf
   languageName: node
   linkType: hard
 
@@ -5348,6 +5375,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"long-timeout@npm:0.1.1":
+  version: 0.1.1
+  resolution: "long-timeout@npm:0.1.1"
+  checksum: 48668e5362cb74c4b77a6b833d59f149b9bb9e99c5a5097609807e2597cd0920613b2a42b89bd0870848298be3691064d95599a04ae010023d07dba39932afa7
+  languageName: node
+  linkType: hard
+
 "lru-cache@npm:^10.0.1, lru-cache@npm:^9.1.1 || ^10.0.0":
   version: 10.0.1
   resolution: "lru-cache@npm:10.0.1"
@@ -5370,6 +5404,13 @@ __metadata:
   dependencies:
     yallist: ^4.0.0
   checksum: f97f499f898f23e4585742138a22f22526254fdba6d75d41a1c2526b3b6cc5747ef59c5612ba7375f42aca4f8461950e925ba08c991ead0651b4918b7c978297
+  languageName: node
+  linkType: hard
+
+"luxon@npm:^3.2.1":
+  version: 3.4.4
+  resolution: "luxon@npm:3.4.4"
+  checksum: 36c1f99c4796ee4bfddf7dc94fa87815add43ebc44c8934c924946260a58512f0fd2743a629302885df7f35ccbd2d13f178c15df046d0e3b6eb71db178f1c60c
   languageName: node
   linkType: hard
 
@@ -5512,7 +5553,9 @@ __metadata:
     "@types/html-to-text": ^9.0.4
     "@types/jest": ^29.5.11
     "@types/js-yaml": ^4.0.9
+    "@types/moment-timezone": ^0.5.30
     "@types/node": ^20.8.4
+    "@types/node-schedule": ^2.1.5
     "@typescript-eslint/eslint-plugin": ^6.7.4
     "@typescript-eslint/parser": ^6.7.4
     dotenv: ^16.3.1
@@ -5522,6 +5565,8 @@ __metadata:
     googleapis: ^129.0.0
     html-to-text: ^9.0.5
     jest: ^29.7.0
+    moment-timezone: ^0.5.44
+    node-schedule: ^2.1.1
     prettier: ^3.0.3
     ts-jest: ^29.1.1
     ts-loader: ^9.5.0
@@ -5643,6 +5688,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"moment-timezone@npm:*, moment-timezone@npm:^0.5.44":
+  version: 0.5.44
+  resolution: "moment-timezone@npm:0.5.44"
+  dependencies:
+    moment: ^2.29.4
+  checksum: 2f1de58f145bb87896ca06afaebaea0904f24542a900208d6a56a54f2fb50b38d9d2b61c46039ed36d0ec575140ff9ba6a5824877551763dbf3db7bda0333781
+  languageName: node
+  linkType: hard
+
+"moment@npm:^2.29.4":
+  version: 2.30.1
+  resolution: "moment@npm:2.30.1"
+  checksum: 859236bab1e88c3e5802afcf797fc801acdbd0ee509d34ea3df6eea21eb6bcc2abd4ae4e4e64aa7c986aa6cba563c6e62806218e6412a765010712e5fa121ba6
+  languageName: node
+  linkType: hard
+
 "ms@npm:2.0.0":
   version: 2.0.0
   resolution: "ms@npm:2.0.0"
@@ -5730,6 +5791,17 @@ __metadata:
   version: 2.0.13
   resolution: "node-releases@npm:2.0.13"
   checksum: 17ec8f315dba62710cae71a8dad3cd0288ba943d2ece43504b3b1aa8625bf138637798ab470b1d9035b0545996f63000a8a926e0f6d35d0996424f8b6d36dda3
+  languageName: node
+  linkType: hard
+
+"node-schedule@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "node-schedule@npm:2.1.1"
+  dependencies:
+    cron-parser: ^4.2.0
+    long-timeout: 0.1.1
+    sorted-array-functions: ^1.3.0
+  checksum: 6a8822b16fb024277c42efe710bdb35b6f1f6ab3a2f826283640511247d693f34ebd5ddf2863cd91609e7f323574e36c81cd2084dc204fa521f931380f0f963f
   languageName: node
   linkType: hard
 
@@ -6667,6 +6739,13 @@ __metadata:
     ip: ^2.0.0
     smart-buffer: ^4.2.0
   checksum: 259d9e3e8e1c9809a7f5c32238c3d4d2a36b39b83851d0f573bfde5f21c4b1288417ce1af06af1452569cd1eb0841169afd4998f0e04ba04656f6b7f0e46d748
+  languageName: node
+  linkType: hard
+
+"sorted-array-functions@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "sorted-array-functions@npm:1.3.0"
+  checksum: 673fd39ca3b6c92644d4483eac1700bb7d7555713a536822a7522a35af559bef3e72f10d89356b75042dc394cd7c2e2ab6f40024385218ec3c85bb7335032857
   languageName: node
   linkType: hard
 
