@@ -7,6 +7,7 @@ export enum UserType {
   BOT = "bot",
   RESTRICTED = "restricted",
   ULTRA_RESTRICTED = "ultra_restricted",
+  FULL_MEMBER = "full_member",
 }
 
 /**

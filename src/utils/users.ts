@@ -1,7 +1,10 @@
+import * as environment from "./env";
 import { App } from "@slack/bolt";
+import SlackChannel from "../classes/SlackChannel";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import { Member } from "@slack/web-api/dist/response/UsersListResponse";
 import { filterSlackChannelFromName, getAllSlackChannels } from "./channels";
+import { SlackUserID, allSlackUsers, getChannelMembers } from "./slack";
 
 /**
  * Determine the type of a Slack user based on the provided Member object.
@@ -19,31 +22,11 @@ export function determineUserType(user: Member): UserType {
     return UserType.BOT;
   } else if (user.is_ultra_restricted) {
     return UserType.ULTRA_RESTRICTED;
-  } else {
+  } else if (user.is_restricted) {
     return UserType.RESTRICTED;
+  } else {
+    return UserType.FULL_MEMBER;
   }
-}
-
-/**
- * Fetches all active Slack users.
- * @param app The Slack Bolt app instance.
- * @returns A promise that resolves to an array of active SlackUser instances.
- */
-export async function allSlackUsers(app: App): Promise<SlackUser[]> {
-  const activeUsers: SlackUser[] = [];
-  const users = await app.client.users.list({
-    limit: 900,
-  });
-  if (users.members) {
-    users.members.forEach((user) => {
-      if (user.deleted == false) {
-        const userType: UserType = determineUserType(user);
-        const newGuest = new SlackUser(user.real_name as string, user.id as string, userType);
-        activeUsers.push(newGuest);
-      }
-    });
-  }
-  return activeUsers;
 }
 
 /**
@@ -54,9 +37,17 @@ export async function allSlackUsers(app: App): Promise<SlackUser[]> {
  */
 export async function getAllSingleChannelGuests(app: App, slackUsers: SlackUser[]): Promise<SlackUser[]> {
   const allActiveSlackUsers = slackUsers;
-  const allSingleChannelGuests = allActiveSlackUsers.filter((user) => {
-    return user.userType == "ultra_restricted";
-  });
+  let allSingleChannelGuests: SlackUser[] = [];
+  console.log(environment.environment);
+  if (environment.environment == "development") {
+    allSingleChannelGuests = allActiveSlackUsers.filter((user) => {
+      return user.userType == "admin";
+    });
+  } else {
+    allSingleChannelGuests = allActiveSlackUsers.filter((user) => {
+      return user.userType == "ultra_restricted";
+    });
+  }
   return allSingleChannelGuests;
 }
 
@@ -67,27 +58,24 @@ export async function getAllSingleChannelGuests(app: App, slackUsers: SlackUser[
  * @returns A promise that resolves to an array of user IDs in the channel,
  *   or undefined if the channel is not found.
  */
-export async function getAllUsersInChannel(app: App, channel: string): Promise<string[] | undefined> {
+export async function getAllUsersInChannel(app: App, channel: string): Promise<SlackUserID[] | undefined> {
   const allSlackChannels = await getAllSlackChannels(app);
   const channelId = await filterSlackChannelFromName(channel, allSlackChannels);
   if (!channelId) {
     throw new Error(`Channel ${channel} not found.`);
   }
-  const allUsersInChannel = await app.client.conversations.members({
-    channel: channelId.id,
-    limit: 900,
-  });
-  return allUsersInChannel.members;
+  const channelMembers = await getChannelMembers(app, channelId.id);
+  return channelMembers;
 }
 
 /**
  * Retrieves a list of active SlackUsers of single channel guests in a specific channel.
  * @param app The Slack Bolt app instance.
- * @param channel The channel name.
+ * @param channel The SlackChannel object.
  * @returns A promise that resolves to an array of SlackGuests of single channel guests in a specific channel.
  */
-export async function getAllSingleChannelGuestsInOneChannel(app: App, channel: string): Promise<SlackUser[]> {
-  const allUsersInChannel = await getAllUsersInChannel(app, channel);
+export async function getAllSingleChannelGuestsInOneChannel(app: App, channel: SlackChannel): Promise<SlackUser[]> {
+  const allUsersInChannel = await getAllUsersInChannel(app, channel.name);
   const activeUsers = await allSlackUsers(app);
   const allSingleChannelGuests = await getAllSingleChannelGuests(app, activeUsers);
   if (!allUsersInChannel) {
@@ -100,10 +88,10 @@ export async function getAllSingleChannelGuestsInOneChannel(app: App, channel: s
 /**
  * Retrieves a list of active SlackUsers of single channel guests in multiple channels.
  * @param app The Slack Bolt app instance.
- * @param channels The array of channel names.
+ * @param channels The array SlackChannels.
  * @returns A promise that resolves to an array of SlackGuests of single channel guests in multiple channels.
  */
-export async function getAllSingleChannelGuestsInChannels(app: App, channels: string[]): Promise<SlackUser[]> {
+export async function getAllSingleChannelGuestsInChannels(app: App, channels: SlackChannel[]): Promise<SlackUser[]> {
   const allSingleChannelGuestsInChannels: SlackUser[] = [];
   for (const channel of channels) {
     const singleChannelGuests = await getAllSingleChannelGuestsInOneChannel(app, channel);
