@@ -1,7 +1,7 @@
 import { App } from "@slack/bolt";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import SlackChannel from "../classes/SlackChannel";
-import { determineUserType } from "./users";
+import { determineUserType, getAllSingleChannelGuestsInOneChannel } from "./users";
 
 export type SlackUserID = string;
 
@@ -20,6 +20,26 @@ export function postMessage(app: App, channel: SlackChannel, text: string): void
     });
   } catch (error) {
     console.error(`Failed to post message to channel ${channel.name} with error ${error}`);
+  }
+}
+
+/**
+ * Posts a message to all single-channel guests in a specified channel
+ * @param app The Bolt App
+ * @param channel The Slack channel to post the message to the single-channel guests
+ * @param text The text of the message to post
+ */
+export async function postMessageToSingleChannelGuestsInChannel(app: App, channel: SlackChannel): Promise<void> {
+  const allSingleChannelGuestsInOneChannel = await getAllSingleChannelGuestsInOneChannel(app, channel);
+  for (const guest of allSingleChannelGuestsInOneChannel) {
+    try {
+      app.client.chat.postMessage({
+        channel: guest.id,
+        text: "Hello! You are a single channel guest.",
+      });
+    } catch (error) {
+      console.error(`Failed to post message to channel ${channel.name} with error ${error}`);
+    }
   }
 }
 
