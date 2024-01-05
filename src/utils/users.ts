@@ -4,7 +4,7 @@ import SlackChannel from "../classes/SlackChannel";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import { Member } from "@slack/web-api/dist/response/UsersListResponse";
 import { filterSlackChannelFromName, getAllSlackChannels } from "./channels";
-import { SlackUserID, allSlackUsers, getChannelMembers } from "./slack";
+import { SlackUserID, getAllSlackUsers, getChannelMembers } from "./slack";
 
 /**
  * Determine the type of a Slack user based on the provided Member object.
@@ -38,7 +38,8 @@ export function determineUserType(user: Member): UserType {
 export async function getAllSingleChannelGuests(app: App, slackUsers: SlackUser[]): Promise<SlackUser[]> {
   const allActiveSlackUsers = slackUsers;
   let allSingleChannelGuests: SlackUser[] = [];
-  console.log(environment.environment);
+  // Since the development Slack is on a free plan, multi- and single-channel guests don't exist there.
+  //  Therefore, we're validating functionality with admin users instead.
   if (environment.environment == "development") {
     allSingleChannelGuests = allActiveSlackUsers.filter((user) => {
       return user.userType == "admin";
@@ -76,7 +77,7 @@ export async function getAllUsersInChannel(app: App, channel: string): Promise<S
  */
 export async function getAllSingleChannelGuestsInOneChannel(app: App, channel: SlackChannel): Promise<SlackUser[]> {
   const allUsersInChannel = await getAllUsersInChannel(app, channel.name);
-  const activeUsers = await allSlackUsers(app);
+  const activeUsers = await getAllSlackUsers(app);
   const allSingleChannelGuests = await getAllSingleChannelGuests(app, activeUsers);
   if (!allUsersInChannel) {
     return [];
@@ -93,9 +94,15 @@ export async function getAllSingleChannelGuestsInOneChannel(app: App, channel: S
  */
 export async function getAllSingleChannelGuestsInChannels(app: App, channels: SlackChannel[]): Promise<SlackUser[]> {
   const allSingleChannelGuestsInChannels: SlackUser[] = [];
+  let seenIds = new Set();
   for (const channel of channels) {
     const singleChannelGuests = await getAllSingleChannelGuestsInOneChannel(app, channel);
-    allSingleChannelGuestsInChannels.concat(singleChannelGuests);
+    for (const user of singleChannelGuests) {
+      if (!seenIds.has(user.id)) {
+        allSingleChannelGuestsInChannels.push(user);
+        seenIds = seenIds.add(user.id);
+      }
+    }
   }
   return allSingleChannelGuestsInChannels;
 }

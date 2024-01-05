@@ -26,10 +26,10 @@ export function postMessage(app: App, channel: SlackChannel, text: string): void
 /**
  * Fetches all active Slack users by default else specified.
  * @param app The Slack Bolt app instance.
- * @param deactivatedMembers The boolean to filter for deleted/deactivated members or not.
+ * @param includeDeactivatedMembers The boolean to include deleted/deactivated members or not.
  * @returns A promise that resolves to an array of active SlackUser instances.
  */
-export async function allSlackUsers(app: App, deactivatedMembers: boolean = false): Promise<SlackUser[]> {
+export async function getAllSlackUsers(app: App, includeDeactivatedMembers: boolean = false): Promise<SlackUser[]> {
   const usersList: SlackUser[] = [];
   let cursor: string | undefined = undefined;
 
@@ -41,7 +41,7 @@ export async function allSlackUsers(app: App, deactivatedMembers: boolean = fals
 
     if (response.members) {
       response.members.forEach((user) => {
-        if (user.deleted == deactivatedMembers) {
+        if (user.deleted == includeDeactivatedMembers) {
           const userType: UserType = determineUserType(user);
           const newGuest = new SlackUser(user.real_name as string, user.id as string, userType);
           usersList.push(newGuest);
