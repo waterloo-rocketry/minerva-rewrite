@@ -1,4 +1,4 @@
-import { App } from "@slack/bolt";
+import { WebClient } from "@slack/web-api";
 import SlackChannel from "../classes/SlackChannel";
 import { defaultSlackChannels } from "../common/constants";
 
@@ -62,12 +62,12 @@ export function filterDefaultSlackChannels(channels: SlackChannel[]): SlackChann
 
 /**
  * Retrieves all Slack channels using the Slack API.
- * @param app - The Slack Bolt app instance.
+ * @param client Slack Web API client
  * @returns A promise that resolves to an array of Slack channels.
  */
-export async function getAllSlackChannels(app: App): Promise<SlackChannel[]> {
+export async function getAllSlackChannels(client: WebClient): Promise<SlackChannel[]> {
   // Excludes archived channels and has a maximum limit of 1000 channels.
-  const channels = await app.client.conversations.list({
+  const channels = await client.conversations.list({
     types: "public_channel",
     exclude_archived: true,
     limit: 1000, // This is the max limit
