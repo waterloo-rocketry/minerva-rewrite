@@ -26,9 +26,9 @@ export function postMessage(client: WebClient, channel: SlackChannel, text: stri
  * @param app The Slack App instance.
  * @returns A promise that resolves to an array of emoji names.
  */
-export async function getAllEmoji(app: App): Promise<string[]> {
+export async function getAllEmoji(client: WebClient): Promise<string[]> {
   try {
-    const result = await app.client.emoji.list();
+    const result = await client.emoji.list();
     if (!result.emoji) {
       throw new Error("No emojis found");
     }
