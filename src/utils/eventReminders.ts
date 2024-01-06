@@ -1,4 +1,4 @@
-import { App } from "@slack/bolt";
+import { WebClient } from "@slack/web-api";
 
 import CalendarEvent from "../classes/CalendarEvent";
 import { ChatPostMessageResponse } from "@slack/web-api";
@@ -53,9 +53,10 @@ export function getEventReminderType(event: CalendarEvent): EventReminderType | 
 /**
  * Posts a reminder for the given event to the channel it is associated with
  * @param event The event to post a reminder for
- * @param app The Bolt App
+ * @param client Slack Web API client
+>>>>>>> main
  */
-export function remindUpcomingEvent(event: CalendarEvent, app: App): void {
+export function remindUpcomingEvent(event: CalendarEvent, client: WebClient): void {
   // If the event does not have event metadata, then minerva ignores it
   if (!event.minervaEventMetadata) {
     return;
@@ -88,7 +89,7 @@ export function remindUpcomingEvent(event: CalendarEvent, app: App): void {
   reminderChannels.forEach(async (channel) => {
     let res: ChatPostMessageResponse | undefined = undefined;
     try {
-      res = await postMessage(app, channel, reminderText, {
+      res = await postMessage(client, channel, reminderText, {
         unfurl_links: false,
         unfurl_media: false,
       });
@@ -100,7 +101,7 @@ export function remindUpcomingEvent(event: CalendarEvent, app: App): void {
       reactEmojis.forEach(async (emoji) => {
         // TODO Proper function for adding reactions
         try {
-          await app.client.reactions.add({
+          await client.reactions.add({
             channel: channel.id,
             name: emoji,
             timestamp: res?.ts,
@@ -116,11 +117,11 @@ export function remindUpcomingEvent(event: CalendarEvent, app: App): void {
 /**
  * Posts reminders for the given events to the channels they are associated with
  * @param events The events to post reminders for
- * @param app The Bolt App
+ * @param client Slack Web API client
  */
-export function remindUpcomingEvents(events: CalendarEvent[], app: App): void {
+export function remindUpcomingEvents(events: CalendarEvent[], client: WebClient): void {
   events.forEach((event) => {
-    remindUpcomingEvent(event, app);
+    remindUpcomingEvent(event, client);
   });
 }
 

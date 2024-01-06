@@ -1,4 +1,4 @@
-import { App } from "@slack/bolt";
+import { WebClient } from "@slack/web-api";
 import { ChatPostMessageResponse } from "@slack/web-api";
 import SlackChannel from "../classes/SlackChannel";
 
@@ -19,20 +19,20 @@ interface ChatPostMessageOptionalArgs {
 
 /**
  * Posts a message to a Slack channel
- * @param app The Bolt App
+ * @param client Slack Web API client
  * @param channel The Slack channel to post the message to
  * @param text The text of the message to post
  * @param options Optional arguments for the message as per https://api.slack.com/methods/chat.postMessage#arguments
  */
 export async function postMessage(
-  app: App,
+  client: WebClient,
   channel: SlackChannel,
   text: string,
   options?: ChatPostMessageOptionalArgs,
 ): Promise<ChatPostMessageResponse | undefined> {
   let res: ChatPostMessageResponse | undefined = undefined;
   try {
-    res = await app.client.chat.postMessage({
+    res = await client.chat.postMessage({
       channel: channel.id,
       text: text,
       ...options,
