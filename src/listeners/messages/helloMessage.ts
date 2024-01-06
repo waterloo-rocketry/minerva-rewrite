@@ -1,5 +1,4 @@
-import { App, AllMiddlewareArgs, SlackEventMiddlewareArgs, GenericMessageEvent } from "@slack/bolt";
-import { generateEmojiPair, seedMessageReactions } from "../../utils/slackEmojis";
+import { AllMiddlewareArgs, SlackEventMiddlewareArgs } from "@slack/bolt";
 
 const helloMessageCallback = async ({
   message,
@@ -33,22 +32,4 @@ const helloMessageCallback = async ({
   }
 };
 
-// Define a separate callback for "Nice to meet you"
-const niceToMeetYouCallback = async ({
-  message,
-  say,
-  context,
-}: AllMiddlewareArgs & SlackEventMiddlewareArgs<"message"> & { context: { app: App } }): Promise<void> => {
-  const genericMessage = message as GenericMessageEvent; // Use type assertion
-  if (genericMessage && genericMessage.text && genericMessage.text.includes("Nice to meet you")) {
-    try {
-      const emojis = await generateEmojiPair(context.app);
-      await seedMessageReactions(context.app, message.channel, emojis, message.ts);
-      await say(`Emoji reaction added to the message.`);
-    } catch (error) {
-      console.error("Failed to add emoji reaction:", error);
-    }
-  }
-};
-
-export { helloMessageCallback, niceToMeetYouCallback };
+export default helloMessageCallback;

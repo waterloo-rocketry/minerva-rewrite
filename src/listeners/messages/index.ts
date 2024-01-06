@@ -1,5 +1,6 @@
 import { App } from "@slack/bolt";
-import { helloMessageCallback, niceToMeetYouCallback } from "./helloMessage";
+import helloMessageCallback from "./helloMessage";
+import niceToMeetYouCallback from "./niceToMeetYouMessage";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const register = (app: App): void => {
