@@ -28,7 +28,7 @@ const app = new App({
 registerListeners(app);
 
 // Schedule tasks
-scheduleTasks(app, auth);
+scheduleTasks(app.client, auth);
 
 // Start app
 (async (): Promise<void> => {

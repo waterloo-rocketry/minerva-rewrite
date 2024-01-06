@@ -1,4 +1,4 @@
-import { App } from "@slack/bolt";
+import { WebClient } from "@slack/web-api";
 
 import CalendarEvent from "../classes/CalendarEvent";
 import { postMessage } from "./slack";
@@ -51,10 +51,10 @@ export function getEventReminderType(event: CalendarEvent): EventReminderType | 
 /**
  * Posts a reminder for the given event to the channel it is associated with
  * @param event The event to post a reminder for
- * @param app The Bolt App
+ * @param client Slack Web API client
  * @todo add support for #default as a channel
  */
-export function remindUpcomingEvent(event: CalendarEvent, app: App): void {
+export function remindUpcomingEvent(event: CalendarEvent, client: WebClient): void {
   // If the event does not have event metadata, then minerva ignores it
   if (!event.minervaEventMetadata) {
     return;
@@ -70,17 +70,17 @@ export function remindUpcomingEvent(event: CalendarEvent, app: App): void {
   console.log(
     `Sending reminder for event ${event.title} at ${event.start} to #${event.minervaEventMetadata.channel.name}.`,
   );
-  postMessage(app, event.minervaEventMetadata.channel, reminderText);
+  postMessage(client, event.minervaEventMetadata.channel, reminderText);
 }
 
 /**
  * Posts reminders for the given events to the channels they are associated with
  * @param events The events to post reminders for
- * @param app The Bolt App
+ * @param client Slack Web API client
  */
-export function remindUpcomingEvents(events: CalendarEvent[], app: App): void {
+export function remindUpcomingEvents(events: CalendarEvent[], client: WebClient): void {
   events.forEach((event) => {
-    remindUpcomingEvent(event, app);
+    remindUpcomingEvent(event, client);
   });
 }
 
