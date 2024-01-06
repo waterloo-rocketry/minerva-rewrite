@@ -1,17 +1,17 @@
-import { App } from "@slack/bolt";
+import { WebClient } from "@slack/web-api";
 
 import SlackChannel from "../classes/SlackChannel";
 
 /**
  * Posts a message to a Slack channel
- * @param app The Bolt App
+ * @param client Slack Web API client
  * @param channel The Slack channel to post the message to
  * @param text The text of the message to post
  * @todo Add support for #default as a channel
  */
-export function postMessage(app: App, channel: SlackChannel, text: string): void {
+export function postMessage(client: WebClient, channel: SlackChannel, text: string): void {
   try {
-    app.client.chat.postMessage({
+    client.chat.postMessage({
       channel: channel.id,
       text: text,
     });
