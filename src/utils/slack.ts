@@ -1,7 +1,5 @@
-import { App } from "@slack/bolt";
-import SlackUser, { UserType } from "../classes/SlackUser";
 import { WebClient } from "@slack/web-api";
-
+import SlackUser, { UserType } from "../classes/SlackUser";
 import SlackChannel from "../classes/SlackChannel";
 import { determineUserType, getAllSingleChannelGuestsInOneChannel } from "./users";
 
@@ -10,11 +8,11 @@ export type SlackUserID = string;
 /**
  * Posts a message to a Slack channel
  * @param client Slack Web API client
- * @param channel The Slack channel to post the message to
+ * @param channel The Slack channel / Slack user to post the message to
  * @param text The text of the message to post
  * @todo Add support for #default as a channel
  */
-export function postMessage(client: WebClient, channel: SlackChannel, text: string): void {
+export function postMessage(client: WebClient, channel: SlackChannel | SlackUser, text: string): void {
   try {
     client.chat.postMessage({
       channel: channel.id,
@@ -27,36 +25,40 @@ export function postMessage(client: WebClient, channel: SlackChannel, text: stri
 
 /**
  * Posts a message to all single-channel guests in a specified channel
- * @param app The Bolt App
+ * @param client Slack Web API client
  * @param channel The Slack channel to post the message to the single-channel guests
  * @param text The text of the message to post
  */
-export async function postMessageToSingleChannelGuestsInChannel(app: App, channel: SlackChannel): Promise<void> {
-  const allSingleChannelGuestsInOneChannel = await getAllSingleChannelGuestsInOneChannel(app, channel);
+export async function postMessageToSingleChannelGuestsInChannel(
+  client: WebClient,
+  channel: SlackChannel,
+  text: string,
+): Promise<void> {
+  const allSingleChannelGuestsInOneChannel = await getAllSingleChannelGuestsInOneChannel(client, channel);
   for (const guest of allSingleChannelGuestsInOneChannel) {
     try {
-      app.client.chat.postMessage({
-        channel: guest.id,
-        text: "Hello! You are a single channel guest.",
-      });
+      await postMessage(client, guest, text);
     } catch (error) {
-      console.error(`Failed to post message to channel ${channel.name} with error ${error}`);
+      console.error(`Failed to post message to ${guest.name} with error ${error}`);
     }
   }
 }
 
 /**
  * Fetches all active Slack users by default else specified.
- * @param app The Slack Bolt app instance.
+ * @param client Slack Web API client.
  * @param includeDeactivatedMembers The boolean to include deleted/deactivated members or not.
  * @returns A promise that resolves to an array of active SlackUser instances.
  */
-export async function getAllSlackUsers(app: App, includeDeactivatedMembers: boolean = false): Promise<SlackUser[]> {
+export async function getAllSlackUsers(
+  client: WebClient,
+  includeDeactivatedMembers: boolean = false,
+): Promise<SlackUser[]> {
   const usersList: SlackUser[] = [];
   let cursor: string | undefined = undefined;
 
   while (true) {
-    const response = await app.client.users.list({
+    const response = await client.users.list({
       limit: 900,
       cursor: cursor,
     });
@@ -81,18 +83,18 @@ export async function getAllSlackUsers(app: App, includeDeactivatedMembers: bool
 
 /**
  * Retrieves all members in a Slack channel.
- * @param app The Slack Bolt app instance.
+ * @param client Slack Web API client.
  * @param channelId The id of the Slack channel.
  * @returns A promise that resolves to an array of SlackUserIDs in the channel,
  *   or undefined if the channel is not found.
  */
-export async function getChannelMembers(app: App, channelId: string): Promise<SlackUserID[] | undefined> {
+export async function getChannelMembers(client: WebClient, channelId: string): Promise<SlackUserID[] | undefined> {
   try {
     let cursor: string | undefined = undefined;
     const members: SlackUserID[] = [];
 
     while (true) {
-      const response = await app.client.conversations.members({
+      const response = await client.conversations.members({
         channel: channelId,
         limit: 900,
         cursor: cursor,

@@ -1,5 +1,5 @@
 import * as environment from "./env";
-import { App } from "@slack/bolt";
+import { WebClient } from "@slack/web-api";
 import SlackChannel from "../classes/SlackChannel";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import { Member } from "@slack/web-api/dist/response/UsersListResponse";
@@ -31,11 +31,11 @@ export function determineUserType(user: Member): UserType {
 
 /**
  * Retrieves a list of active SlackUsers of single channel guests.
- * @param app The Slack Bolt app instance.
+ * @param client Slack Web API client.
  * @param slackUsers The array of all active SlackUsers.
  * @returns A promise that resolves to an array of SlackGuests of single channel guests.
  */
-export async function getAllSingleChannelGuests(app: App, slackUsers: SlackUser[]): Promise<SlackUser[]> {
+export async function getAllSingleChannelGuests(client: WebClient, slackUsers: SlackUser[]): Promise<SlackUser[]> {
   const allActiveSlackUsers = slackUsers;
   let allSingleChannelGuests: SlackUser[] = [];
   // Since the development Slack is on a free plan, multi- and single-channel guests don't exist there.
@@ -54,31 +54,34 @@ export async function getAllSingleChannelGuests(app: App, slackUsers: SlackUser[
 
 /**
  * Retrieves all active users in a Slack channel.
- * @param app The Slack Bolt app instance.
+ * @param client Slack Web API client.
  * @param channel The name of the Slack channel.
  * @returns A promise that resolves to an array of user IDs in the channel,
  *   or undefined if the channel is not found.
  */
-export async function getAllUsersInChannel(app: App, channel: string): Promise<SlackUserID[] | undefined> {
-  const allSlackChannels = await getAllSlackChannels(app);
+export async function getAllUsersInChannel(client: WebClient, channel: string): Promise<SlackUserID[] | undefined> {
+  const allSlackChannels = await getAllSlackChannels(client);
   const channelId = await filterSlackChannelFromName(channel, allSlackChannels);
   if (!channelId) {
     throw new Error(`Channel ${channel} not found.`);
   }
-  const channelMembers = await getChannelMembers(app, channelId.id);
+  const channelMembers = await getChannelMembers(client, channelId.id);
   return channelMembers;
 }
 
 /**
  * Retrieves a list of active SlackUsers of single channel guests in a specific channel.
- * @param app The Slack Bolt app instance.
+ * @param client Slack Web API client.
  * @param channel The SlackChannel object.
  * @returns A promise that resolves to an array of SlackGuests of single channel guests in a specific channel.
  */
-export async function getAllSingleChannelGuestsInOneChannel(app: App, channel: SlackChannel): Promise<SlackUser[]> {
-  const allUsersInChannel = await getAllUsersInChannel(app, channel.name);
-  const activeUsers = await getAllSlackUsers(app);
-  const allSingleChannelGuests = await getAllSingleChannelGuests(app, activeUsers);
+export async function getAllSingleChannelGuestsInOneChannel(
+  client: WebClient,
+  channel: SlackChannel,
+): Promise<SlackUser[]> {
+  const allUsersInChannel = await getAllUsersInChannel(client, channel.name);
+  const activeUsers = await getAllSlackUsers(client);
+  const allSingleChannelGuests = await getAllSingleChannelGuests(client, activeUsers);
   if (!allUsersInChannel) {
     return [];
   }
@@ -88,15 +91,18 @@ export async function getAllSingleChannelGuestsInOneChannel(app: App, channel: S
 
 /**
  * Retrieves a list of active SlackUsers of single channel guests in multiple channels.
- * @param app The Slack Bolt app instance.
+ * @param client Slack Web API client.
  * @param channels The array SlackChannels.
  * @returns A promise that resolves to an array of SlackGuests of single channel guests in multiple channels.
  */
-export async function getAllSingleChannelGuestsInChannels(app: App, channels: SlackChannel[]): Promise<SlackUser[]> {
+export async function getAllSingleChannelGuestsInChannels(
+  client: WebClient,
+  channels: SlackChannel[],
+): Promise<SlackUser[]> {
   const allSingleChannelGuestsInChannels: SlackUser[] = [];
-  let seenIds = new Set();
+  let seenIds = new Set<string>();
   for (const channel of channels) {
-    const singleChannelGuests = await getAllSingleChannelGuestsInOneChannel(app, channel);
+    const singleChannelGuests = await getAllSingleChannelGuestsInOneChannel(client, channel);
     for (const user of singleChannelGuests) {
       if (!seenIds.has(user.id)) {
         allSingleChannelGuestsInChannels.push(user);
