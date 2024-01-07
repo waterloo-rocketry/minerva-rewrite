@@ -32,4 +32,7 @@ export default class SlackUser {
     this.id = id;
     this.userType = userType;
   }
+  equals(other: SlackUser): boolean {
+    return this.id === other.id;
+  }
 }
