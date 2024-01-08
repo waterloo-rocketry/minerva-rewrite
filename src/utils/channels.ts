@@ -73,7 +73,7 @@ export async function getAllSlackChannels(client: WebClient): Promise<SlackChann
     limit: 1000, // This is the max limit
   });
 
-  const res = [];
+  const res: SlackChannel[] = [];
 
   for (const channel of channels.channels ?? []) {
     if (channel.name == undefined || channel.id == undefined) {
