@@ -5,7 +5,7 @@ import { getAllEmoji } from "./slack";
 // https://api.slack.com/methods/reactions.add
 /**
  * Adds a reaction to a specific message in a Slack channel.
- * @param client The Slack App instance.
+ * @param client The Slack Web API client.
  * @param channel The ID of the channel where the message is posted.
  * @param emoji The name of the emoji to add.
  * @param timestamp The timestamp of the message to react to, as a string or number.
@@ -30,7 +30,7 @@ export function addReactionToMessage(
 /**
  * Generates a pair of unique, random emoji from the available set in a Slack workspace.
  * If there are not enough emojis, defaults to ["white_check_mark", "x"].
- * @param client The Slack App instance.
+ * @param client The Slack Web API client.
  * @returns A promise that resolves to an array containing two emoji names.
  */
 export async function generateEmojiPair(client: WebClient): Promise<string[]> {
