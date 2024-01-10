@@ -125,7 +125,9 @@ export function remindUpcomingEvents(events: CalendarEvent[], client: WebClient)
  * @returns The generated reminder text
  */
 export function generateEventReminderText(event: CalendarEvent, reminderType: EventReminderType): string {
-  let message = `<!channel>\nReminder: *${event.title}* is occurring`;
+  let message = `${reminderType == EventReminderType.FIVE_MINUTES ? "<!channel>\n" : ""}Reminder: *${
+    event.title
+  }* is occurring`;
 
   if (reminderType === EventReminderType.FIVE_MINUTES) {
     const timeUntilEvent = event.start.getTime() - new Date().getTime();

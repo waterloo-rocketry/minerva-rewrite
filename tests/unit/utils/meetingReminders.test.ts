@@ -168,7 +168,8 @@ Ways to attend:
       const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
 
       expect(result).toBe(
-        `Reminder: *Test event* is occurring in *5 minutes*
+        `<!channel>
+Reminder: *Test event* is occurring in *5 minutes*
 <https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
 Ways to attend:
 \t:office: In person @ Test location
@@ -199,7 +200,8 @@ Ways to attend:
       const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
 
       expect(result).toBe(
-        `Reminder: *Test event* is occurring in *5 minutes*
+        `<!channel>
+Reminder: *Test event* is occurring in *5 minutes*
 <https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
 Ways to attend:
 \t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/bay_area`,
@@ -232,7 +234,8 @@ Ways to attend:
       const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
 
       expect(result).toBe(
-        `Reminder: *Test event* is occurring in *5 minutes*
+        `<!channel>
+Reminder: *Test event* is occurring in *5 minutes*
 <https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
 Ways to attend:
 \t:office: In person @ Test location
@@ -265,7 +268,8 @@ Ways to attend:
       const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
 
       expect(result).toBe(
-        `Reminder: *Test event* is occurring in *5 minutes*
+        `<!channel>
+Reminder: *Test event* is occurring in *5 minutes*
 <https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
 Ways to attend:
 \t:globe_with_meridians: Online @ https://example.com`,
