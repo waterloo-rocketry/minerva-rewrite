@@ -1,9 +1,9 @@
-import { WebClient } from "@slack/web-api";
+import { WebClient, ChatPostMessageResponse } from "@slack/web-api";
+import moment from "moment-timezone";
 
 import CalendarEvent from "../classes/CalendarEvent";
-import { ChatPostMessageResponse } from "@slack/web-api";
-import { postMessage } from "./slack";
-import moment from "moment-timezone";
+import { postMessage, addReactionToMessage } from "./slack";
+import { generateEmojiPair } from "./slackEmojis";
 
 /**
  * The interval in milliseconds at which the scheduled event checking task runs
@@ -54,9 +54,8 @@ export function getEventReminderType(event: CalendarEvent): EventReminderType | 
  * Posts a reminder for the given event to the channel it is associated with
  * @param event The event to post a reminder for
  * @param client Slack Web API client
->>>>>>> main
  */
-export function remindUpcomingEvent(event: CalendarEvent, client: WebClient): void {
+export async function remindUpcomingEvent(event: CalendarEvent, client: WebClient): Promise<void> {
   // If the event does not have event metadata, then minerva ignores it
   if (!event.minervaEventMetadata) {
     return;
@@ -72,8 +71,7 @@ export function remindUpcomingEvent(event: CalendarEvent, client: WebClient): vo
   let reactEmojis: string[] = [];
 
   if (reminderType === EventReminderType.SIX_HOURS) {
-    // TODO Randomized emojis
-    reactEmojis = ["white_check_mark", "x"];
+    reactEmojis = await generateEmojiPair(client);
 
     reminderText += `\nReact with :${reactEmojis[0]}: if you're coming, or :${reactEmojis[1]}: if you're not!`;
   }
@@ -97,15 +95,10 @@ export function remindUpcomingEvent(event: CalendarEvent, client: WebClient): vo
       console.error(error);
     }
 
-    if (res != undefined && reactEmojis.length > 0) {
+    if (res !== undefined && res.ts !== undefined && reactEmojis.length > 0) {
       reactEmojis.forEach(async (emoji) => {
-        // TODO Proper function for adding reactions
         try {
-          await client.reactions.add({
-            channel: channel.id,
-            name: emoji,
-            timestamp: res?.ts,
-          });
+          await addReactionToMessage(client, channel.id, emoji, res?.ts || "");
         } catch (error) {
           console.error(`Failed to add reaction ${emoji} to message ${res?.ts} with error ${error}`);
         }
