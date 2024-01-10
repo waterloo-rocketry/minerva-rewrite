@@ -18,4 +18,4 @@ export const defaultSlackChannels =
         "infrastructure",
         "recovery",
       ]
-    : ["general", "random", "software", "test", "propulsion"];
+    : ["general", "random", "software", "test", "propulsion"]; // default channels for development
