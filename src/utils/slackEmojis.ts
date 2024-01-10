@@ -1,31 +1,5 @@
 import { WebClient } from "@slack/web-api";
-import { ReactionsAddResponse } from "@slack/web-api";
-import { getAllEmoji } from "./slack";
-
-// https://api.slack.com/methods/reactions.add
-/**
- * Adds a reaction to a specific message in a Slack channel.
- * @param client The Slack Web API client.
- * @param channel The ID of the channel where the message is posted.
- * @param emoji The name of the emoji to add.
- * @param timestamp The timestamp of the message to react to, as a string or number.
- * @returns A promise that resolves to the response from the Slack API.
- */
-export function addReactionToMessage(
-  client: WebClient,
-  channel: string,
-  emoji: string,
-  timestamp: string | number,
-): Promise<ReactionsAddResponse> {
-  // Convert timestamp to string if it's a number
-  const timestampStr = typeof timestamp === "number" ? timestamp.toString() : timestamp;
-
-  return client.reactions.add({
-    channel,
-    name: emoji,
-    timestamp: timestampStr,
-  });
-}
+import { addReactionToMessage, getAllEmoji } from "./slack";
 
 /**
  * Generates a pair of unique, random emoji from the available set in a Slack workspace.

@@ -3,6 +3,7 @@ import { ChatPostMessageResponse } from "@slack/web-api";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import SlackChannel from "../classes/SlackChannel";
 import { determineUserType, getAllSingleChannelGuestsInOneChannel } from "./users";
+import { ReactionsAddResponse } from "@slack/web-api";
 
 export type SlackUserID = string;
 
@@ -157,4 +158,29 @@ export async function getChannelMembers(client: WebClient, channelId: string): P
     console.error("Error fetching channel members:", error);
     return undefined;
   }
+}
+
+// https://api.slack.com/methods/reactions.add
+/**
+ * Adds a reaction to a specific message in a Slack channel.
+ * @param client The Slack Web API client.
+ * @param channel The ID of the channel where the message is posted.
+ * @param emoji The name of the emoji to add.
+ * @param timestamp The timestamp of the message to react to, as a string or number.
+ * @returns A promise that resolves to the response from the Slack API.
+ */
+export function addReactionToMessage(
+  client: WebClient,
+  channel: string,
+  emoji: string,
+  timestamp: string | number,
+): Promise<ReactionsAddResponse> {
+  // Convert timestamp to string if it's a number
+  const timestampStr = typeof timestamp === "number" ? timestamp.toString() : timestamp;
+
+  return client.reactions.add({
+    channel,
+    name: emoji,
+    timestamp: timestampStr,
+  });
 }
