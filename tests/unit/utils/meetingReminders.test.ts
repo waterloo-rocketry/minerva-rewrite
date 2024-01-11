@@ -144,7 +144,7 @@ describe("utils/eventReminders", () => {
       jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
       event.location = "Test location";
       event.minervaEventMetadata = {
-        channels: [slackChannels[0]],
+        channel: slackChannels[0],
         meetingLink: "https://example.com",
       };
       const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
@@ -162,7 +162,7 @@ Ways to attend:
       jest.useFakeTimers().setSystemTime(new Date("2023-01-01T05:55:00.000Z").getTime());
       event.location = "Test location";
       event.minervaEventMetadata = {
-        channels: [slackChannels[0]],
+        channel: slackChannels[0],
         meetingLink: "https://example.com",
       };
       const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
@@ -180,7 +180,7 @@ Ways to attend:
     it("should generate a reminder for 6 hours with no meeting link or location provided", () => {
       jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
       event.minervaEventMetadata = {
-        channels: [slackChannels[0]],
+        channel: slackChannels[0],
       };
       const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
 
@@ -195,7 +195,7 @@ Ways to attend:
     it("should generate a reminder for 5 minutes with no meeting link or location provided", () => {
       jest.useFakeTimers().setSystemTime(new Date("2023-01-01T05:55:00.000Z").getTime());
       event.minervaEventMetadata = {
-        channels: [slackChannels[0]],
+        channel: slackChannels[0],
       };
       const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
 
@@ -212,7 +212,7 @@ Ways to attend:
       jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
       event.location = "Test location";
       event.minervaEventMetadata = {
-        channels: [slackChannels[0]],
+        channel: slackChannels[0],
       };
       const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
 
@@ -228,7 +228,7 @@ Ways to attend:
     it("should generate a reminder for 5 minutes with only location provided", () => {
       jest.useFakeTimers().setSystemTime(new Date("2023-01-01T05:55:00.000Z").getTime());
       event.minervaEventMetadata = {
-        channels: [slackChannels[0]],
+        channel: slackChannels[0],
       };
       event.location = "Test location";
       const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
@@ -246,7 +246,7 @@ Ways to attend:
     it("should generate a reminder for 6 hours with only meeting link provided", () => {
       jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
       event.minervaEventMetadata = {
-        channels: [slackChannels[0]],
+        channel: slackChannels[0],
         meetingLink: "https://example.com",
       };
       const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
@@ -262,7 +262,7 @@ Ways to attend:
     it("should generate a reminder for 5 minutes with only meeting link provided", () => {
       jest.useFakeTimers().setSystemTime(new Date("2023-01-01T05:55:00.000Z").getTime());
       event.minervaEventMetadata = {
-        channels: [slackChannels[0]],
+        channel: slackChannels[0],
         meetingLink: "https://example.com",
       };
       const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);

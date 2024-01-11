@@ -5,7 +5,7 @@ import {
   parseDescription,
 } from "../../../src/utils/calendarDescription";
 
-import { slackChannels, defaultSlackChannels } from "../../fixtures/slackChannels";
+import { slackChannels } from "../../fixtures/slackChannels";
 
 describe("utils/calendarDescription", () => {
   describe("splitDescription", () => {
@@ -135,7 +135,7 @@ describe("utils/calendarDescription", () => {
       expect(result).toEqual({
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
-          channels: [slackChannels[0]],
+          channel: slackChannels[0],
           meetingLink: "https://example.com",
         },
       });
@@ -153,19 +153,7 @@ describe("utils/calendarDescription", () => {
       expect(result).toEqual({
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
-          channels: [slackChannels[0]],
-        },
-      });
-    });
-
-    it("should return the default channels when the channel specified is `default`", () => {
-      const description = `#default<br>This is a description<br>Yep it is.`;
-      const result = parseDescription(description, slackChannels);
-      result.minervaEventMetadata?.channels.sort((a, b) => a.name.localeCompare(b.name));
-      expect(result).toEqual({
-        description: "This is a description\nYep it is.",
-        minervaEventMetadata: {
-          channels: defaultSlackChannels,
+          channel: slackChannels[0],
         },
       });
     });

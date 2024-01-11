@@ -11,7 +11,7 @@ describe("classes/CalendarEvent", () => {
         url: googleCalendarEvent.htmlLink,
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
-          channels: [slackChannels[0]],
+          channel: slackChannels[0],
           meetingLink: "https://example.com",
         },
         location: googleCalendarEvent.location,

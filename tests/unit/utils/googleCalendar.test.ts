@@ -1,4 +1,4 @@
-import { parseEvents, parseEventsOfChannels } from "../../../src/utils/googleCalendar";
+import { parseEvents, filterEventsForChannels } from "../../../src/utils/googleCalendar";
 import { slackChannels } from "../../fixtures/slackChannels";
 import CalendarEvent from "../../../src/classes/CalendarEvent";
 import googleCalendarEvent from "../../fixtures/googleCalendarEvent.json";
@@ -13,7 +13,7 @@ describe("utils/googleCalendar", () => {
           url: googleCalendarEvent.htmlLink,
           description: "This is a description\nYep it is.",
           minervaEventMetadata: {
-            channels: [slackChannels[0]],
+            channel: slackChannels[0],
             meetingLink: "https://example.com",
           },
           location: googleCalendarEvent.location,
@@ -32,16 +32,16 @@ describe("utils/googleCalendar", () => {
       "https://example.com",
     );
     event.minervaEventMetadata = {
-      channels: [slackChannels[0]],
+      channel: slackChannels[0],
       meetingLink: "https://example.com",
     };
 
     it("should parse a Google Calendar event with one channel specified", () => {
-      expect(parseEventsOfChannels([event], [slackChannels[0].name])).toEqual([event]);
+      expect(filterEventsForChannels([event], [slackChannels[0].name])).toEqual([event]);
     });
 
     it("should return empty if no calendar events match the specified channel", () => {
-      expect(parseEventsOfChannels([event], [slackChannels[1].name])).toEqual([]);
+      expect(filterEventsForChannels([event], [slackChannels[1].name])).toEqual([]);
     });
   });
 });
