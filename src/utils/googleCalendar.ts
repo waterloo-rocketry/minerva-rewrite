@@ -45,16 +45,16 @@ export function parseEvents(events: calendar_v3.Schema$Events, channels: SlackCh
 }
 
 /**
- * Filters CalendarEvents into those including only specified Slack channels.
+ * Filters CalendarEvents into those including only specified Slack channel.
  * @param calendarEvents The list of CalendarEvents to be filtered.
  * @param channelNames The names of SlackChannels to filter and associate with the events.
  * @returns The filtered list of CalendarEvents.
  */
-export function parseEventsOfChannels(calendarEvents: CalendarEvent[], channelNames: string[]): CalendarEvent[] {
+export function filterEventsForChannels(calendarEvents: CalendarEvent[], channelNames: string[]): CalendarEvent[] {
   const filteredEvents = calendarEvents.filter((event) => {
     const metadata = event.minervaEventMetadata;
-    if (metadata && metadata.channels) {
-      return metadata.channels.some((channel) => channelNames.includes(channel.name));
+    if (metadata && metadata.channel) {
+      return channelNames.includes(metadata.channel.name);
     }
     return false;
   });

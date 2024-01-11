@@ -76,35 +76,31 @@ export async function remindUpcomingEvent(event: CalendarEvent, client: WebClien
     reminderText += `\nReact with :${reactEmojis[0]}: if you're coming, or :${reactEmojis[1]}: if you're not!`;
   }
 
-  const reminderChannels = event.minervaEventMetadata.channels;
+  const channel = event.minervaEventMetadata.channel;
 
   console.log(
-    `Sending reminder for event "${event.title}" at ${event.start} to ${event.minervaEventMetadata.channels
-      .map((channel) => `#${channel.name}`)
-      .join(", ")}`,
+    `Sending reminder for event "${event.title}" at ${event.start} to #${event.minervaEventMetadata.channel}`,
   );
 
-  reminderChannels.forEach(async (channel) => {
-    let res: ChatPostMessageResponse | undefined = undefined;
-    try {
-      res = await postMessage(client, channel, reminderText, {
-        unfurl_links: false,
-        unfurl_media: false,
-      });
-    } catch (error) {
-      console.error(error);
-    }
+  let res: ChatPostMessageResponse | undefined = undefined;
+  try {
+    res = await postMessage(client, channel, reminderText, {
+      unfurl_links: false,
+      unfurl_media: false,
+    });
+  } catch (error) {
+    console.error(error);
+  }
 
-    if (res !== undefined && res.ts !== undefined && reactEmojis.length > 0) {
-      reactEmojis.forEach(async (emoji) => {
-        try {
-          await addReactionToMessage(client, channel.id, emoji, res?.ts || "");
-        } catch (error) {
-          console.error(`Failed to add reaction ${emoji} to message ${res?.ts} with error ${error}`);
-        }
-      });
-    }
-  });
+  if (res !== undefined && res.ts !== undefined && reactEmojis.length > 0) {
+    reactEmojis.forEach(async (emoji) => {
+      try {
+        await addReactionToMessage(client, channel.id, emoji, res?.ts || "");
+      } catch (error) {
+        console.error(`Failed to add reaction ${emoji} to message ${res?.ts} with error ${error}`);
+      }
+    });
+  }
 }
 
 /**

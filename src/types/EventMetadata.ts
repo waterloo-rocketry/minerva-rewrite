@@ -5,9 +5,9 @@ import SlackChannel from "../classes/SlackChannel";
  */
 export type EventMetadata = {
   /**
-   * The channels that event reminders should be posted to
+   * The channel that event reminders should be posted to
    */
-  channels: SlackChannel[];
+  channel: SlackChannel;
   /**
    * The meeting link for the event, if it exists
    */
