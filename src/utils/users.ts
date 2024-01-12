@@ -13,14 +13,14 @@ import { SlackUserID, getAllSlackUsers, getChannelMembers, postMessage } from ".
  * @returns The determined user type.
  */
 export function determineUserType(user: Member): UserType {
-  if (user.is_admin) {
-    return UserType.ADMIN;
-  } else if (user.is_owner) {
+  if (user.is_owner) {
     return UserType.OWNER;
-  } else if (user.is_restricted) {
-    return UserType.RESTRICTED;
   } else if (user.is_bot) {
     return UserType.BOT;
+  } else if (user.is_admin) {
+    return UserType.ADMIN;
+  } else if (user.is_restricted) {
+    return UserType.RESTRICTED;
   } else if (user.is_ultra_restricted) {
     return UserType.ULTRA_RESTRICTED;
   } else if (user.is_restricted) {
@@ -40,10 +40,10 @@ export async function getAllSingleChannelGuests(client: WebClient, slackUsers: S
   const allActiveSlackUsers = slackUsers;
   let allSingleChannelGuests: SlackUser[] = [];
   // Since the development Slack is on a free plan, multi- and single-channel guests don't exist there.
-  //  Therefore, we're validating functionality with admin users instead.
+  //  Therefore, we're validating functionality with admin and owner users instead.
   if (environment.environment == "development") {
     allSingleChannelGuests = allActiveSlackUsers.filter((user) => {
-      return user.userType == "admin";
+      return user.userType == "admin" || user.userType == "owner";
     });
   } else {
     allSingleChannelGuests = allActiveSlackUsers.filter((user) => {
