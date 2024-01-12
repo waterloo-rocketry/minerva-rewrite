@@ -100,6 +100,7 @@ describe("utils/calendarDescription", () => {
       });
     });
   });
+
   describe("replaceATagsWithHref", () => {
     it("should replace <a> tags with their href", () => {
       const html = `<a href="https://example.com">Example</a>`;
@@ -126,6 +127,7 @@ describe("utils/calendarDescription", () => {
       expect(result).toEqual("This is a description\nWith a https://example.com\nAnd another line\n---\nfoo: bar");
     });
   });
+
   describe("parseDescription", () => {
     it("should parse the description when metadata exists", () => {
       const description = `#${slackChannels[0].name}<br><a href="https://example.com">https://example.com</a><br>This is a description<br>Yep it is.`;
@@ -160,6 +162,7 @@ describe("utils/calendarDescription", () => {
       const description = `#foodstuffs<br>This is a description<br>Yep it is.`;
       expect(() => parseDescription(description, [])).toThrow("could not find channel with name foodstuffs");
     });
+
     it("should throw an error if no channel is specified", () => {
       const description = `<a href="https://example.com">https://example.com</a><br>This is a description<br>Yep it is.`;
       expect(() => parseDescription(description, slackChannels)).toThrow("channel name not specified");

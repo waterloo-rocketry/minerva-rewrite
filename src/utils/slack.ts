@@ -1,26 +1,52 @@
 import { WebClient } from "@slack/web-api";
+import { ChatPostMessageResponse } from "@slack/web-api";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import SlackChannel from "../classes/SlackChannel";
 import { determineUserType, getAllSingleChannelGuestsInOneChannel } from "./users";
+import { ReactionsAddResponse } from "@slack/web-api";
 
 export type SlackUserID = string;
+
+/**
+ * Optional arguments for chat.postMessage as per https://api.slack.com/methods/chat.postMessage#arguments
+ */
+interface ChatPostMessageOptionalArgs {
+  as_user?: boolean;
+  icon_emoji?: string;
+  icon_url?: string;
+  link_names?: boolean;
+  mrkdwn?: boolean;
+  reply_broadcast?: boolean;
+  thread_ts?: string;
+  unfurl_links?: boolean;
+  unfurl_media?: boolean;
+}
 
 /**
  * Posts a message to a Slack channel
  * @param client Slack Web API client
  * @param channel The Slack channel / Slack user to post the message to
  * @param text The text of the message to post
- * @todo Add support for #default as a channel
+ * @param options Optional arguments for the message as per https://api.slack.com/methods/chat.postMessage#arguments
  */
-export function postMessage(client: WebClient, channel: SlackChannel | SlackUser, text: string): void {
+export async function postMessage(
+  client: WebClient,
+  channel: SlackChannel | SlackUser,
+  text: string,
+  options?: ChatPostMessageOptionalArgs,
+): Promise<ChatPostMessageResponse | undefined> {
+  let res: ChatPostMessageResponse | undefined = undefined;
   try {
-    client.chat.postMessage({
+    res = await client.chat.postMessage({
       channel: channel.id,
       text: text,
+      ...options,
     });
   } catch (error) {
-    console.error(`Failed to post message to channel ${channel.name} with error ${error}`);
+    throw `Failed to post message to channel ${channel.name} with error ${error}`;
   }
+
+  return res;
 }
 
 // https://api.slack.com/methods/emoji.list
@@ -132,4 +158,29 @@ export async function getChannelMembers(client: WebClient, channelId: string): P
     console.error("Error fetching channel members:", error);
     return undefined;
   }
+}
+
+// https://api.slack.com/methods/reactions.add
+/**
+ * Adds a reaction to a specific message in a Slack channel.
+ * @param client The Slack Web API client.
+ * @param channel The ID of the channel where the message is posted.
+ * @param emoji The name of the emoji to add.
+ * @param timestamp The timestamp of the message to react to, as a string or number.
+ * @returns A promise that resolves to the response from the Slack API.
+ */
+export function addReactionToMessage(
+  client: WebClient,
+  channel: string,
+  emoji: string,
+  timestamp: string | number,
+): Promise<ReactionsAddResponse> {
+  // Convert timestamp to string if it's a number
+  const timestampStr = typeof timestamp === "number" ? timestamp.toString() : timestamp;
+
+  return client.reactions.add({
+    channel,
+    name: emoji,
+    timestamp: timestampStr,
+  });
 }

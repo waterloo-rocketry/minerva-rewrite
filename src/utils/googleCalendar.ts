@@ -30,29 +30,27 @@ export async function getEvents(auth: OAuth2Client): Promise<calendar_v3.Schema$
  * @param channels The array of SlackChannels to associate with the events.
  * @returns A promise that resolves to the list of parsed CalendarEvents.
  */
-export async function parseEvents(
-  events: calendar_v3.Schema$Events,
-  channels: SlackChannel[],
-): Promise<CalendarEvent[]> {
+export function parseEvents(events: calendar_v3.Schema$Events, channels: SlackChannel[]): CalendarEvent[] {
   const eventsList: CalendarEvent[] = [];
   if (events.items) {
     events.items.forEach((event) => {
       const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(event, channels);
       eventsList.push(calendarEvent);
     });
+
+    return eventsList;
   } else {
     return [];
   }
-  return eventsList;
 }
 
 /**
- * Filters CalendarEvents into those only from specified Slack channels.
+ * Filters CalendarEvents into those including only specified Slack channel.
  * @param calendarEvents The list of CalendarEvents to be filtered.
  * @param channelNames The names of SlackChannels to filter and associate with the events.
  * @returns The filtered list of CalendarEvents.
  */
-export function parseEventsOfChannels(calendarEvents: CalendarEvent[], channelNames: string[]): CalendarEvent[] {
+export function filterEventsForChannels(calendarEvents: CalendarEvent[], channelNames: string[]): CalendarEvent[] {
   const filteredEvents = calendarEvents.filter((event) => {
     const metadata = event.minervaEventMetadata;
     if (metadata && metadata.channel) {

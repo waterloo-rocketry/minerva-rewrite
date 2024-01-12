@@ -8,6 +8,7 @@ describe("classes/CalendarEvent", () => {
       const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(googleCalendarEvent, slackChannels);
       expect(calendarEvent).toEqual({
         title: googleCalendarEvent.summary,
+        url: googleCalendarEvent.htmlLink,
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
           channel: slackChannels[0],
@@ -25,11 +26,36 @@ describe("classes/CalendarEvent", () => {
       const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(calendarEventJson, slackChannels);
       expect(calendarEvent).toEqual({
         title: googleCalendarEvent.summary,
+        url: googleCalendarEvent.htmlLink,
         description: "This is a description\nYep it is.",
         location: googleCalendarEvent.location,
         start: new Date(googleCalendarEvent.start.dateTime),
         end: new Date(googleCalendarEvent.end.dateTime),
       });
+    });
+
+    it("should throw an error when the event summary is undefined", () => {
+      const calendarEventJson = JSON.parse(JSON.stringify(googleCalendarEvent));
+      delete calendarEventJson.summary;
+      expect(() => CalendarEvent.fromGoogleCalendarEvent(calendarEventJson, slackChannels)).toThrowError(
+        "Event summary is undefined",
+      );
+    });
+
+    it("should throw an error when the event start is undefined", () => {
+      const calendarEventJson = JSON.parse(JSON.stringify(googleCalendarEvent));
+      delete calendarEventJson.start;
+      expect(() => CalendarEvent.fromGoogleCalendarEvent(calendarEventJson, slackChannels)).toThrowError(
+        "Event start is undefined",
+      );
+    });
+
+    it("should throw an error when the event end is undefined", () => {
+      const calendarEventJson = JSON.parse(JSON.stringify(googleCalendarEvent));
+      delete calendarEventJson.end;
+      expect(() => CalendarEvent.fromGoogleCalendarEvent(calendarEventJson, slackChannels)).toThrowError(
+        "Event end is undefined",
+      );
     });
   });
 });

@@ -1,21 +1,8 @@
 import { convert } from "html-to-text";
 
 import SlackChannel from "../classes/SlackChannel";
+import { EventMetadata } from "../types/EventMetadata";
 import { filterSlackChannelFromName } from "../utils/channels";
-
-/**
- * The representation metadata of the event that minerva uses. This includes the main channel, additional channels, and meeting link
- */
-export type EventMetadata = {
-  /**
-   * The channel that event reminders should be posted to
-   */
-  channel: SlackChannel;
-  /**
-   * The meeting link for the event, if it exists
-   */
-  meetingLink?: string;
-};
 
 /**
  * Splits the given description into its components.

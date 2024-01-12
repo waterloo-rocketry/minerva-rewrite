@@ -86,3 +86,14 @@ export async function getAllSlackChannels(client: WebClient): Promise<SlackChann
 
   return res;
 }
+
+/**
+ * Gets the default Slack channels for the workspace.
+ * @param client The Slack API Web Client
+ * @returns The default Slack channels for the workspace
+ */
+export async function getDefaultSlackChannels(client: WebClient): Promise<SlackChannel[]> {
+  const allChannels = await getAllSlackChannels(client);
+  const defaultChannels = filterDefaultSlackChannels(allChannels);
+  return defaultChannels;
+}

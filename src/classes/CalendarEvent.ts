@@ -1,6 +1,7 @@
 import { calendar_v3 } from "googleapis";
 import SlackChannel from "../classes/SlackChannel";
-import { EventMetadata, parseDescription } from "../utils/calendarDescription";
+import { parseDescription } from "../utils/calendarDescription";
+import { EventMetadata } from "../types/EventMetadata";
 
 /**
  * Class representing a google calendar event
@@ -14,6 +15,10 @@ export default class CalendarEvent {
    * The description of the event
    */
   description?: string;
+  /**
+   * A read-only URL to the event in Google Calendar
+   */
+  url: string;
   /**
    * The metadata of the event that minerva uses. This includes the main channel, additional channels, and meeting link
    */
@@ -44,10 +49,13 @@ export default class CalendarEvent {
     const start = new Date(event.start.dateTime);
     if (event.end?.dateTime == undefined) throw new Error("Event end is undefined");
     const end = new Date(event.end.dateTime);
+    if (event.htmlLink == undefined) throw new Error("Event URL is undefined");
+    const url = event.htmlLink;
 
-    const parsedEvent = new CalendarEvent(title, start, end);
+    const parsedEvent = new CalendarEvent(title, start, end, url);
 
     parsedEvent.location = event.location ?? undefined;
+    parsedEvent.url = event.htmlLink ?? undefined;
 
     if (event?.description != undefined) {
       const { description, minervaEventMetadata } = parseDescription(event.description, workspaceChannels);
@@ -63,6 +71,7 @@ export default class CalendarEvent {
     title: string,
     start: Date,
     end: Date,
+    url: string,
     description?: string,
     location?: string,
     minervaEventMetadata?: EventMetadata,
@@ -70,6 +79,7 @@ export default class CalendarEvent {
     this.title = title;
     this.start = start;
     this.end = end;
+    this.url = url;
     this.description = description;
     this.location = location;
     this.minervaEventMetadata = minervaEventMetadata;

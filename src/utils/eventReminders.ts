@@ -1,7 +1,9 @@
-import { WebClient } from "@slack/web-api";
+import { WebClient, ChatPostMessageResponse } from "@slack/web-api";
+import moment from "moment-timezone";
 
 import CalendarEvent from "../classes/CalendarEvent";
-import { postMessage } from "./slack";
+import { postMessage, addReactionToMessage } from "./slack";
+import { generateEmojiPair } from "./slackEmojis";
 
 /**
  * The interval in milliseconds at which the scheduled event checking task runs
@@ -52,9 +54,8 @@ export function getEventReminderType(event: CalendarEvent): EventReminderType | 
  * Posts a reminder for the given event to the channel it is associated with
  * @param event The event to post a reminder for
  * @param client Slack Web API client
- * @todo add support for #default as a channel
  */
-export function remindUpcomingEvent(event: CalendarEvent, client: WebClient): void {
+export async function remindUpcomingEvent(event: CalendarEvent, client: WebClient): Promise<void> {
   // If the event does not have event metadata, then minerva ignores it
   if (!event.minervaEventMetadata) {
     return;
@@ -66,11 +67,40 @@ export function remindUpcomingEvent(event: CalendarEvent, client: WebClient): vo
     return;
   }
 
-  const reminderText = generateEventReminderText(event, reminderType);
+  let reminderText = generateEventReminderText(event, reminderType);
+  let reactEmojis: string[] = [];
+
+  if (reminderType === EventReminderType.SIX_HOURS) {
+    reactEmojis = await generateEmojiPair(client);
+
+    reminderText += `\nReact with :${reactEmojis[0]}: if you're coming, or :${reactEmojis[1]}: if you're not!`;
+  }
+
+  const channel = event.minervaEventMetadata.channel;
+
   console.log(
-    `Sending reminder for event ${event.title} at ${event.start} to #${event.minervaEventMetadata.channel.name}.`,
+    `Sending reminder for event "${event.title}" at ${event.start} to #${event.minervaEventMetadata.channel}`,
   );
-  postMessage(client, event.minervaEventMetadata.channel, reminderText);
+
+  let res: ChatPostMessageResponse | undefined = undefined;
+  try {
+    res = await postMessage(client, channel, reminderText, {
+      unfurl_links: false,
+      unfurl_media: false,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+
+  if (res !== undefined && res.ts !== undefined && reactEmojis.length > 0) {
+    reactEmojis.forEach(async (emoji) => {
+      try {
+        await addReactionToMessage(client, channel.id, emoji, res?.ts || "");
+      } catch (error) {
+        console.error(`Failed to add reaction ${emoji} to message ${res?.ts} with error ${error}`);
+      }
+    });
+  }
 }
 
 /**
@@ -89,8 +119,31 @@ export function remindUpcomingEvents(events: CalendarEvent[], client: WebClient)
  * @param event The event to generate the reminder text for
  * @param reminderType The type of reminder to generate the text for
  * @returns The generated reminder text
- * @todo This is a placeholder function that should be replaced with a function that generates the actual reminder text
  */
 export function generateEventReminderText(event: CalendarEvent, reminderType: EventReminderType): string {
-  return `I should be generating a reminder for ${event.title} at ${event.start} with reminder type ${EventReminderType[reminderType]}!`;
+  let message = `${reminderType == EventReminderType.FIVE_MINUTES ? "<!channel>\n" : ""}Reminder: *${
+    event.title
+  }* is occurring`;
+
+  if (reminderType === EventReminderType.FIVE_MINUTES) {
+    const timeUntilEvent = event.start.getTime() - new Date().getTime();
+    message += ` in *${Math.ceil(timeUntilEvent / 1000 / 60)} minutes*`;
+  } else {
+    message += ` at *${moment(event.start).tz("America/Toronto").format("MMMM Do, YYYY [at] h:mm A")}*`;
+  }
+
+  if (event.url) {
+    message += `\n<${event.url}|Event Details>`;
+  }
+
+  message += `\nWays to attend:`;
+  if (event.location) {
+    message += `\n\t:office: In person @ ${event.location}`;
+  }
+
+  message += `\n\t:globe_with_meridians: Online @ ${
+    event.minervaEventMetadata?.meetingLink ?? "https://meet.waterloorocketry.com/bay_area"
+  }`;
+
+  return message;
 }
