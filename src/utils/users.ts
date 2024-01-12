@@ -1,6 +1,7 @@
 import * as environment from "./env";
 import { WebClient } from "@slack/web-api";
 import SlackChannel from "../classes/SlackChannel";
+import ObjectSet from "../classes/ObjectSet";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import { Member } from "@slack/web-api/dist/response/UsersListResponse";
 import { filterSlackChannelFromName, getAllSlackChannels } from "./channels";
@@ -99,16 +100,13 @@ export async function getAllSingleChannelGuestsInChannels(
   client: WebClient,
   channels: SlackChannel[],
 ): Promise<SlackUser[]> {
-  const allSingleChannelGuestsInChannels: SlackUser[] = [];
-  let seenIds = new Set<string>();
-  for (const channel of channels) {
-    const singleChannelGuests = await getAllSingleChannelGuestsInOneChannel(client, channel);
-    for (const user of singleChannelGuests) {
-      if (!seenIds.has(user.id)) {
-        allSingleChannelGuestsInChannels.push(user);
-        seenIds = seenIds.add(user.id);
-      }
-    }
-  }
-  return allSingleChannelGuestsInChannels;
+  const allSingleChannelGuestsInChannels = new ObjectSet<SlackUser>((user) => user.id);
+  channels.forEach(async (channel) => {
+    const singleChannelGuestsInChannel = await getAllSingleChannelGuestsInOneChannel(client, channel);
+    singleChannelGuestsInChannel.forEach((user) => {
+      allSingleChannelGuestsInChannels.add(user);
+    });
+  });
+
+  return allSingleChannelGuestsInChannels.values();
 }
