@@ -2,8 +2,10 @@ import { WebClient, ChatPostMessageResponse } from "@slack/web-api";
 import moment from "moment-timezone";
 
 import CalendarEvent from "../classes/CalendarEvent";
-import { postMessage, addReactionToMessage } from "./slack";
+import { postMessage, addReactionToMessage, getMessagePermalink } from "./slack";
+import { getDefaultSlackChannels } from "./channels";
 import { generateEmojiPair } from "./slackEmojis";
+import SlackChannel from "../classes/SlackChannel";
 
 /**
  * The interval in milliseconds at which the scheduled event checking task runs
@@ -55,7 +57,11 @@ export function getEventReminderType(event: CalendarEvent): EventReminderType | 
  * @param event The event to post a reminder for
  * @param client Slack Web API client
  */
-export async function remindUpcomingEvent(event: CalendarEvent, client: WebClient): Promise<void> {
+export async function remindUpcomingEvent(
+  event: CalendarEvent,
+  client: WebClient,
+  defaultSlackChannels?: SlackChannel[],
+): Promise<void> {
   // If the event does not have event metadata, then minerva ignores it
   if (!event.minervaEventMetadata) {
     return;
@@ -67,7 +73,7 @@ export async function remindUpcomingEvent(event: CalendarEvent, client: WebClien
     return;
   }
 
-  let reminderText = generateEventReminderText(event, reminderType);
+  let reminderText = generateEventReminderChannelText(event, reminderType);
   let reactEmojis: string[] = [];
 
   if (reminderType === EventReminderType.SIX_HOURS) {
@@ -79,9 +85,25 @@ export async function remindUpcomingEvent(event: CalendarEvent, client: WebClien
   const channel = event.minervaEventMetadata.channel;
 
   console.log(
-    `Sending reminder for event "${event.title}" at ${event.start} to #${event.minervaEventMetadata.channel}`,
+    `Sending reminder for event "${event.title}" at ${event.start} to #${event.minervaEventMetadata.channel.name}`,
   );
 
+  const messageUrl = await postReminderToChannel(client, channel, reminderText, reactEmojis);
+
+  if (messageUrl == undefined) {
+    return;
+  }
+
+  const DmReminderText = generateEventReminderDMText(messageUrl);
+  postReminderToDMs(client, channel, DmReminderText, defaultSlackChannels);
+}
+
+export async function postReminderToChannel(
+  client: WebClient,
+  channel: SlackChannel,
+  reminderText: string,
+  reactEmojis?: string[],
+): Promise<string | undefined> {
   let res: ChatPostMessageResponse | undefined = undefined;
   try {
     res = await postMessage(client, channel, reminderText, {
@@ -89,17 +111,37 @@ export async function remindUpcomingEvent(event: CalendarEvent, client: WebClien
       unfurl_media: false,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Failed to post message to channel with error:", error);
+    return;
   }
 
-  if (res !== undefined && res.ts !== undefined && reactEmojis.length > 0) {
+  if (res == undefined || res.ts == undefined) {
+    return;
+  }
+
+  const timestamp = res.ts;
+
+  if (reactEmojis !== undefined) {
     reactEmojis.forEach(async (emoji) => {
       try {
-        await addReactionToMessage(client, channel.id, emoji, res?.ts || "");
+        await addReactionToMessage(client, channel.id, emoji, timestamp);
       } catch (error) {
-        console.error(`Failed to add reaction ${emoji} to message ${res?.ts} with error ${error}`);
+        console.error(`Failed to add reaction ${emoji} to message ${timestamp} with error ${error}`);
       }
     });
+  }
+  const messageUrl = getMessagePermalink(client, channel.id, res.ts);
+  return messageUrl;
+}
+
+export async function postReminderToDMs(
+  client: WebClient,
+  eventChannel: SlackChannel,
+  reminderText: string,
+  defaultSlackChannels?: SlackChannel[],
+): Promise<void> {
+  if (defaultSlackChannels == undefined) {
+    defaultSlackChannels = await getDefaultSlackChannels(client);
   }
 }
 
@@ -108,9 +150,11 @@ export async function remindUpcomingEvent(event: CalendarEvent, client: WebClien
  * @param events The events to post reminders for
  * @param client Slack Web API client
  */
-export function remindUpcomingEvents(events: CalendarEvent[], client: WebClient): void {
+export async function remindUpcomingEvents(client: WebClient, events: CalendarEvent[]): Promise<void> {
+  const defaultSlackChannels = await getDefaultSlackChannels(client);
+
   events.forEach((event) => {
-    remindUpcomingEvent(event, client);
+    remindUpcomingEvent(event, client, defaultSlackChannels);
   });
 }
 
@@ -120,7 +164,7 @@ export function remindUpcomingEvents(events: CalendarEvent[], client: WebClient)
  * @param reminderType The type of reminder to generate the text for
  * @returns The generated reminder text
  */
-export function generateEventReminderText(event: CalendarEvent, reminderType: EventReminderType): string {
+export function generateEventReminderChannelText(event: CalendarEvent, reminderType: EventReminderType): string {
   let message = `${reminderType == EventReminderType.FIVE_MINUTES ? "<!channel>\n" : ""}Reminder: *${
     event.title
   }* is occurring`;
@@ -146,4 +190,8 @@ export function generateEventReminderText(event: CalendarEvent, reminderType: Ev
   }`;
 
   return message;
+}
+
+export function generateEventReminderDMText(eventChannelMessageUrl: string): string {
+  return `${eventChannelMessageUrl}\n_You have been sent this message because you are a single channel guest who might have otherwise missed this alert._`;
 }

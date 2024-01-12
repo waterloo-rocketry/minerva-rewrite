@@ -2,7 +2,7 @@ import { WebClient } from "@slack/web-api";
 import { ChatPostMessageResponse } from "@slack/web-api";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import SlackChannel from "../classes/SlackChannel";
-import { determineUserType, getAllSingleChannelGuestsInOneChannel } from "./users";
+import { determineUserType } from "./users";
 import { ReactionsAddResponse } from "@slack/web-api";
 
 export type SlackUserID = string;
@@ -65,26 +65,6 @@ export async function getAllEmoji(client: WebClient): Promise<string[]> {
   } catch (error) {
     console.error("Failed to get emoji:", error);
     throw error;
-  }
-}
-/**
- * Posts a message to all single-channel guests in a specified channel
- * @param client Slack Web API client
- * @param channel The Slack channel to post the message to the single-channel guests
- * @param text The text of the message to post
- */
-export async function postMessageToSingleChannelGuestsInChannel(
-  client: WebClient,
-  channel: SlackChannel,
-  text: string,
-): Promise<void> {
-  const allSingleChannelGuestsInOneChannel = await getAllSingleChannelGuestsInOneChannel(client, channel);
-  for (const guest of allSingleChannelGuestsInOneChannel) {
-    try {
-      await postMessage(client, guest, text);
-    } catch (error) {
-      console.error(`Failed to post message to ${guest.name} with error ${error}`);
-    }
   }
 }
 
@@ -183,4 +163,24 @@ export function addReactionToMessage(
     name: emoji,
     timestamp: timestampStr,
   });
+}
+
+export async function getMessagePermalink(
+  client: WebClient,
+  channel: string,
+  timestamp: string,
+): Promise<string | undefined> {
+  let res;
+  try {
+    res = await client.chat.getPermalink({
+      channel,
+      message_ts: timestamp,
+    });
+  } catch (error) {
+    console.error(`Error fetching message permalink for message with timestamp ${timestamp} in ${channel}`, error);
+  }
+
+  if (res?.ok) {
+    return res.permalink;
+  }
 }

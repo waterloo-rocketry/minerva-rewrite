@@ -9,7 +9,7 @@ const checkForEvents = async (client: WebClient, auth: OAuth2Client): Promise<vo
   const fetchedEvents = await getEvents(auth);
   const events = await parseEvents(fetchedEvents, slackChannels);
 
-  remindUpcomingEvents(events, client);
+  remindUpcomingEvents(client, events);
 };
 
 export default checkForEvents;

@@ -5,7 +5,7 @@ import ObjectSet from "../classes/ObjectSet";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import { Member } from "@slack/web-api/dist/response/UsersListResponse";
 import { filterSlackChannelFromName, getAllSlackChannels } from "./channels";
-import { SlackUserID, getAllSlackUsers, getChannelMembers } from "./slack";
+import { SlackUserID, getAllSlackUsers, getChannelMembers, postMessage } from "./slack";
 
 /**
  * Determine the type of a Slack user based on the provided Member object.
@@ -68,6 +68,38 @@ export async function getAllUsersInChannel(client: WebClient, channel: string): 
   }
   const channelMembers = await getChannelMembers(client, channelId.id);
   return channelMembers;
+}
+
+/**
+ * Posts a message to all single-channel guests in a specified channel
+ * @param client Slack Web API client
+ * @param channel The Slack channel to post the message to the single-channel guests
+ * @param text The text of the message to post
+ */
+export async function postMessageToSingleChannelGuestsInChannel(
+  client: WebClient,
+  channel: SlackChannel,
+  text: string,
+): Promise<void> {
+  const allSingleChannelGuestsInOneChannel = await getAllSingleChannelGuestsInOneChannel(client, channel);
+  for (const guest of allSingleChannelGuestsInOneChannel) {
+    try {
+      await postMessage(client, guest, text);
+    } catch (error) {
+      console.error(`Failed to post message to ${guest.name} with error ${error}`);
+    }
+  }
+}
+
+export async function postMessageToSingleChannelGuestsInChannels(
+  client: WebClient,
+  channels: SlackChannel[],
+  text: string,
+): Promise<void> {
+  const allSingleChannelGuestsInChannels = await getAllSingleChannelGuestsInChannels(client, channels);
+  allSingleChannelGuestsInChannels.forEach((user) => {
+    postMessage(client, user, text);
+  });
 }
 
 /**

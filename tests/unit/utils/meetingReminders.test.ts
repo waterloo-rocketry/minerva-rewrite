@@ -2,7 +2,7 @@ import {
   getEventReminderType,
   isTimeWithinBounds,
   EventReminderType,
-  generateEventReminderText,
+  generateEventReminderChannelText,
   TIME_CHECK_INTERVAL,
 } from "../../../src/utils/eventReminders";
 import CalendarEvent from "../../../src/classes/CalendarEvent";
@@ -147,7 +147,7 @@ describe("utils/eventReminders", () => {
         channel: slackChannels[0],
         meetingLink: "https://example.com",
       };
-      const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
+      const result = generateEventReminderChannelText(event, EventReminderType.SIX_HOURS);
 
       expect(result).toBe(
         `Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
@@ -165,7 +165,7 @@ Ways to attend:
         channel: slackChannels[0],
         meetingLink: "https://example.com",
       };
-      const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
+      const result = generateEventReminderChannelText(event, EventReminderType.FIVE_MINUTES);
 
       expect(result).toBe(
         `<!channel>
@@ -182,7 +182,7 @@ Ways to attend:
       event.minervaEventMetadata = {
         channel: slackChannels[0],
       };
-      const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
+      const result = generateEventReminderChannelText(event, EventReminderType.SIX_HOURS);
 
       expect(result).toBe(
         `Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
@@ -197,7 +197,7 @@ Ways to attend:
       event.minervaEventMetadata = {
         channel: slackChannels[0],
       };
-      const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
+      const result = generateEventReminderChannelText(event, EventReminderType.FIVE_MINUTES);
 
       expect(result).toBe(
         `<!channel>
@@ -214,7 +214,7 @@ Ways to attend:
       event.minervaEventMetadata = {
         channel: slackChannels[0],
       };
-      const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
+      const result = generateEventReminderChannelText(event, EventReminderType.SIX_HOURS);
 
       expect(result).toBe(
         `Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
@@ -231,7 +231,7 @@ Ways to attend:
         channel: slackChannels[0],
       };
       event.location = "Test location";
-      const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
+      const result = generateEventReminderChannelText(event, EventReminderType.FIVE_MINUTES);
 
       expect(result).toBe(
         `<!channel>
@@ -249,7 +249,7 @@ Ways to attend:
         channel: slackChannels[0],
         meetingLink: "https://example.com",
       };
-      const result = generateEventReminderText(event, EventReminderType.SIX_HOURS);
+      const result = generateEventReminderChannelText(event, EventReminderType.SIX_HOURS);
 
       expect(result).toBe(
         `Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
@@ -265,7 +265,7 @@ Ways to attend:
         channel: slackChannels[0],
         meetingLink: "https://example.com",
       };
-      const result = generateEventReminderText(event, EventReminderType.FIVE_MINUTES);
+      const result = generateEventReminderChannelText(event, EventReminderType.FIVE_MINUTES);
 
       expect(result).toBe(
         `<!channel>
