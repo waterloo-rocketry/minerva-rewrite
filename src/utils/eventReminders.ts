@@ -58,6 +58,8 @@ export function getEventReminderType(event: CalendarEvent): EventReminderType | 
  * Posts a reminder for the given event to the channel it is associated with
  * @param event The event to post a reminder for
  * @param client Slack Web API client
+ * @param defaultSlackChannels
+ * @param allSlackUsersInWorkspace
  */
 export async function remindUpcomingEvent(
   event: CalendarEvent,
@@ -106,6 +108,13 @@ export async function remindUpcomingEvent(
   );
 }
 
+/**
+ *
+ * @param client
+ * @param channel
+ * @param reminderText
+ * @param reactEmojis
+ */
 export async function postReminderToChannel(
   client: WebClient,
   channel: SlackChannel,
@@ -142,6 +151,14 @@ export async function postReminderToChannel(
   return messageUrl;
 }
 
+/**
+ *
+ * @param client
+ * @param eventChannel
+ * @param reminderText
+ * @param defaultSlackChannels
+ * @param allSlackUsersInWorkspace
+ */
 export async function postReminderToDMs(
   client: WebClient,
   eventChannel: SlackChannel,
@@ -212,6 +229,10 @@ export function generateEventReminderChannelText(event: CalendarEvent, reminderT
   return message;
 }
 
+/**
+ *
+ * @param eventChannelMessageUrl
+ */
 export function generateEventReminderDMText(eventChannelMessageUrl: string): string {
   return `${eventChannelMessageUrl}\n_You have been sent this message because you are a single channel guest who might have otherwise missed this alert._`;
 }

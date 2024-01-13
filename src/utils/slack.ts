@@ -53,6 +53,7 @@ export async function postMessage(
 /**
  * Retrieves all custom emoji from a Slack workspace.
  * @param app The Slack App instance.
+ * @param client
  * @returns A promise that resolves to an array of emoji names.
  */
 export async function getAllEmoji(client: WebClient): Promise<string[]> {
@@ -165,6 +166,12 @@ export function addReactionToMessage(
   });
 }
 
+/**
+ *
+ * @param client
+ * @param channel
+ * @param timestamp
+ */
 export async function getMessagePermalink(
   client: WebClient,
   channel: string,

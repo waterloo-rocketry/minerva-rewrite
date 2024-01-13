@@ -6,7 +6,6 @@ import { filterSlackChannelFromName } from "../utils/channels";
 
 /**
  * Splits the given description into its components.
- *
  * @param description - The description to split.
  * @returns An object containing the split components of the description.
  */
