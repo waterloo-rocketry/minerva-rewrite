@@ -2,10 +2,12 @@ import { WebClient, ChatPostMessageResponse } from "@slack/web-api";
 import moment from "moment-timezone";
 
 import CalendarEvent from "../classes/CalendarEvent";
-import { postMessage, addReactionToMessage, getMessagePermalink } from "./slack";
+import { postMessage, addReactionToMessage, getMessagePermalink, getAllSlackUsers } from "./slack";
 import { getDefaultSlackChannels } from "./channels";
 import { generateEmojiPair } from "./slackEmojis";
 import SlackChannel from "../classes/SlackChannel";
+import SlackUser from "../classes/SlackUser";
+import { postMessageToSingleChannelGuestsInChannels } from "./users";
 
 /**
  * The interval in milliseconds at which the scheduled event checking task runs
@@ -61,6 +63,7 @@ export async function remindUpcomingEvent(
   event: CalendarEvent,
   client: WebClient,
   defaultSlackChannels?: SlackChannel[],
+  allSlackUsersInWorkspace?: SlackUser[],
 ): Promise<void> {
   // If the event does not have event metadata, then minerva ignores it
   if (!event.minervaEventMetadata) {
@@ -83,11 +86,6 @@ export async function remindUpcomingEvent(
   }
 
   const channel = event.minervaEventMetadata.channel;
-
-  console.log(
-    `Sending reminder for event "${event.title}" at ${event.start} to #${event.minervaEventMetadata.channel.name}`,
-  );
-
   const messageUrl = await postReminderToChannel(client, channel, reminderText, reactEmojis);
 
   if (messageUrl == undefined) {
@@ -95,7 +93,17 @@ export async function remindUpcomingEvent(
   }
 
   const DmReminderText = generateEventReminderDMText(messageUrl);
-  postReminderToDMs(client, channel, DmReminderText, defaultSlackChannels);
+  const singleChannelGuestsMessaged = await postReminderToDMs(
+    client,
+    channel,
+    DmReminderText,
+    defaultSlackChannels,
+    allSlackUsersInWorkspace,
+  );
+
+  console.log(
+    `Sent reminder for event "${event.title}" at ${event.start} to #${event.minervaEventMetadata.channel.name} and ${singleChannelGuestsMessaged} single channel guests`,
+  );
 }
 
 export async function postReminderToChannel(
@@ -139,10 +147,21 @@ export async function postReminderToDMs(
   eventChannel: SlackChannel,
   reminderText: string,
   defaultSlackChannels?: SlackChannel[],
-): Promise<void> {
+  allSlackUsersInWorkspace?: SlackUser[],
+): Promise<number> {
   if (defaultSlackChannels == undefined) {
     defaultSlackChannels = await getDefaultSlackChannels(client);
   }
+
+  const slackChannels = defaultSlackChannels.filter((channel) => channel != eventChannel);
+  const singleChannelGuestsMessaged = await postMessageToSingleChannelGuestsInChannels(
+    client,
+    slackChannels,
+    reminderText,
+    allSlackUsersInWorkspace,
+  );
+
+  return singleChannelGuestsMessaged;
 }
 
 /**
@@ -152,9 +171,10 @@ export async function postReminderToDMs(
  */
 export async function remindUpcomingEvents(client: WebClient, events: CalendarEvent[]): Promise<void> {
   const defaultSlackChannels = await getDefaultSlackChannels(client);
+  const allSlackUsersInWorkspace = await getAllSlackUsers(client);
 
   events.forEach((event) => {
-    remindUpcomingEvent(event, client, defaultSlackChannels);
+    remindUpcomingEvent(event, client, defaultSlackChannels, allSlackUsersInWorkspace);
   });
 }
 
