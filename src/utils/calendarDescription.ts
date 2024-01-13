@@ -47,31 +47,16 @@ export function splitDescription(description: string): {
 }
 
 /**
- * Replace <a> tags with their href attribute to allow for cleaner parsing of the description
- * @param html The html to replace the <a> tags in
- * @returns The html with the <a> tags replaced with their href attribute
- */
-export function replaceATagsWithHref(html: string): string {
-  // Replace <a> tags with their href attribute
-  // TODO replace this with a custom html-to-text formatter:
-  // https://github.com/html-to-text/node-html-to-text/blob/master/packages/html-to-text/README.md#override-formatting
-  const aTagRegex = /<a href="(.*)">(.*)<\/a>/g;
-  return html.replace(aTagRegex, "$1");
-}
-
-/**
  * Parse the description from HTML to plain text
  * @param description The description to parse
  * @returns The parsed description
  */
 export function parseDescriptionFromHtml(description: string): string {
-  // Replace <a> tags with their href attribute
-  description = replaceATagsWithHref(description);
-
   // Convert HTML to plain text
   // TODO parse description as markdown potentially - would allow for slack to have more formatting
   const plainDescription = convert(description, {
     wordwrap: false,
+    selectors: [{ selector: "a", options: { ignoreHref: true } }],
   });
 
   return plainDescription;

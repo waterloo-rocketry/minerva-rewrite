@@ -1,9 +1,4 @@
-import {
-  splitDescription,
-  replaceATagsWithHref,
-  parseDescriptionFromHtml,
-  parseDescription,
-} from "../../../src/utils/calendarDescription";
+import { splitDescription, parseDescriptionFromHtml, parseDescription } from "../../../src/utils/calendarDescription";
 
 import { slackChannels } from "../../fixtures/slackChannels";
 
@@ -101,30 +96,27 @@ describe("utils/calendarDescription", () => {
     });
   });
 
-  describe("replaceATagsWithHref", () => {
-    it("should replace <a> tags with their href", () => {
-      const html = `<a href="https://example.com">Example</a>`;
-      const result = replaceATagsWithHref(html);
-      expect(result).toEqual("https://example.com");
-    });
-
-    it("should ignore <a> tags that don't have an href", () => {
-      const html = `<a>Example</a>`;
-      const result = replaceATagsWithHref(html);
-      expect(result).toEqual(html);
-    });
-
-    it("should work even if the <a> tag does not contain anything inside it", () => {
-      const html = `<a href="https://example.com"></a>`;
-      const result = replaceATagsWithHref(html);
-      expect(result).toEqual("https://example.com");
-    });
-  });
   describe("parseDescriptionFromHtml", () => {
     it("should properly parse the HTML description", () => {
-      const description = `This is a description<br>With a <a href="https://example.com">link</a><br>And another line<br>---<br>foo: bar`;
+      const description = `This is a description<br>With a link: <a href="https://example.com">https://example.com</a><br>And another line<br>---<br>foo: bar`;
       const result = parseDescriptionFromHtml(description);
-      expect(result).toEqual("This is a description\nWith a https://example.com\nAnd another line\n---\nfoo: bar");
+      expect(result).toEqual(
+        "This is a description\nWith a link: https://example.com\nAnd another line\n---\nfoo: bar",
+      );
+    });
+
+    it("should parse <a> tags with href different than the content", () => {
+      const description = `This is a description<br>With a link: <a href="https://example2.com">https://example.com</a><br>And another line<br>---<br>foo: bar`;
+      const result = parseDescriptionFromHtml(description);
+      expect(result).toEqual(
+        "This is a description\nWith a link: https://example.com\nAnd another line\n---\nfoo: bar",
+      );
+    });
+
+    it("should parse <a> tags with href but no content", () => {
+      const description = `This is a description<br>With no link:<a href="https://example2.com"></a><br>And another line<br>---<br>foo: bar`;
+      const result = parseDescriptionFromHtml(description);
+      expect(result).toEqual("This is a description\nWith no link:\nAnd another line\n---\nfoo: bar");
     });
   });
 
