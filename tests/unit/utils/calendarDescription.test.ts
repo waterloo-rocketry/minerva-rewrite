@@ -118,6 +118,14 @@ describe("utils/calendarDescription", () => {
       const result = parseDescriptionFromHtml(description);
       expect(result).toEqual("This is a description\nWith no link:\nAnd another line\n---\nfoo: bar");
     });
+
+    it("should parse <a> tags with the common case of Google redirects modifying the link", () => {
+      const description = `This is a description<br>With a link: <a href="https://www.google.com/url?q=https://example.com&sa=D&source=calendar&usd=2&usg=AOvVaw1_K9Jd3eeN2rd5SWGxxxxx">https://example.com</a><br>And another line<br>---<br>foo: bar`;
+      const result = parseDescriptionFromHtml(description);
+      expect(result).toEqual(
+        "This is a description\nWith a link: https://example.com\nAnd another line\n---\nfoo: bar",
+      );
+    });
   });
 
   describe("parseDescription", () => {
