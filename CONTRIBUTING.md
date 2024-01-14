@@ -41,6 +41,10 @@ To allow the TypeScript extension to work with Yarn for things such as dependenc
 
 ## Contributing Code
 
+### Adding yourself to the `CODEOWNERS` file
+
+The [CODEOWNERS file](https://github.com/waterloo-rocketry/minerva-rewrite/blob/main/.github/CODEOWNERS) for the repo contains a list of all the active contributors to the repo (as well as the default reviewers for all the team's software repositories) and can be considered a source of truth for who is working on the project. If you would like to contribute to this project, it is recommended that you open up a PR that adds yourself to the `CODEOWNERS` file so that you will automatically be assigned as a reviewer for PRs in this repo and that others are made aware of your new contributor status. Simply create a new PR with your GitHub username added to the end of the existing line of username. Conversely, if you would like to no longer be an active contributor to the project then please open up a PR removing yourself from the `CODEOWNERS` file so others are made aware and so that you will no longer receive review requests.
+
 ### Taking Issues
 
 The best way to get started on contributing to Minerva is to take on an issue. Simply go to the [issues page](https://github.com/waterloo-rocketry/minerva-rewrite/issues) and find an issue that may interest you. Some issues may be lacking context or background info so it might be a good idea to ask a fellow Minerva developer on specifics if required. Once you've found an issue that you would like to work on, then set yourself as the issue's assignee and once ready, change the status of the issue in the linked project from "Todo" to "In Progress".
@@ -76,7 +80,7 @@ When you have written up your code and are ready to get it reviewed, merged to `
 
 - All branches being merged to `main` must pass all their unit tests and successfully deploy to the Minerva development environment. If you have not done so yet, ensure that all unit tests pass and deploy to dev by running `yarn run deploy-dev`.
 - Assign yourself as the assignee for the PR.
-- Assign the `minerva-reviewers` Team as a reviewer for your PR. This will assign everyone working on Minerva as a reviewer to the PR and is good for keeping everyone in the loop about what's going on. Additionally, if desired, assign others as reviewers to the PR if you want them specifically to review it or if the reviewer is not in the `minerva-reviewers` team.
+- All users under the [CODEOWNERS file](https://github.com/waterloo-rocketry/minerva-rewrite/blob/main/.github/CODEOWNERS) will automatically be added as a reviewer to your PR. This will assign everyone working on Minerva as a reviewer and is good for keeping everyone in the loop about what's going on. Additionally, if desired, assign others as reviewers to the PR if you want them specifically to review if they are not listed in the `CODEOWNERS` file.
 - Make sure to link the PR to the relevant issue, if possible. The easiest way is [by using keywords in the PR description](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword), e.g. you can link the PR to Issue 103 by writing "closes #103" somewhere in the description.
 - Since your task is now in a review state, make sure to move the project status of the issue that this PR is linked to from "In Progress" to "Needs Review". If this project is not linked to an issue, add the PR to the "Software Master Project" Project and set its status accordingly.
 
