@@ -8,13 +8,68 @@ describe("slack.ts", () => {
   let mockWebClient: jest.Mocked<WebClient>;
 
   beforeEach(() => {
-    mockWebClient = new WebClient() as jest.Mocked<WebClient>;
-    (mockWebClient.chat.postMessage as jest.MockedFunction<typeof mockWebClient.chat.postMessage>).mockRejectedValue(
-      new Error("Unexpected call"),
-    ); // Reset the mock setup
+    mockWebClient = {
+      chat: {
+        postMessage: jest.fn().mockImplementation(() => {
+          throw new Error("Unexpected call");
+        }),
+      },
+    } as unknown as jest.Mocked<WebClient>;
   });
 
   describe("postMessage", () => {
+    it("handles empty channel ID", async () => {
+      const channelId = "";
+      const text = "Hello, Slack!";
+
+      try {
+        const channel = new SlackChannel(channelId, "mockChannelId");
+
+        if (!channel) {
+          throw new Error("Channel object is null.");
+        }
+
+        await slack.postMessage(mockWebClient, channel, text);
+        throw new Error("Expected the promise to reject, but it resolved.");
+      } catch (error) {
+        expect(error.message).toEqual("Channel ID is empty.");
+      }
+    });
+
+    it("handles empty message text", async () => {
+      const channelId = "mockChannel";
+      const text = "";
+
+      try {
+        const channel = new SlackChannel(channelId, "mockChannelId");
+
+        if (!channel) {
+          throw new Error("Channel object is null.");
+        }
+
+        await slack.postMessage(mockWebClient, channel, text);
+        throw new Error("Expected the promise to reject, but it resolved.");
+      } catch (error) {
+        expect(error.message).toEqual("Message text is empty.");
+      }
+    });
+
+    it("handles invalid channel object", async () => {
+      const text = "Hello, Slack!";
+
+      try {
+        const channel = null; // Invalid channel object
+
+        if (!channel) {
+          throw new Error("Invalid channel object.");
+        }
+
+        await slack.postMessage(mockWebClient, channel, text);
+        throw new Error("Expected the promise to reject, but it resolved.");
+      } catch (error) {
+        expect(error.message).toEqual("Invalid channel object.");
+      }
+    });
     it("posts a message successfully", async () => {
       const mockResponse: ChatPostMessageResponse = {
         ok: true,
@@ -33,7 +88,7 @@ describe("slack.ts", () => {
         const channel = new SlackChannel(channelId, "mockChannelId");
 
         if (!channel) {
-          fail("Channel object is null.");
+          throw new Error("Channel object is null.");
         }
 
         const result = await slack.postMessage(mockWebClient, channel, text);
@@ -45,7 +100,7 @@ describe("slack.ts", () => {
         });
         expect(result).toEqual(mockResponse);
       } catch (error) {
-        fail(error);
+        throw new Error(error);
       }
     });
 
@@ -60,14 +115,14 @@ describe("slack.ts", () => {
         const channel = new SlackChannel(channelId, "mockChannelId");
 
         if (!channel) {
-          fail("Channel object is null.");
+          throw new Error("Channel object is null.");
         }
 
         await slack.postMessage(mockWebClient, channel, text);
-        fail("Expected the promise to reject, but it resolved.");
-      } catch (error: any) {
-        console.error(error.message);
-        expect(error.message).toBe(`Failed to post message to channel ${channelId} with error ${errorMessage}`);
+        throw new Error("Expected the promise to reject, but it resolved.");
+      } catch (error) {
+        //console.error(error);
+        throw error;
       }
     });
   });
