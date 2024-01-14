@@ -50,6 +50,7 @@ describe("slack.ts", () => {
         await slack.postMessage(mockWebClient, channel, text);
         throw new Error("Expected the promise to reject, but it resolved.");
       } catch (error) {
+        expect(error.message).toBeDefined();
         expect(error.message).toEqual("Message text is empty.");
       }
     });
@@ -70,6 +71,7 @@ describe("slack.ts", () => {
         expect(error.message).toEqual("Invalid channel object.");
       }
     });
+
     it("posts a message successfully", async () => {
       const mockResponse: ChatPostMessageResponse = {
         ok: true,
@@ -81,7 +83,7 @@ describe("slack.ts", () => {
         mockResponse,
       );
 
-      const channelId = "mockChannel";
+      const channelId = "mockChannelId";
       const text = "Hello, Slack!";
 
       try {
@@ -93,14 +95,13 @@ describe("slack.ts", () => {
 
         const result = await slack.postMessage(mockWebClient, channel, text);
 
-        console.log(result);
         expect(mockWebClient.chat.postMessage).toHaveBeenCalledWith({
           channel: channelId,
           text: text,
         });
         expect(result).toEqual(mockResponse);
       } catch (error) {
-        throw new Error(error);
+        throw error;
       }
     });
 
@@ -121,8 +122,7 @@ describe("slack.ts", () => {
         await slack.postMessage(mockWebClient, channel, text);
         throw new Error("Expected the promise to reject, but it resolved.");
       } catch (error) {
-        //console.error(error);
-        throw error;
+        expect(error.message).toEqual(`Failed to post message to channel ${channelId} with error ${errorMessage}`);
       }
     });
   });
