@@ -73,7 +73,8 @@ export async function getAllUsersInChannel(client: WebClient, channel: string): 
  * @param client Slack Web API client
  * @param channels The Slack channels to post the message to the single-channel guests
  * @param text The text of the message to post
- * @param allUsersInWorkspace
+ * @param allUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
+ * @returns The number of single-channel guests messaged
  */
 export async function postMessageToSingleChannelGuestsInChannels(
   client: WebClient,
@@ -99,7 +100,7 @@ export async function postMessageToSingleChannelGuestsInChannels(
  * Retrieves a list of active SlackUsers of single channel guests in a specific channel.
  * @param client Slack Web API client.
  * @param channel The SlackChannel object.
- * @param allUsersInWorkspace
+ * @param allUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
  * @returns A promise that resolves to an array of SlackGuests of single channel guests in a specific channel.
  */
 export async function getAllSingleChannelGuestsInOneChannel(
@@ -125,7 +126,7 @@ export async function getAllSingleChannelGuestsInOneChannel(
  * Retrieves a list of active SlackUsers of single channel guests in multiple channels.
  * @param client Slack Web API client.
  * @param channels The array SlackChannels.
- * @param allUsersInWorkspace
+ * @param allUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
  * @returns A promise that resolves to an array of SlackGuests of single channel guests in multiple channels.
  */
 export async function getAllSingleChannelGuestsInChannels(

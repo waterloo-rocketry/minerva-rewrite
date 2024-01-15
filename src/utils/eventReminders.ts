@@ -58,8 +58,8 @@ export function getEventReminderType(event: CalendarEvent): EventReminderType | 
  * Posts a reminder for the given event to the channel it is associated with
  * @param event The event to post a reminder for
  * @param client Slack Web API client
- * @param defaultSlackChannels
- * @param allSlackUsersInWorkspace
+ * @param defaultSlackChannels The default Slack channels to post reminders to. If not provided, the default channels will be fetched from the Slack API
+ * @param allSlackUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
  */
 export async function remindUpcomingEvent(
   event: CalendarEvent,
@@ -109,11 +109,12 @@ export async function remindUpcomingEvent(
 }
 
 /**
- *
- * @param client
- * @param channel
- * @param reminderText
- * @param reactEmojis
+ * Posts an event reminder to the given channel
+ * @param client Slack Web API client
+ * @param channel The channel to post the reminder to
+ * @param reminderText The text of the reminder
+ * @param reactEmojis The emojis to react to the reminder with
+ * @returns The URL of the posted reminder message
  */
 export async function postReminderToChannel(
   client: WebClient,
@@ -152,12 +153,13 @@ export async function postReminderToChannel(
 }
 
 /**
- *
- * @param client
- * @param eventChannel
- * @param reminderText
- * @param defaultSlackChannels
- * @param allSlackUsersInWorkspace
+ * Posts a reminder for the given event to the DMs of all single channel guests in the given channels
+ * @param client Slack Web API client
+ * @param eventChannel The channel the event is associated with
+ * @param reminderText The text of the reminder
+ * @param defaultSlackChannels The default Slack channels to post reminders to. If not provided, the default channels will be fetched from the Slack API
+ * @param allSlackUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
+ * @returns The number of single channel guests messaged
  */
 export async function postReminderToDMs(
   client: WebClient,
@@ -183,8 +185,8 @@ export async function postReminderToDMs(
 
 /**
  * Posts reminders for the given events to the channels they are associated with
- * @param events The events to post reminders for
  * @param client Slack Web API client
+ * @param events The events to post reminders for
  */
 export async function remindUpcomingEvents(client: WebClient, events: CalendarEvent[]): Promise<void> {
   const defaultSlackChannels = await getDefaultSlackChannels(client);
@@ -230,8 +232,9 @@ export function generateEventReminderChannelText(event: CalendarEvent, reminderT
 }
 
 /**
- *
- * @param eventChannelMessageUrl
+ * Generates the text body for the event reminder DM
+ * @param eventChannelMessageUrl The URL of the event reminder message
+ * @returns The text body for the event reminder DM
  */
 export function generateEventReminderDMText(eventChannelMessageUrl: string): string {
   return `${eventChannelMessageUrl}\n_You have been sent this message because you are a single channel guest who might have otherwise missed this alert._`;

@@ -28,6 +28,7 @@ interface ChatPostMessageOptionalArgs {
  * @param channel The Slack channel / Slack user to post the message to
  * @param text The text of the message to post
  * @param options Optional arguments for the message as per https://api.slack.com/methods/chat.postMessage#arguments
+ * @returns A promise that resolves to the response from the Slack API
  */
 export async function postMessage(
   client: WebClient,
@@ -52,8 +53,7 @@ export async function postMessage(
 // https://api.slack.com/methods/emoji.list
 /**
  * Retrieves all custom emoji from a Slack workspace.
- * @param app The Slack App instance.
- * @param client
+ * @param client Slack Web API client
  * @returns A promise that resolves to an array of emoji names.
  */
 export async function getAllEmoji(client: WebClient): Promise<string[]> {
@@ -110,8 +110,7 @@ export async function getAllSlackUsers(
  * Retrieves all members in a Slack channel.
  * @param client Slack Web API client.
  * @param channelId The id of the Slack channel.
- * @returns A promise that resolves to an array of SlackUserIDs in the channel,
- *   or undefined if the channel is not found.
+ * @returns A promise that resolves to an array of SlackUserIDs in the channel, or undefined if the channel is not found.
  */
 export async function getChannelMembers(client: WebClient, channelId: string): Promise<SlackUserID[] | undefined> {
   try {
@@ -167,10 +166,11 @@ export function addReactionToMessage(
 }
 
 /**
- *
- * @param client
- * @param channel
- * @param timestamp
+ * Retrieves the permalink for a message in a Slack channel.
+ * @param client Slack Web API client
+ * @param channel The ID of the channel where the message is posted
+ * @param timestamp The timestamp of the message to react to
+ * @returns A promise that resolves to the permalink of the message, or undefined if the message is not found
  */
 export async function getMessagePermalink(
   client: WebClient,
