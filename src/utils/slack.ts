@@ -2,7 +2,11 @@ import { WebClient } from "@slack/web-api";
 import { ChatPostMessageResponse } from "@slack/web-api";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import SlackChannel from "../classes/SlackChannel";
+<<<<<<< HEAD
 import { determineUserType } from "./users";
+=======
+import { determineUserType, getAllSingleChannelGuestsInOneChannel } from "./users";
+>>>>>>> main
 import { ReactionsAddResponse } from "@slack/web-api";
 
 export type SlackUserID = string;
@@ -28,7 +32,10 @@ interface ChatPostMessageOptionalArgs {
  * @param channel The Slack channel / Slack user to post the message to
  * @param text The text of the message to post
  * @param options Optional arguments for the message as per https://api.slack.com/methods/chat.postMessage#arguments
+<<<<<<< HEAD
  * @returns A promise that resolves to the response from the Slack API
+=======
+>>>>>>> main
  */
 export async function postMessage(
   client: WebClient,
