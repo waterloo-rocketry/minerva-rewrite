@@ -1,10 +1,11 @@
 import * as environment from "./env";
 import { WebClient } from "@slack/web-api";
 import SlackChannel from "../classes/SlackChannel";
+import ObjectSet from "../classes/ObjectSet";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import { Member } from "@slack/web-api/dist/response/UsersListResponse";
 import { filterSlackChannelFromName, getAllSlackChannels } from "./channels";
-import { SlackUserID, getAllSlackUsers, getChannelMembers } from "./slack";
+import { SlackUserID, getAllSlackUsers, getChannelMembers, postMessage } from "./slack";
 
 /**
  * Determine the type of a Slack user based on the provided Member object.
@@ -12,14 +13,14 @@ import { SlackUserID, getAllSlackUsers, getChannelMembers } from "./slack";
  * @returns The determined user type.
  */
 export function determineUserType(user: Member): UserType {
-  if (user.is_admin) {
-    return UserType.ADMIN;
-  } else if (user.is_owner) {
+  if (user.is_owner) {
     return UserType.OWNER;
-  } else if (user.is_restricted) {
-    return UserType.RESTRICTED;
   } else if (user.is_bot) {
     return UserType.BOT;
+  } else if (user.is_admin) {
+    return UserType.ADMIN;
+  } else if (user.is_restricted) {
+    return UserType.RESTRICTED;
   } else if (user.is_ultra_restricted) {
     return UserType.ULTRA_RESTRICTED;
   } else if (user.is_restricted) {
@@ -31,22 +32,20 @@ export function determineUserType(user: Member): UserType {
 
 /**
  * Retrieves a list of active SlackUsers of single channel guests.
- * @param client Slack Web API client.
  * @param slackUsers The array of all active SlackUsers.
  * @returns A promise that resolves to an array of SlackGuests of single channel guests.
  */
-export async function getAllSingleChannelGuests(client: WebClient, slackUsers: SlackUser[]): Promise<SlackUser[]> {
-  const allActiveSlackUsers = slackUsers;
+export async function getAllSingleChannelGuests(slackUsers: SlackUser[]): Promise<SlackUser[]> {
   let allSingleChannelGuests: SlackUser[] = [];
   // Since the development Slack is on a free plan, multi- and single-channel guests don't exist there.
-  //  Therefore, we're validating functionality with admin users instead.
+  //  Therefore, we're validating functionality with admin and owner users instead.
   if (environment.environment == "development") {
-    allSingleChannelGuests = allActiveSlackUsers.filter((user) => {
-      return user.userType == "admin";
+    allSingleChannelGuests = slackUsers.filter((user) => {
+      return user.userType == UserType.OWNER || user.userType == UserType.ADMIN;
     });
   } else {
-    allSingleChannelGuests = allActiveSlackUsers.filter((user) => {
-      return user.userType == "ultra_restricted";
+    allSingleChannelGuests = slackUsers.filter((user) => {
+      return user.userType == UserType.ULTRA_RESTRICTED;
     });
   }
   return allSingleChannelGuests;
@@ -70,18 +69,52 @@ export async function getAllUsersInChannel(client: WebClient, channel: string): 
 }
 
 /**
+ * Posts a message to all single-channel guests in a specified channel
+ * @param client Slack Web API client
+ * @param channels The Slack channels to post the message to the single-channel guests
+ * @param text The text of the message to post
+ * @param allUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
+ * @returns The number of single-channel guests messaged
+ */
+export async function postMessageToSingleChannelGuestsInChannels(
+  client: WebClient,
+  channels: SlackChannel[],
+  text: string,
+  allUsersInWorkspace?: SlackUser[],
+): Promise<number> {
+  const allSingleChannelGuestsInChannels = await getAllSingleChannelGuestsInChannels(
+    client,
+    channels,
+    allUsersInWorkspace,
+  );
+  const DMSingleChannelGuestPromises = allSingleChannelGuestsInChannels.map((guest) =>
+    postMessage(client, guest, text),
+  );
+
+  await Promise.all(DMSingleChannelGuestPromises);
+
+  return allSingleChannelGuestsInChannels.length;
+}
+
+/**
  * Retrieves a list of active SlackUsers of single channel guests in a specific channel.
  * @param client Slack Web API client.
  * @param channel The SlackChannel object.
+ * @param allUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
  * @returns A promise that resolves to an array of SlackGuests of single channel guests in a specific channel.
  */
 export async function getAllSingleChannelGuestsInOneChannel(
   client: WebClient,
   channel: SlackChannel,
+  allUsersInWorkspace?: SlackUser[],
 ): Promise<SlackUser[]> {
   const allUsersInChannel = await getAllUsersInChannel(client, channel.name);
-  const activeUsers = await getAllSlackUsers(client);
-  const allSingleChannelGuests = await getAllSingleChannelGuests(client, activeUsers);
+
+  if (allUsersInWorkspace == undefined) {
+    allUsersInWorkspace = await getAllSlackUsers(client);
+  }
+
+  const allSingleChannelGuests = await getAllSingleChannelGuests(allUsersInWorkspace);
   if (!allUsersInChannel) {
     return [];
   }
@@ -93,22 +126,24 @@ export async function getAllSingleChannelGuestsInOneChannel(
  * Retrieves a list of active SlackUsers of single channel guests in multiple channels.
  * @param client Slack Web API client.
  * @param channels The array SlackChannels.
+ * @param allUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
  * @returns A promise that resolves to an array of SlackGuests of single channel guests in multiple channels.
  */
 export async function getAllSingleChannelGuestsInChannels(
   client: WebClient,
   channels: SlackChannel[],
+  allUsersInWorkspace?: SlackUser[],
 ): Promise<SlackUser[]> {
-  const allSingleChannelGuestsInChannels: SlackUser[] = [];
-  let seenIds = new Set<string>();
-  for (const channel of channels) {
-    const singleChannelGuests = await getAllSingleChannelGuestsInOneChannel(client, channel);
-    for (const user of singleChannelGuests) {
-      if (!seenIds.has(user.id)) {
-        allSingleChannelGuestsInChannels.push(user);
-        seenIds = seenIds.add(user.id);
-      }
-    }
-  }
-  return allSingleChannelGuestsInChannels;
+  const allSingleChannelGuestsInChannels = new ObjectSet<SlackUser>((user) => user.id);
+
+  const getSingleChannelGuestPromises = channels.map((channel) =>
+    getAllSingleChannelGuestsInOneChannel(client, channel, allUsersInWorkspace).then((guests) => {
+      guests.forEach((guest) => {
+        allSingleChannelGuestsInChannels.add(guest);
+      });
+    }),
+  );
+  await Promise.all(getSingleChannelGuestPromises);
+
+  return allSingleChannelGuestsInChannels.values();
 }

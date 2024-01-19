@@ -1,5 +1,6 @@
 import { WebClient } from "@slack/web-api";
 import SlackChannel from "../classes/SlackChannel";
+import ObjectSet from "../classes/ObjectSet";
 import { defaultSlackChannels } from "../common/constants";
 
 /**
@@ -24,7 +25,7 @@ export function filterSlackChannelFromName(name: string, channels: SlackChannel[
  * @returns An array of filtered Slack channels.
  */
 export function filterSlackChannelsFromNames(names: string[], channels: SlackChannel[]): SlackChannel[] {
-  const res = new Set<SlackChannel>();
+  const res = new ObjectSet<SlackChannel>((channel) => channel.name);
 
   for (const name of names) {
     // If the name is "default", it filters the default Slack channels defined in the constants.
@@ -48,7 +49,7 @@ export function filterSlackChannelsFromNames(names: string[], channels: SlackCha
     }
   }
 
-  return Array.from(res);
+  return res.values();
 }
 
 /**

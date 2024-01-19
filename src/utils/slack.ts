@@ -2,7 +2,7 @@ import { WebClient } from "@slack/web-api";
 import { ChatPostMessageResponse } from "@slack/web-api";
 import SlackUser, { UserType } from "../classes/SlackUser";
 import SlackChannel from "../classes/SlackChannel";
-import { determineUserType, getAllSingleChannelGuestsInOneChannel } from "./users";
+import { determineUserType } from "./users";
 import { ReactionsAddResponse } from "@slack/web-api";
 
 export type SlackUserID = string;
@@ -28,6 +28,7 @@ interface ChatPostMessageOptionalArgs {
  * @param channel The Slack channel / Slack user to post the message to
  * @param text The text of the message to post
  * @param options Optional arguments for the message as per https://api.slack.com/methods/chat.postMessage#arguments
+ * @returns A promise that resolves to the response from the Slack API
  */
 export async function postMessage(
   client: WebClient,
@@ -52,7 +53,7 @@ export async function postMessage(
 // https://api.slack.com/methods/emoji.list
 /**
  * Retrieves all custom emoji from a Slack workspace.
- * @param app The Slack App instance.
+ * @param client Slack Web API client
  * @returns A promise that resolves to an array of emoji names.
  */
 export async function getAllEmoji(client: WebClient): Promise<string[]> {
@@ -65,26 +66,6 @@ export async function getAllEmoji(client: WebClient): Promise<string[]> {
   } catch (error) {
     console.error("Failed to get emoji:", error);
     throw error;
-  }
-}
-/**
- * Posts a message to all single-channel guests in a specified channel
- * @param client Slack Web API client
- * @param channel The Slack channel to post the message to the single-channel guests
- * @param text The text of the message to post
- */
-export async function postMessageToSingleChannelGuestsInChannel(
-  client: WebClient,
-  channel: SlackChannel,
-  text: string,
-): Promise<void> {
-  const allSingleChannelGuestsInOneChannel = await getAllSingleChannelGuestsInOneChannel(client, channel);
-  for (const guest of allSingleChannelGuestsInOneChannel) {
-    try {
-      await postMessage(client, guest, text);
-    } catch (error) {
-      console.error(`Failed to post message to ${guest.name} with error ${error}`);
-    }
   }
 }
 
@@ -129,8 +110,7 @@ export async function getAllSlackUsers(
  * Retrieves all members in a Slack channel.
  * @param client Slack Web API client.
  * @param channelId The id of the Slack channel.
- * @returns A promise that resolves to an array of SlackUserIDs in the channel,
- *   or undefined if the channel is not found.
+ * @returns A promise that resolves to an array of SlackUserIDs in the channel, or undefined if the channel is not found.
  */
 export async function getChannelMembers(client: WebClient, channelId: string): Promise<SlackUserID[] | undefined> {
   try {
@@ -183,4 +163,31 @@ export function addReactionToMessage(
     name: emoji,
     timestamp: timestampStr,
   });
+}
+
+/**
+ * Retrieves the permalink for a message in a Slack channel.
+ * @param client Slack Web API client
+ * @param channel The ID of the channel where the message is posted
+ * @param timestamp The timestamp of the message to react to
+ * @returns A promise that resolves to the permalink of the message, or undefined if the message is not found
+ */
+export async function getMessagePermalink(
+  client: WebClient,
+  channel: string,
+  timestamp: string,
+): Promise<string | undefined> {
+  let res;
+  try {
+    res = await client.chat.getPermalink({
+      channel,
+      message_ts: timestamp,
+    });
+  } catch (error) {
+    console.error(`Error fetching message permalink for message with timestamp ${timestamp} in ${channel}`, error);
+  }
+
+  if (res?.ok) {
+    return res.permalink;
+  }
 }

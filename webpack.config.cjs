@@ -10,7 +10,7 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: "ts-loader",
+        use: "swc-loader",
         exclude: /node_modules/,
       },
     ],
