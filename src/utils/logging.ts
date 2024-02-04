@@ -7,6 +7,6 @@ import { SlackLogger } from "../classes/SlackLogger";
  */
 export async function logCommandUsed(command: SlashCommand): Promise<void> {
   await SlackLogger.getInstance().info(
-    `${command.user_name} used the ${command.command} command in ${command.channel_name}`,
+    `\`${command.user_name}\` used the \`${command.command}\` command in \`${command.channel_name}\``,
   );
 }

@@ -105,7 +105,7 @@ export async function remindUpcomingEvent(
   );
 
   SlackLogger.getInstance().info(
-    `Sent reminder for event "${event.title}" at ${event.start} to #${event.minervaEventMetadata.channel.name} and ${singleChannelGuestsMessaged} single channel guests`,
+    `Sent reminder for event \`${event.title}\` at \`${event.start}\` to \`${event.minervaEventMetadata.channel.name}\` and ${singleChannelGuestsMessaged} single channel guests`,
   );
 }
 
@@ -131,10 +131,8 @@ export async function postReminderToChannel(
     });
   } catch (error) {
     SlackLogger.getInstance().error(
-      `Failed to post reminder message to channel ${channel.name} with error:
-\`\`\`
-${error}
-\`\`\``,
+      `Failed to post reminder message to channel \`${channel.name}\` with error:`,
+      String(error),
     );
     return;
   }
@@ -150,12 +148,10 @@ ${error}
       try {
         await addReactionToMessage(client, channel.id, emoji, timestamp);
       } catch (error) {
-        SlackLogger.getInstance()
-          .error(`Failed to add reaction ${emoji} to message ${timestamp} in ${channel.name} with error 
-\`\`\`        
-${error}
-\`\`\`
-`);
+        SlackLogger.getInstance().error(
+          `Failed to add reaction \`${emoji}\` to message \`${timestamp}\` in \`${channel.name}\` with error:`,
+          String(error),
+        );
       }
     });
   }

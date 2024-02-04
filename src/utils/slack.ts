@@ -45,10 +45,46 @@ export async function postMessage(
       ...options,
     });
   } catch (error) {
-    throw `Failed to post message to channel ${channel.name} with error ${error}`;
+    SlackLogger.getInstance().error(`Failed to post message to channel \`${channel.name}\` with error:`, String(error));
+    throw error;
   }
 
   return res;
+}
+
+/**
+ * Posts an ephemeral message to a Slack channel
+ * @param client Slack Web API client
+ * @param channel The Slack channel to post the message to
+ * @param user The Slack user to post the message to
+ * @param text The text of the message to post
+ * @param options Optional arguments for the message as per https://api.slack.com/methods/chat.postEphemeral#args
+ * @returns A promise that resolves to the response from the Slack API
+ */
+export async function postEphemeralMessage(
+  client: WebClient,
+  channel: string,
+  user: string,
+  text: string,
+  options?: ChatPostMessageOptionalArgs,
+): Promise<ChatPostMessageResponse | undefined> {
+  let res: ChatPostMessageResponse | undefined = undefined;
+  try {
+    res = await client.chat.postEphemeral({
+      channel: channel,
+      user: user,
+      text: text,
+      ...options,
+    });
+
+    return res;
+  } catch (error) {
+    SlackLogger.getInstance().error(
+      `Failed to post ephemeral message to channel \`${channel}\` with error:`,
+      String(error),
+    );
+    throw error;
+  }
 }
 
 // https://api.slack.com/methods/emoji.list
@@ -65,11 +101,7 @@ export async function getAllEmoji(client: WebClient): Promise<string[]> {
     }
     return Object.keys(result.emoji);
   } catch (error) {
-    SlackLogger.getInstance().error(`Failed to get emojis for workspace: 
-\`\`\`
-${error}
-\`\`\`
-    `);
+    SlackLogger.getInstance().error(`Failed to get emojis for workspace:`, String(error));
     throw error;
   }
 }
@@ -88,24 +120,29 @@ export async function getAllSlackUsers(
   let cursor: string | undefined = undefined;
 
   while (true) {
-    const response = await client.users.list({
-      limit: 900,
-      cursor: cursor,
-    });
-
-    if (response.members) {
-      response.members.forEach((user) => {
-        if (user.deleted == includeDeactivatedMembers) {
-          const userType: UserType = determineUserType(user);
-          const newGuest = new SlackUser(user.real_name as string, user.id as string, userType);
-          usersList.push(newGuest);
-        }
+    try {
+      const response = await client.users.list({
+        limit: 900,
+        cursor: cursor,
       });
-    }
 
-    cursor = response.response_metadata?.next_cursor;
-    if (!cursor) {
-      break;
+      if (response.members) {
+        response.members.forEach((user) => {
+          if (user.deleted == includeDeactivatedMembers) {
+            const userType: UserType = determineUserType(user);
+            const newGuest = new SlackUser(user.real_name as string, user.id as string, userType);
+            usersList.push(newGuest);
+          }
+        });
+      }
+
+      cursor = response.response_metadata?.next_cursor;
+      if (!cursor) {
+        break;
+      }
+    } catch (error) {
+      SlackLogger.getInstance().error(`Failed to get users from workspace:`, String(error));
+      throw error;
     }
   }
   return usersList;
@@ -140,12 +177,8 @@ export async function getChannelMembers(client: WebClient, channelId: string): P
     }
     return members.length > 0 ? members : undefined;
   } catch (error) {
-    SlackLogger.getInstance().error(`Failed to get members for channel with id ${channelId}:
-\`\`\`
-${error}
-\`\`\`
-    `);
-    return undefined;
+    SlackLogger.getInstance().error(`Failed to get members for channel with id \`${channelId}\`:`, String(error));
+    throw error;
   }
 }
 
@@ -167,11 +200,19 @@ export function addReactionToMessage(
   // Convert timestamp to string if it's a number
   const timestampStr = typeof timestamp === "number" ? timestamp.toString() : timestamp;
 
-  return client.reactions.add({
-    channel,
-    name: emoji,
-    timestamp: timestampStr,
-  });
+  try {
+    return client.reactions.add({
+      channel,
+      name: emoji,
+      timestamp: timestampStr,
+    });
+  } catch (error) {
+    SlackLogger.getInstance().error(
+      `Failed to add reaction \`${emoji}\` to message \`${timestampStr}\` in \`${channel}\`:`,
+      String(error),
+    );
+    throw error;
+  }
 }
 
 /**
@@ -193,13 +234,11 @@ export async function getMessagePermalink(
       message_ts: timestamp,
     });
   } catch (error) {
-    SlackLogger.getInstance()
-      .error(`Error fetching message permalink for message with timestamp ${timestamp} in ${channel}:
-\`\`\`
-${error}
-\`\`\`
-    `);
-    return;
+    SlackLogger.getInstance().error(
+      `Error fetching message permalink for message with timestamp \`${timestamp}\` in \`${channel}\`:`,
+      String(error),
+    );
+    throw error;
   }
 
   if (res?.ok) {

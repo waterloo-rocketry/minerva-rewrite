@@ -31,34 +31,51 @@ export class SlackLogger {
     return SlackLogger.instance;
   }
 
-  private async log(level: LogLevel, message: string, logToConsole = true): Promise<void> {
+  private async log(
+    level: LogLevel,
+    message: string,
+    codeBlockContent: string = "",
+    logToConsole = true,
+  ): Promise<void> {
     const formattedMessage = this.formatMessage(level, message);
 
     if (logToConsole) {
       if (level === LogLevel.ERROR) {
         console.error(formattedMessage);
+        console.error(codeBlockContent);
       } else {
         console.log(formattedMessage);
+        console.log(codeBlockContent);
       }
     }
 
-    await postMessage(this.slackClient, loggingChannel, formattedMessage);
+    let formattedSlackMessage = formattedMessage;
+
+    if (codeBlockContent) {
+      formattedSlackMessage += "\n" + this.formatcodeBlockContent(codeBlockContent);
+    }
+
+    await postMessage(this.slackClient, loggingChannel, formattedSlackMessage);
   }
 
-  async info(message: string, logToConsole = true): Promise<void> {
-    await this.log(LogLevel.INFO, message, logToConsole);
+  async info(message: string, codeBlockContent: string = "", logToConsole = true): Promise<void> {
+    await this.log(LogLevel.INFO, message, codeBlockContent, logToConsole);
   }
 
-  async warning(message: string, logToConsole = true): Promise<void> {
-    await this.log(LogLevel.WARNING, message, logToConsole);
+  async warning(message: string, codeBlockContent: string = "", logToConsole = true): Promise<void> {
+    await this.log(LogLevel.WARNING, message, codeBlockContent, logToConsole);
   }
 
-  async error(message: string, logToConsole = true): Promise<void> {
-    await this.log(LogLevel.ERROR, message, logToConsole);
+  async error(message: string, codeBlockContent: string = "", logToConsole = true): Promise<void> {
+    await this.log(LogLevel.ERROR, message, codeBlockContent, logToConsole);
   }
 
   private formatMessage(level: LogLevel, message: string): string {
     const timeStamp = new Date().toISOString();
     return `[${timeStamp}] [${level}] ${message}`;
+  }
+
+  private formatcodeBlockContent(codeBlockContent: string): string {
+    return `\`\`\`${codeBlockContent}\`\`\``;
   }
 }
