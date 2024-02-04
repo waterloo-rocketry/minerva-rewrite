@@ -2,6 +2,7 @@ import { WebClient } from "@slack/web-api";
 import SlackChannel from "../classes/SlackChannel";
 import ObjectSet from "../classes/ObjectSet";
 import { defaultSlackChannels } from "../common/constants";
+import { SlackLogger } from "../classes/SlackLogger";
 
 /**
  * Filters a Slack channel from an array of channels based on its name.
@@ -35,13 +36,13 @@ export function filterSlackChannelsFromNames(names: string[], channels: SlackCha
       const channel = channels.find((channel) => channel.name === name);
       // If a channel with a given name is not found, it logs an error and continues to the next name.
       if (channel == undefined) {
-        console.error(`could not find channel with name ${name}`);
+        SlackLogger.getInstance().warning(`could not find channel with name ${name} when filtering channels`);
         continue;
       }
 
       // If a channel has an undefined name or id, it logs an error and continues to the next channel.
       if (channel.name == undefined || channel.id == undefined) {
-        console.error(`channel with name ${name} has undefined name or id. This should not happen.`);
+        SlackLogger.getInstance().error(`channel with name ${name} has undefined name or id. This should not happen.`);
         continue;
       }
 
@@ -78,7 +79,7 @@ export async function getAllSlackChannels(client: WebClient): Promise<SlackChann
 
   for (const channel of channels.channels ?? []) {
     if (channel.name == undefined || channel.id == undefined) {
-      console.error(`channel with name ${channel.name} has undefined name or id. This should not happen.`);
+      SlackLogger.getInstance().error(`channel with name ${name} has undefined name or id. This should not happen.`);
       continue;
     }
 

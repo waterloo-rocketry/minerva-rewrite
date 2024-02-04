@@ -8,6 +8,7 @@ import { generateEmojiPair } from "./slackEmojis";
 import SlackChannel from "../classes/SlackChannel";
 import SlackUser from "../classes/SlackUser";
 import { postMessageToSingleChannelGuestsInChannels } from "./users";
+import { SlackLogger } from "../classes/SlackLogger";
 
 /**
  * The interval in milliseconds at which the scheduled event checking task runs
@@ -103,7 +104,7 @@ export async function remindUpcomingEvent(
     allSlackUsersInWorkspace,
   );
 
-  console.log(
+  SlackLogger.getInstance().info(
     `Sent reminder for event "${event.title}" at ${event.start} to #${event.minervaEventMetadata.channel.name} and ${singleChannelGuestsMessaged} single channel guests`,
   );
 }
@@ -129,7 +130,12 @@ export async function postReminderToChannel(
       unfurl_media: false,
     });
   } catch (error) {
-    console.error("Failed to post message to channel with error:", error);
+    SlackLogger.getInstance().error(
+      `Failed to post reminder message to channel ${channel.name} with error:
+\`\`\`
+${error}
+\`\`\``,
+    );
     return;
   }
 
@@ -144,7 +150,12 @@ export async function postReminderToChannel(
       try {
         await addReactionToMessage(client, channel.id, emoji, timestamp);
       } catch (error) {
-        console.error(`Failed to add reaction ${emoji} to message ${timestamp} with error ${error}`);
+        SlackLogger.getInstance()
+          .error(`Failed to add reaction ${emoji} to message ${timestamp} in ${channel.name} with error 
+\`\`\`        
+${error}
+\`\`\`
+`);
       }
     });
   }

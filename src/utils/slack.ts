@@ -4,6 +4,7 @@ import SlackUser, { UserType } from "../classes/SlackUser";
 import SlackChannel from "../classes/SlackChannel";
 import { determineUserType } from "./users";
 import { ReactionsAddResponse } from "@slack/web-api";
+import { SlackLogger } from "../classes/SlackLogger";
 
 export type SlackUserID = string;
 
@@ -64,7 +65,11 @@ export async function getAllEmoji(client: WebClient): Promise<string[]> {
     }
     return Object.keys(result.emoji);
   } catch (error) {
-    console.error("Failed to get emoji:", error);
+    SlackLogger.getInstance().error(`Failed to get emojis for workspace: 
+\`\`\`
+${error}
+\`\`\`
+    `);
     throw error;
   }
 }
@@ -135,7 +140,11 @@ export async function getChannelMembers(client: WebClient, channelId: string): P
     }
     return members.length > 0 ? members : undefined;
   } catch (error) {
-    console.error("Error fetching channel members:", error);
+    SlackLogger.getInstance().error(`Failed to get members for channel with id ${channelId}:
+\`\`\`
+${error}
+\`\`\`
+    `);
     return undefined;
   }
 }
@@ -184,7 +193,13 @@ export async function getMessagePermalink(
       message_ts: timestamp,
     });
   } catch (error) {
-    console.error(`Error fetching message permalink for message with timestamp ${timestamp} in ${channel}`, error);
+    SlackLogger.getInstance()
+      .error(`Error fetching message permalink for message with timestamp ${timestamp} in ${channel}:
+\`\`\`
+${error}
+\`\`\`
+    `);
+    return;
   }
 
   if (res?.ok) {
