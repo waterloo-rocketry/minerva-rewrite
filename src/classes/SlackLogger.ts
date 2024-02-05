@@ -73,7 +73,7 @@ export class SlackLogger {
     let formattedSlackMessage = formattedMessage;
 
     if (codeBlockContent) {
-      formattedSlackMessage += "\n" + this.formatcodeBlockContent(codeBlockContent);
+      formattedSlackMessage += "\n" + SlackLogger.formatCodeBlockContent(codeBlockContent);
     }
 
     await postMessage(this.slackClient, loggingChannel, formattedSlackMessage);
@@ -124,7 +124,7 @@ export class SlackLogger {
    * @param codeBlockContent The content of the code block
    * @returns The formatted code block content
    */
-  private formatcodeBlockContent(codeBlockContent: unknown): string {
+  private static formatCodeBlockContent(codeBlockContent: unknown): string {
     return `\`\`\`${codeBlockContent}\`\`\``;
   }
 }
