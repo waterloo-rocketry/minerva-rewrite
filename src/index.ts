@@ -36,9 +36,12 @@ scheduleTasks(app.client, auth);
 (async (): Promise<void> => {
   try {
     await app.start();
-    SlackLogger.getInstance().info("Minerva has started.");
+    SlackLogger.getInstance().info(`Minerva has started. Deployment commit hash: ${environment.deploymentCommitHash}`);
   } catch (error) {
-    SlackLogger.getInstance().error("Minerva has failed to start.");
+    SlackLogger.getInstance().error(
+      `Minerva has failed to start. Deployment commit hash: ${environment.deploymentCommitHash}:`,
+      String(error),
+    );
     throw error;
   }
 })();
