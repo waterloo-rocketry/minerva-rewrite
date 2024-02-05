@@ -72,7 +72,10 @@ export default class CalendarEvent {
         parsedEvent.minervaEventMetadata = minervaEventMetadata;
         parsedEvent.description = description;
       } catch (error) {
-        throw new Error(`Failed to parse event description`, { cause: error });
+        if (error instanceof Error) {
+          throw new Error(`Failed to parse event description for event ${event.summary} with error: ${error.message}`);
+        }
+        throw new Error(`Failed to parse event description for event ${event.summary}: ${error}`);
       }
     }
 
