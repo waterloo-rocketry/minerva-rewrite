@@ -80,7 +80,7 @@ export async function postEphemeralMessage(
     return res;
   } catch (error) {
     SlackLogger.getInstance().error(
-      `Failed to post ephemeral message to channel \`${channel}\` with error:`,
+      `Failed to post ephemeral message to user \`${user}\` in channel \`${channel}\` with error:`,
       String(error),
     );
     throw error;

@@ -104,8 +104,14 @@ export async function remindUpcomingEvent(
     allSlackUsersInWorkspace,
   );
 
+  const reminderTypeString = reminderType === EventReminderType.FIVE_MINUTES ? "5 minute" : "6 hour";
+
   SlackLogger.getInstance().info(
-    `Sent reminder for event \`${event.title}\` at \`${event.start}\` to \`${event.minervaEventMetadata.channel.name}\` and ${singleChannelGuestsMessaged} single channel guests`,
+    `Sent ${reminderTypeString} reminder for event \`${
+      event.title
+    }\` at \`${event.start.toISOString()}\` to channel \`${
+      event.minervaEventMetadata.channel.name
+    }\` and ${singleChannelGuestsMessaged} single channel guests`,
   );
 }
 
