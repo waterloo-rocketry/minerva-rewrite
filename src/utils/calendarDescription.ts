@@ -66,6 +66,7 @@ export function parseDescriptionFromHtml(description: string): string {
  * @param description The description of the event to parse
  * @param workspaceChannels The Slack channels in the workspace
  * @returns The parsed description and the metadata of the event that minerva uses
+ * @throws Error if the channel name is not specified or if the channel is not found
  */
 export function parseDescription(
   description: string,

@@ -154,7 +154,7 @@ export async function getAllSlackUsers(
  * @param channelId The id of the Slack channel.
  * @returns A promise that resolves to an array of SlackUserIDs in the channel, or undefined if the channel is not found.
  */
-export async function getChannelMembers(client: WebClient, channelId: string): Promise<SlackUserID[] | undefined> {
+export async function getChannelMembers(client: WebClient, channelId: string): Promise<SlackUserID[]> {
   try {
     let cursor: string | undefined = undefined;
     const members: SlackUserID[] = [];
@@ -175,7 +175,7 @@ export async function getChannelMembers(client: WebClient, channelId: string): P
         break;
       }
     }
-    return members.length > 0 ? members : undefined;
+    return members.length > 0 ? members : [];
   } catch (error) {
     SlackLogger.getInstance().error(`Failed to get members for channel with id \`${channelId}\`:`, String(error));
     throw error;
