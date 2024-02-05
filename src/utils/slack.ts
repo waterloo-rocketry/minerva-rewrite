@@ -45,7 +45,7 @@ export async function postMessage(
       ...options,
     });
   } catch (error) {
-    SlackLogger.getInstance().error(`Failed to post message to channel \`${channel.name}\` with error:`, String(error));
+    SlackLogger.getInstance().error(`Failed to post message to channel \`${channel.name}\` with error:`, error);
     throw error;
   }
 
@@ -81,7 +81,7 @@ export async function postEphemeralMessage(
   } catch (error) {
     SlackLogger.getInstance().error(
       `Failed to post ephemeral message to user \`${user}\` in channel \`${channel}\` with error:`,
-      String(error),
+      error,
     );
     throw error;
   }
@@ -101,7 +101,7 @@ export async function getAllEmoji(client: WebClient): Promise<string[]> {
     }
     return Object.keys(result.emoji);
   } catch (error) {
-    SlackLogger.getInstance().error(`Failed to get emojis for workspace:`, String(error));
+    SlackLogger.getInstance().error(`Failed to get emojis for workspace:`, error);
     throw error;
   }
 }
@@ -141,7 +141,7 @@ export async function getAllSlackUsers(
         break;
       }
     } catch (error) {
-      SlackLogger.getInstance().error(`Failed to get users from workspace:`, String(error));
+      SlackLogger.getInstance().error(`Failed to get users from workspace:`, error);
       throw error;
     }
   }
@@ -177,7 +177,7 @@ export async function getChannelMembers(client: WebClient, channelId: string): P
     }
     return members.length > 0 ? members : [];
   } catch (error) {
-    SlackLogger.getInstance().error(`Failed to get members for channel with id \`${channelId}\`:`, String(error));
+    SlackLogger.getInstance().error(`Failed to get members for channel with id \`${channelId}\`:`, error);
     throw error;
   }
 }
@@ -209,7 +209,7 @@ export function addReactionToMessage(
   } catch (error) {
     SlackLogger.getInstance().error(
       `Failed to add reaction \`${emoji}\` to message \`${timestampStr}\` in \`${channel}\`:`,
-      String(error),
+      error,
     );
     throw error;
   }
@@ -236,7 +236,7 @@ export async function getMessagePermalink(
   } catch (error) {
     SlackLogger.getInstance().error(
       `Error fetching message permalink for message with timestamp \`${timestamp}\` in \`${channel}\`:`,
-      String(error),
+      error,
     );
     throw error;
   }

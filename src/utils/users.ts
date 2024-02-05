@@ -113,7 +113,7 @@ export async function getAllSingleChannelGuestsInOneChannel(
   try {
     allUsersInChannel = await getAllUsersInChannel(client, channel.name);
   } catch (error) {
-    SlackLogger.getInstance().error(`Failed to get users in channel \`${channel.name}\` with error:`, String(error));
+    SlackLogger.getInstance().error(`Failed to get users in channel \`${channel.name}\` with error:`, error);
     throw error;
   }
 

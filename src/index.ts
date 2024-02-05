@@ -42,7 +42,7 @@ scheduleTasks(app.client, auth);
   } catch (error) {
     SlackLogger.getInstance().error(
       `Minerva has failed to start. Deployment commit hash: \`${environment.deploymentCommitHash}\``,
-      String(error),
+      error,
     );
   }
 })();

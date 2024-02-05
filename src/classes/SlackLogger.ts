@@ -49,13 +49,13 @@ export class SlackLogger {
    * Log a message to the minerva logging channel in Slack
    * @param level The level of the log
    * @param message The message to log
-   * @param codeBlockContent The content of the code block to log after the message, if any. To be used for logging errors
+   * @param codeBlockContent The content of the code block to log after the message, if any.
    * @param logToConsole Whether to log the message to the console in addition to Slack
    */
   private async log(
     level: LogLevel,
     message: string,
-    codeBlockContent: string = "",
+    codeBlockContent: unknown = "",
     logToConsole = true,
   ): Promise<void> {
     const formattedMessage = this.formatMessage(level, message);
@@ -85,7 +85,7 @@ export class SlackLogger {
    * @param codeBlockContent The content of the code block to log after the message, if any.
    * @param logToConsole Whether to log the message to the console in addition to Slack
    */
-  async info(message: string, codeBlockContent: string = "", logToConsole = true): Promise<void> {
+  async info(message: string, codeBlockContent: unknown = "", logToConsole = true): Promise<void> {
     await this.log(LogLevel.INFO, message, codeBlockContent, logToConsole);
   }
   /**
@@ -94,7 +94,7 @@ export class SlackLogger {
    * @param codeBlockContent The content of the code block to log after the message, if any.
    * @param logToConsole Whether to log the message to the console in addition to Slack
    */
-  async warning(message: string, codeBlockContent: string = "", logToConsole = true): Promise<void> {
+  async warning(message: string, codeBlockContent: unknown = "", logToConsole = true): Promise<void> {
     await this.log(LogLevel.WARNING, message, codeBlockContent, logToConsole);
   }
 
@@ -104,7 +104,7 @@ export class SlackLogger {
    * @param codeBlockContent The content of the code block to log after the message, if any. Can be used to log the error content
    * @param logToConsole Whether to log the message to the console in addition to Slack
    */
-  async error(message: string, codeBlockContent: string = "", logToConsole = true): Promise<void> {
+  async error(message: string, codeBlockContent: unknown = "", logToConsole = true): Promise<void> {
     await this.log(LogLevel.ERROR, message, codeBlockContent, logToConsole);
   }
 
@@ -124,7 +124,11 @@ export class SlackLogger {
    * @param codeBlockContent The content of the code block
    * @returns The formatted code block content
    */
-  private formatcodeBlockContent(codeBlockContent: string): string {
-    return `\`\`\`${codeBlockContent}\`\`\``;
+  private formatcodeBlockContent(codeBlockContent: unknown): string {
+    if (codeBlockContent instanceof Error) {
+      return `\`\`\`${codeBlockContent.message}\`\`\``;
+    } else {
+      return `\`\`\`${codeBlockContent}\`\`\``;
+    }
   }
 }

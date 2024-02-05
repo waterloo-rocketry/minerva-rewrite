@@ -39,7 +39,7 @@ export function parseEvents(events: calendar_v3.Schema$Events, channels: SlackCh
         const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(event, channels);
         eventsList.push(calendarEvent);
       } catch (error) {
-        SlackLogger.getInstance().error(`Failed to parse Google Calendar event:`, String(error));
+        SlackLogger.getInstance().error(`Failed to parse Google Calendar event:`, error);
       }
     });
 

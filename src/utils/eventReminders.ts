@@ -138,7 +138,7 @@ export async function postReminderToChannel(
   } catch (error) {
     SlackLogger.getInstance().error(
       `Failed to post reminder message to channel \`${channel.name}\` with error:`,
-      String(error),
+      error,
     );
     return;
   }
@@ -156,7 +156,7 @@ export async function postReminderToChannel(
       } catch (error) {
         SlackLogger.getInstance().error(
           `Failed to add reaction \`${emoji}\` to message \`${timestamp}\` in \`${channel.name}\` with error:`,
-          String(error),
+          error,
         );
       }
     });
