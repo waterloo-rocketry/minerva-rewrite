@@ -125,10 +125,6 @@ export class SlackLogger {
    * @returns The formatted code block content
    */
   private formatcodeBlockContent(codeBlockContent: unknown): string {
-    if (codeBlockContent instanceof Error) {
-      return `\`\`\`${codeBlockContent.message}\`\`\``;
-    } else {
-      return `\`\`\`${codeBlockContent}\`\`\``;
-    }
+    return `\`\`\`${codeBlockContent}\`\`\``;
   }
 }
