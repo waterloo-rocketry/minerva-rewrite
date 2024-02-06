@@ -14,7 +14,7 @@ import { SlackLogger } from "../classes/SlackLogger";
 export function filterSlackChannelFromName(name: string, channels: SlackChannel[]): SlackChannel | undefined {
   if (name == "default") throw new Error("`default` is not a valid channel name, as it is a group of channels");
   const channel = channels?.find((channel) => channel.name === name);
-  if (channel == undefined) throw new Error(`could not find channel with name ${name}`);
+  if (channel == undefined) throw new Error(`could not find channel with name "${name}"`);
 
   return channel;
 }

@@ -49,15 +49,15 @@ export default class CalendarEvent {
     }
     const title = event.summary;
     if (event.start?.dateTime == undefined) {
-      throw new Error(`Event start is undefined for event ${event.summary}`);
+      throw new Error(`Event start is undefined for event "${event.summary}"`);
     }
     const start = new Date(event.start.dateTime);
     if (event.end?.dateTime == undefined) {
-      throw new Error(`Event end is undefined for event ${event.summary}`);
+      throw new Error(`Event end is undefined for event "${event.summary}"`);
     }
     const end = new Date(event.end.dateTime);
     if (event.htmlLink == undefined) {
-      throw new Error(`Event URL is undefined for event ${event.summary}`);
+      throw new Error(`Event URL is undefined for event "${event.summary}"`);
     }
     const url = event.htmlLink;
 
@@ -73,7 +73,9 @@ export default class CalendarEvent {
         parsedEvent.description = description;
       } catch (error) {
         if (error instanceof Error) {
-          throw new Error(`Failed to parse event description for event ${event.summary} with error: ${error.message}`);
+          throw new Error(
+            `Failed to parse event description for event "${event.summary}" with error: ${error.message}`,
+          );
         }
         throw new Error(`Failed to parse event description for event ${event.summary}: ${error}`);
       }

@@ -160,7 +160,7 @@ describe("utils/calendarDescription", () => {
 
     it("should throw an error if the the channel specified does not exist", () => {
       const description = `#foodstuffs<br>This is a description<br>Yep it is.`;
-      expect(() => parseDescription(description, [])).toThrow("could not find channel with name foodstuffs");
+      expect(() => parseDescription(description, [])).toThrow(`could not find channel with name "foodstuffs"`);
     });
 
     it("should throw an error if no channel is specified", () => {

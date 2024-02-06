@@ -85,7 +85,7 @@ export function parseDescription(
   }
 
   const channel = filterSlackChannelFromName(channelName, workspaceChannels);
-  if (channel == undefined) throw new Error(`channel ${channelName} not found`);
+  if (channel == undefined) throw new Error(`channel "${channelName}" not found`);
 
   const minervaEventMetadata = {
     channel,
