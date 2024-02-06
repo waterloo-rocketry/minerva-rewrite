@@ -55,6 +55,7 @@ export function parseDescriptionFromHtml(description: string): string {
   // TODO parse description as markdown potentially - would allow for slack to have more formatting
   const plainDescription = convert(description, {
     wordwrap: false,
+    preserveNewlines: true,
     selectors: [{ selector: "a", options: { ignoreHref: true } }],
   });
 
