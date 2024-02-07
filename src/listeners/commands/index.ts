@@ -1,9 +1,13 @@
 // commands/index.ts
 import { App } from "@slack/bolt";
-import { helpCommandHandler } from "./helpCommand";
+import { OAuth2Client } from "google-auth-library";
 
-const register = (app: App): void => {
+import { helpCommandHandler } from "./helpCommand";
+import { meetingReminderCommandHandler } from "./meetingReminderCommand";
+
+const register = (app: App, googleAuth: OAuth2Client): void => {
   app.command("/help", helpCommandHandler);
+  app.command("/meeting_reminder", (payload) => meetingReminderCommandHandler(payload, googleAuth));
   // Other command registrations would go here
 };
 

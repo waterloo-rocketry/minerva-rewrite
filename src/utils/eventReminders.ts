@@ -19,6 +19,8 @@ export const TIME_CHECK_INTERVAL = 1000 * 60 * 5; // 5 minutes in milliseconds
  * The types of event reminders that can be sent
  */
 export enum EventReminderType {
+  MANUAL = 1,
+  MANUAL_PING = 2,
   FIVE_MINUTES = 1000 * 60 * 5, // 5 minutes in milliseconds
   SIX_HOURS = 1000 * 60 * 60 * 6, // 6 hours in milliseconds
 }
@@ -59,12 +61,14 @@ export function getEventReminderType(event: CalendarEvent): EventReminderType | 
  * Posts a reminder for the given event to the channel it is associated with
  * @param event The event to post a reminder for
  * @param client Slack Web API client
+ * @param reminderType The type of reminder to post
  * @param defaultSlackChannels The default Slack channels to post reminders to. If not provided, the default channels will be fetched from the Slack API
  * @param allSlackUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
  */
 export async function remindUpcomingEvent(
   event: CalendarEvent,
   client: WebClient,
+  reminderType: EventReminderType | null,
   defaultSlackChannels?: SlackChannel[],
   allSlackUsersInWorkspace?: SlackUser[],
 ): Promise<void> {
@@ -73,9 +77,7 @@ export async function remindUpcomingEvent(
     return;
   }
 
-  const reminderType = getEventReminderType(event);
-
-  if (!reminderType) {
+  if (reminderType == null) {
     return;
   }
 
@@ -104,10 +106,15 @@ export async function remindUpcomingEvent(
     allSlackUsersInWorkspace,
   );
 
-  const reminderTypeString = reminderType === EventReminderType.FIVE_MINUTES ? "5 minute" : "6 hour";
+  const reminderTypeStrings = {
+    [EventReminderType.MANUAL]: "manually triggered",
+    [EventReminderType.MANUAL_PING]: "manually triggered (with ping)",
+    [EventReminderType.FIVE_MINUTES]: "5 minute",
+    [EventReminderType.SIX_HOURS]: "6 hour",
+  };
 
   SlackLogger.getInstance().info(
-    `Sent ${reminderTypeString} reminder for event \`${
+    `Sent ${reminderTypeStrings[reminderType]} reminder for event \`${
       event.title
     }\` at \`${event.start.toISOString()}\` to channel \`${
       event.minervaEventMetadata.channel.name
@@ -206,7 +213,8 @@ export async function remindUpcomingEvents(client: WebClient, events: CalendarEv
   const allSlackUsersInWorkspace = await getAllSlackUsers(client);
 
   events.forEach((event) => {
-    remindUpcomingEvent(event, client, defaultSlackChannels, allSlackUsersInWorkspace);
+    const reminderType = getEventReminderType(event);
+    remindUpcomingEvent(event, client, reminderType, defaultSlackChannels, allSlackUsersInWorkspace);
   });
 }
 
@@ -217,9 +225,11 @@ export async function remindUpcomingEvents(client: WebClient, events: CalendarEv
  * @returns The generated reminder text
  */
 export function generateEventReminderChannelText(event: CalendarEvent, reminderType: EventReminderType): string {
-  let message = `${reminderType == EventReminderType.FIVE_MINUTES ? "<!channel>\n" : ""}Reminder: *${
-    event.title
-  }* is occurring`;
+  let message = `${
+    reminderType == EventReminderType.FIVE_MINUTES || reminderType == EventReminderType.MANUAL_PING
+      ? "<!channel>\n"
+      : ""
+  }Reminder: *${event.title}* is occurring`;
 
   if (reminderType === EventReminderType.FIVE_MINUTES) {
     const timeUntilEvent = event.start.getTime() - new Date().getTime();
