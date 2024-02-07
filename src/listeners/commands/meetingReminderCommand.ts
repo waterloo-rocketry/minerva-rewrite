@@ -8,10 +8,17 @@ import { postEphemeralMessage } from "../../utils/slack";
 import { EventReminderType, remindUpcomingEvent } from "../../utils/eventReminders";
 import { SlackLogger } from "../../classes/SlackLogger";
 
+/**
+ * Handler for the /meeting_reminder command
+ * @param payload The payload of the command
+ * @param googleAuth The OAuth2Client for Google Calendar
+ */
 export async function meetingReminderCommandHandler(
-  { command, ack, client }: SlackCommandMiddlewareArgs & AllMiddlewareArgs,
+  payload: SlackCommandMiddlewareArgs & AllMiddlewareArgs,
   googleAuth: OAuth2Client,
 ): Promise<void> {
+  const { command, ack, client } = payload;
+
   ack();
   logCommandUsed(command);
 
