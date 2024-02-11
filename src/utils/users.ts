@@ -6,6 +6,7 @@ import SlackUser, { UserType } from "../classes/SlackUser";
 import { Member } from "@slack/web-api/dist/response/UsersListResponse";
 import { filterSlackChannelFromName, getAllSlackChannels } from "./channels";
 import { SlackUserID, getAllSlackUsers, getChannelMembers, postMessage } from "./slack";
+import { SlackLogger } from "../classes/SlackLogger";
 
 /**
  * Determine the type of a Slack user based on the provided Member object.
@@ -58,7 +59,7 @@ export async function getAllSingleChannelGuests(slackUsers: SlackUser[]): Promis
  * @returns A promise that resolves to an array of user IDs in the channel,
  *   or undefined if the channel is not found.
  */
-export async function getAllUsersInChannel(client: WebClient, channel: string): Promise<SlackUserID[] | undefined> {
+export async function getAllUsersInChannel(client: WebClient, channel: string): Promise<SlackUserID[]> {
   const allSlackChannels = await getAllSlackChannels(client);
   const channelId = await filterSlackChannelFromName(channel, allSlackChannels);
   if (!channelId) {
@@ -108,7 +109,13 @@ export async function getAllSingleChannelGuestsInOneChannel(
   channel: SlackChannel,
   allUsersInWorkspace?: SlackUser[],
 ): Promise<SlackUser[]> {
-  const allUsersInChannel = await getAllUsersInChannel(client, channel.name);
+  let allUsersInChannel: SlackUserID[] = [];
+  try {
+    allUsersInChannel = await getAllUsersInChannel(client, channel.name);
+  } catch (error) {
+    SlackLogger.getInstance().error(`Failed to get users in channel \`${channel.name}\` with error:`, error);
+    throw error;
+  }
 
   if (allUsersInWorkspace == undefined) {
     allUsersInWorkspace = await getAllSlackUsers(client);

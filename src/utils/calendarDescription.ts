@@ -55,6 +55,7 @@ export function parseDescriptionFromHtml(description: string): string {
   // TODO parse description as markdown potentially - would allow for slack to have more formatting
   const plainDescription = convert(description, {
     wordwrap: false,
+    preserveNewlines: true,
     selectors: [{ selector: "a", options: { ignoreHref: true } }],
   });
 
@@ -66,6 +67,7 @@ export function parseDescriptionFromHtml(description: string): string {
  * @param description The description of the event to parse
  * @param workspaceChannels The Slack channels in the workspace
  * @returns The parsed description and the metadata of the event that minerva uses
+ * @throws Error if the channel name is not specified or if the channel is not found
  */
 export function parseDescription(
   description: string,
@@ -84,7 +86,7 @@ export function parseDescription(
   }
 
   const channel = filterSlackChannelFromName(channelName, workspaceChannels);
-  if (channel == undefined) throw new Error(`channel ${channelName} not found`);
+  if (channel == undefined) throw new Error(`channel "${channelName}" not found`);
 
   const minervaEventMetadata = {
     channel,

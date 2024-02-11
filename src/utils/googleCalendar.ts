@@ -2,6 +2,7 @@ import { OAuth2Client } from "google-auth-library";
 import { google, calendar_v3 } from "googleapis";
 import CalendarEvent from "../classes/CalendarEvent";
 import SlackChannel from "../classes/SlackChannel";
+import { SlackLogger } from "../classes/SlackLogger";
 
 /**
  * Fetches all events in the next 24 hours from the Rocketry calendar.
@@ -34,8 +35,12 @@ export function parseEvents(events: calendar_v3.Schema$Events, channels: SlackCh
   const eventsList: CalendarEvent[] = [];
   if (events.items) {
     events.items.forEach((event) => {
-      const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(event, channels);
-      eventsList.push(calendarEvent);
+      try {
+        const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(event, channels);
+        eventsList.push(calendarEvent);
+      } catch (error) {
+        SlackLogger.getInstance().error(`Failed to parse Google Calendar event:`, error);
+      }
     });
 
     return eventsList;

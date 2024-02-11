@@ -4,6 +4,8 @@ import registerListeners from "./listeners";
 import { OAuth2Client } from "google-auth-library";
 import scheduleTasks from "./scheduled";
 
+import { SlackLogger } from "./classes/SlackLogger";
+
 // Set up Google OAuth2 client
 const auth = new OAuth2Client({
   clientId: environment.googleAccountClient,
@@ -34,9 +36,13 @@ scheduleTasks(app.client, auth);
 (async (): Promise<void> => {
   try {
     await app.start();
-    console.log("⚡️ Bolt app is running!");
+    SlackLogger.getInstance().info(
+      `Minerva has started. Deployment commit hash: \`${environment.deploymentCommitHash}\``,
+    );
   } catch (error) {
-    console.error("Failed to start the Bolt app", error);
-    throw error;
+    SlackLogger.getInstance().error(
+      `Minerva has failed to start. Deployment commit hash: \`${environment.deploymentCommitHash}\``,
+      error,
+    );
   }
 })();
