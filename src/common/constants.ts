@@ -25,3 +25,6 @@ export const loggingChannel =
   environment == "production"
     ? new SlackChannel("minerva-log", "C016AAGP83F")
     : new SlackChannel("minerva-log", "C015FSK7FQE");
+
+export const slackWorkspaceUrl =
+  environment == "production" ? "https://waterloorocketry.slack.com" : "https://waterloorocketrydev.slack.com";

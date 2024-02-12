@@ -103,3 +103,15 @@ export async function getDefaultSlackChannels(client: WebClient): Promise<SlackC
   const defaultChannels = filterDefaultSlackChannels(allChannels);
   return defaultChannels;
 }
+
+export function parseEscapedSlashCommandChannel(text: string): SlackChannel {
+  // Escaped channel text is in the format <#C12345678|channel-name>
+  const matches = text.match(/<#(C\w+)\|(.+)>/);
+  if (matches == null) {
+    throw new Error(`could not parse escaped channel text: ${text}`);
+  }
+
+  const id = matches[1];
+  const name = matches[2];
+  return new SlackChannel(name, id);
+}
