@@ -1,5 +1,4 @@
 import { AllMiddlewareArgs, SlackCommandMiddlewareArgs } from "@slack/bolt";
-import { StringIndexed } from "@slack/bolt/dist/types/helpers";
 
 import { logCommandUsed } from "../../utils/logging";
 import { postEphemeralMessage } from "../../utils/slack";
@@ -23,10 +22,10 @@ type NotifyParameters = {
  * @returns A promise of void
  */
 export default async function notifyCommandHandler({
-  ack,
   command,
+  ack,
   client,
-}: SlackCommandMiddlewareArgs & AllMiddlewareArgs<StringIndexed>): Promise<void> {
+}: SlackCommandMiddlewareArgs & AllMiddlewareArgs): Promise<void> {
   await ack();
   await logCommandUsed(command);
 
