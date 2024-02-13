@@ -10,15 +10,16 @@ import { SlackLogger } from "../../classes/SlackLogger";
 
 /**
  * Handler for the /meeting_reminder command
- * @param payload The payload of the command
+ * @param obj The arguments for the middleware
+ * @param obj.ack The Bolt app's `ack()` function
+ * @param obj.command The command payload
+ * @param obj.client The Bolt app client
  * @param googleAuth The OAuth2Client for Google Calendar
  */
 export async function meetingReminderCommandHandler(
-  payload: SlackCommandMiddlewareArgs & AllMiddlewareArgs,
+  { command, ack, client }: SlackCommandMiddlewareArgs & AllMiddlewareArgs,
   googleAuth: OAuth2Client,
 ): Promise<void> {
-  const { command, ack, client } = payload;
-
   ack();
   logCommandUsed(command);
 
