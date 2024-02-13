@@ -104,6 +104,11 @@ export async function getDefaultSlackChannels(client: WebClient): Promise<SlackC
   return defaultChannels;
 }
 
+/**
+ * Parses the escaped channel text from a Slack command and returns the Slack channel. Escaped channels are in the format <#C12345678|channel-name>
+ * @param text The escaped channel text
+ * @returns The Slack channel
+ */
 export function parseEscapedSlashCommandChannel(text: string): SlackChannel {
   // Escaped channel text is in the format <#C12345678|channel-name>
   const matches = text.match(/<#(C\w+)\|(.+)>/);
