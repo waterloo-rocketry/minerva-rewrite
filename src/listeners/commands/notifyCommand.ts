@@ -7,7 +7,7 @@ import { getDefaultSlackChannels, parseEscapedSlashCommandChannel } from "../../
 import { slackWorkspaceUrl } from "../../common/constants";
 import { SlackLogger } from "../../classes/SlackLogger";
 
-type NotifyParameters = {
+export type NotifyParameters = {
   messageUrl: string;
   pingChannels: boolean;
   channels: SlackChannel[] | "default";
@@ -69,15 +69,16 @@ export default async function notifyCommandHandler({
  * @param command The arguments of the `/notify` command
  * @returns The parameters for the notify command
  */
-function parseNotifyCommand(command: string): NotifyParameters {
+export function parseNotifyCommand(command: string): NotifyParameters {
   const tokens = command.split(" ");
 
-  if (tokens.length == 0) {
+  if (tokens.length == 1 && tokens[0].trim() == "") {
     throw new Error("Please provide a message to send. Usage: `/notify <messageURL>`");
   }
 
   // Check if first token is a valid URL
-  const messageUrl = tokens.shift() as string;
+  // Links will be wrapped in < and >, so we remove those
+  const messageUrl = (tokens.shift() as string).replace(/<|>/g, "");
   if (!messageUrl.startsWith(`${slackWorkspaceUrl}/archives/`)) {
     throw new Error("Please provide a valid message URL from this Slack workspace as the first argument.");
   }
