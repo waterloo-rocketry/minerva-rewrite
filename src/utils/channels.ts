@@ -1,7 +1,7 @@
 import { WebClient } from "@slack/web-api";
 import SlackChannel from "../classes/SlackChannel";
 import ObjectSet from "../classes/ObjectSet";
-import { defaultSlackChannels } from "../common/constants";
+import { defaultSlackChannelNames } from "../common/constants";
 import { SlackLogger } from "../classes/SlackLogger";
 
 /**
@@ -61,7 +61,7 @@ export function filterSlackChannelsFromNames(names: string[], channels: SlackCha
  * @returns An array of filtered default Slack channels.
  */
 export function filterDefaultSlackChannels(channels: SlackChannel[]): SlackChannel[] {
-  return filterSlackChannelsFromNames(defaultSlackChannels, channels);
+  return filterSlackChannelsFromNames(defaultSlackChannelNames, channels);
 }
 
 /**

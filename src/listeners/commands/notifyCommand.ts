@@ -1,11 +1,12 @@
 import { AllMiddlewareArgs, SlackCommandMiddlewareArgs } from "@slack/bolt";
 
 import { logCommandUsed } from "../../utils/logging";
-import { postEphemeralMessage } from "../../utils/slack";
+import { postEphemeralMessage, postMessage } from "../../utils/slack";
 import SlackChannel from "../../classes/SlackChannel";
 import { getDefaultSlackChannels, parseEscapedSlashCommandChannel } from "../../utils/channels";
 import { slackWorkspaceUrl } from "../../common/constants";
 import { SlackLogger } from "../../classes/SlackLogger";
+import { loggingChannel } from "../../common/constants";
 
 export type NotifyParameters = {
   messageUrl: string;
@@ -52,16 +53,29 @@ export default async function notifyCommandHandler({
     channels = await getDefaultSlackChannels(client);
   }
 
-  for (const channel of channels) {
-    await client.chat.postMessage({
-      channel: channel.id,
-      text: message,
-    });
+  channels = channels.filter((c) => c.id != command.channel_id);
+
+  try {
+    for (const channel of channels) {
+      await postMessage(client, channel, message);
+    }
+  } catch (e) {
+    await postEphemeralMessage(
+      client,
+      command.channel_id,
+      command.user_id,
+      `An error occurred while notifying the channels. Check <#${loggingChannel.id}> for more details.`,
+    );
+    return;
   }
 
-  SlackLogger.getInstance().info(
-    `Notified channels ${channels.map((c) => `\`${c.name}\``).join(", ")} about message \`${messageUrl}\``,
-  );
+  const responseMessage = `Notified channels ${channels
+    .map((c) => `\`${c.name}\``)
+    .join(", ")} about message \`${messageUrl}\``;
+
+  await postEphemeralMessage(client, command.channel_id, command.user_id, responseMessage);
+
+  SlackLogger.getInstance().info(responseMessage);
 }
 
 /**

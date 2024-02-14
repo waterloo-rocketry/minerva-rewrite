@@ -4,7 +4,7 @@ import SlackChannel from "../classes/SlackChannel";
 /**
  * The "default" slack channels for use in sending DM reminders to single-channel guests
  */
-export const defaultSlackChannels =
+export const defaultSlackChannelNames =
   environment == "production"
     ? [
         "general",
