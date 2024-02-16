@@ -1,4 +1,4 @@
-import { parseNotifyCommand } from "../../../src/listeners/commands/notifyCommand";
+import { parseNotifyCommand, generateNotifyMessage } from "../../../src/listeners/commands/notifyCommand";
 import { NotifyParameters, NotifyType } from "../../../src/listeners/commands/notifyCommand";
 import SlackChannel from "../../../src/classes/SlackChannel";
 
@@ -153,5 +153,25 @@ describe("parseNotifyCommand", () => {
   it("throws an error when the channels are invalid", () => {
     const commandArgs = "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000 #C12345678";
     expect(() => parseNotifyCommand(commandArgs)).toThrow();
+  });
+});
+
+describe("generateNotifyMessage", () => {
+  it("generates the notification message for NotifyType.CHANNEL", () => {
+    const messageUrl = "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000";
+    const expected = `${messageUrl}`;
+    expect(generateNotifyMessage(messageUrl, NotifyType.CHANNEL)).toEqual(expected);
+  });
+
+  it("generates the notification message for NotifyType.DM_SINGLE_CHANNEL_GUESTS", () => {
+    const messageUrl = "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000";
+    const expected = `${messageUrl}\n_You have been sent this message because you are a single channel guest who might have otherwise missed this alert._`;
+    expect(generateNotifyMessage(messageUrl, NotifyType.DM_SINGLE_CHANNEL_GUESTS)).toEqual(expected);
+  });
+
+  it("generates the notification message for NotifyType.CHANNEL_PING", () => {
+    const messageUrl = "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000";
+    const expected = `<!channel>\n${messageUrl}`;
+    expect(generateNotifyMessage(messageUrl, NotifyType.CHANNEL_PING)).toEqual(expected);
   });
 });
