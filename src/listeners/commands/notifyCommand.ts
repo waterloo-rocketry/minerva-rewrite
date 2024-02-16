@@ -82,7 +82,8 @@ export default async function notifyCommandHandler({
     return;
   }
 
-  const responseMessage = `Notified channels ${channels
+  const responseMessage = `Notified channels ${channelSet
+    .values()
     .map((c) => `\`${c.name}\``)
     .join(", ")} about message \`${messageUrl}\``;
 
