@@ -3,6 +3,7 @@ import SlackChannel from "../classes/SlackChannel";
 import ObjectSet from "../classes/ObjectSet";
 import { defaultSlackChannelNames } from "../common/constants";
 import { SlackLogger } from "../classes/SlackLogger";
+import { slackWorkspaceUrl } from "../common/constants";
 
 /**
  * Filters a Slack channel from an array of channels based on its name.
@@ -119,4 +120,22 @@ export function parseEscapedSlashCommandChannel(text: string): SlackChannel {
   const id = matches[1];
   const name = matches[2];
   return new SlackChannel(name, id);
+}
+
+/**
+ * Extracts the channel ID from a message link.
+ * @param messageLink The message link
+ * @returns The channel ID
+ */
+export function extractChannelIdFromMessageLink(messageLink: string): string {
+  if (!messageLink.startsWith(`${slackWorkspaceUrl}/archives/`)) {
+    throw new Error(`link ${messageLink} is not a valid message link from this Slack workspace`);
+  }
+
+  const matches = messageLink.match(/\/archives\/(\w+)\/p\w+/);
+  if (matches == null) {
+    throw new Error(`could not parse message link: ${messageLink}`);
+  }
+
+  return matches[1];
 }

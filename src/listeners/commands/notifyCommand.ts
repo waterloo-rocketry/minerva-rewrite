@@ -3,15 +3,21 @@ import { AllMiddlewareArgs, SlackCommandMiddlewareArgs } from "@slack/bolt";
 import { logCommandUsed } from "../../utils/logging";
 import { postEphemeralMessage, postMessage } from "../../utils/slack";
 import SlackChannel from "../../classes/SlackChannel";
-import { getDefaultSlackChannels, parseEscapedSlashCommandChannel } from "../../utils/channels";
+import {
+  extractChannelIdFromMessageLink,
+  getDefaultSlackChannels,
+  parseEscapedSlashCommandChannel,
+} from "../../utils/channels";
 import { slackWorkspaceUrl } from "../../common/constants";
 import { SlackLogger } from "../../classes/SlackLogger";
 import { loggingChannel } from "../../common/constants";
+import ObjectSet from "../../classes/ObjectSet";
 
 export type NotifyParameters = {
   messageUrl: string;
   pingChannels: boolean;
-  channels: SlackChannel[] | "default";
+  includeDefaultChannels: boolean;
+  channels: SlackChannel[];
 };
 
 /**
@@ -44,19 +50,26 @@ export default async function notifyCommandHandler({
     return;
   }
 
-  let { channels } = notifyParams;
-  const { messageUrl, pingChannels } = notifyParams;
+  const { channels, includeDefaultChannels, messageUrl, pingChannels } = notifyParams;
 
   const message = pingChannels ? `<!channel>\n${messageUrl}` : messageUrl;
+  const channelSet = new ObjectSet<SlackChannel>((c) => c.id);
 
-  if (channels == "default") {
-    channels = await getDefaultSlackChannels(client);
+  if (includeDefaultChannels) {
+    // When default is specified, we filter out the channel that the message is in
+    const messageChannelId = extractChannelIdFromMessageLink(messageUrl);
+    const channelsToAdd = (await getDefaultSlackChannels(client)).filter((c) => c.id != messageChannelId);
+    for (const channel of channelsToAdd) {
+      channelSet.add(channel);
+    }
   }
 
-  channels = channels.filter((c) => c.id != command.channel_id);
+  for (const channel of channels) {
+    channelSet.add(channel);
+  }
 
   try {
-    for (const channel of channels) {
+    for (const channel of channelSet.values()) {
       await postMessage(client, channel, message);
     }
   } catch (e) {
@@ -104,21 +117,27 @@ export function parseNotifyCommand(command: string): NotifyParameters {
     tokens.shift();
   }
 
-  let channels: SlackChannel[] | "default" = [];
+  const channels: SlackChannel[] = [];
+  let includeDefaultChannels = false;
 
   if (tokens.length == 0) {
-    channels = "default";
+    includeDefaultChannels = true;
   } else {
     for (const channelString of tokens) {
-      let channel: SlackChannel;
-      try {
-        channel = parseEscapedSlashCommandChannel(channelString);
-      } catch (e) {
-        throw new Error(`Error parsing channel \`${channelString}\`: ${e}`);
+      if (channelString == "default") {
+        includeDefaultChannels = true;
+        continue;
+      } else {
+        let channel: SlackChannel;
+        try {
+          channel = parseEscapedSlashCommandChannel(channelString);
+        } catch (e) {
+          throw new Error(`Error parsing channel \`${channelString}\`: ${e}`);
+        }
+        channels.push(channel);
       }
-      channels.push(channel);
     }
   }
 
-  return { messageUrl, pingChannels, channels };
+  return { messageUrl, includeDefaultChannels, pingChannels, channels };
 }
