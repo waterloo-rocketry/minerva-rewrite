@@ -132,16 +132,13 @@ export function parseNotifyCommand(command: string): NotifyParameters {
   let notifyType: NotifyType = NotifyType.DM_SINGLE_CHANNEL_GUESTS;
 
   if (tokens.length > 0) {
-    if (tokens[0] == "copy-ping") {
+    if (tokens[0] == "copy") {
+      notifyType = NotifyType.CHANNEL;
+      tokens.shift();
+    } else if (tokens[0] == "copy-ping") {
       notifyType = NotifyType.CHANNEL_PING;
       tokens.shift();
     }
-
-    if (tokens[0] == "ping") {
-      notifyType = NotifyType.CHANNEL_PING;
-    }
-
-    tokens.shift();
   }
 
   const channels: SlackChannel[] = [];
