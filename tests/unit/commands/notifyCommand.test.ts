@@ -8,7 +8,8 @@ describe("parseNotifyCommand", () => {
     const expected: NotifyParameters = {
       messageUrl: "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000",
       pingChannels: false,
-      channels: "default",
+      includeDefaultChannels: true,
+      channels: [],
     };
 
     expect(parseNotifyCommand(commandArgs)).toEqual(expected);
@@ -18,8 +19,9 @@ describe("parseNotifyCommand", () => {
     const commandArgs = "<https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000>";
     const expected: NotifyParameters = {
       messageUrl: "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000",
+      includeDefaultChannels: true,
       pingChannels: false,
-      channels: "default",
+      channels: [],
     };
 
     expect(parseNotifyCommand(commandArgs)).toEqual(expected);
@@ -31,6 +33,7 @@ describe("parseNotifyCommand", () => {
     const expected: NotifyParameters = {
       messageUrl: "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000",
       pingChannels: true,
+      includeDefaultChannels: false,
       channels: [new SlackChannel("channel-name", "C12345678"), new SlackChannel("channel-name2", "C12345679")],
     };
 
@@ -42,7 +45,8 @@ describe("parseNotifyCommand", () => {
     const expected: NotifyParameters = {
       messageUrl: "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000",
       pingChannels: false,
-      channels: "default",
+      includeDefaultChannels: true,
+      channels: [],
     };
 
     expect(parseNotifyCommand(commandArgs)).toEqual(expected);
@@ -53,9 +57,46 @@ describe("parseNotifyCommand", () => {
     const expected: NotifyParameters = {
       messageUrl: "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000",
       pingChannels: true,
-      channels: "default",
+      includeDefaultChannels: true,
+      channels: [],
     };
 
+    expect(parseNotifyCommand(commandArgs)).toEqual(expected);
+  });
+
+  it("parses the /notify command with the default channels and specific channels", () => {
+    const commandArgs =
+      "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000 default <#C12345678|channel-name> <#C12345679|channel-name2>";
+    const expected: NotifyParameters = {
+      messageUrl: "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000",
+      pingChannels: false,
+      includeDefaultChannels: true,
+      channels: [new SlackChannel("channel-name", "C12345678"), new SlackChannel("channel-name2", "C12345679")],
+    };
+    expect(parseNotifyCommand(commandArgs)).toEqual(expected);
+  });
+
+  it("parses the /notify command with the default channels and specific channels (default not first)", () => {
+    const commandArgs =
+      "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000 <#C12345678|channel-name> default <#C12345679|channel-name2>";
+    const expected: NotifyParameters = {
+      messageUrl: "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000",
+      pingChannels: false,
+      includeDefaultChannels: true,
+      channels: [new SlackChannel("channel-name", "C12345678"), new SlackChannel("channel-name2", "C12345679")],
+    };
+    expect(parseNotifyCommand(commandArgs)).toEqual(expected);
+  });
+
+  it("parses the /notify command with pinging the default channels and specific channels", () => {
+    const commandArgs =
+      "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000 ping default <#C12345678|channel-name> <#C12345679|channel-name2>";
+    const expected: NotifyParameters = {
+      messageUrl: "https://waterloorocketrydev.slack.com/archives/C015FXXXXXX/p1707843500000000",
+      pingChannels: true,
+      includeDefaultChannels: true,
+      channels: [new SlackChannel("channel-name", "C12345678"), new SlackChannel("channel-name2", "C12345679")],
+    };
     expect(parseNotifyCommand(commandArgs)).toEqual(expected);
   });
 
