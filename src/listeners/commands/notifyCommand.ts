@@ -8,15 +8,22 @@ import {
   getDefaultSlackChannels,
   parseEscapedSlashCommandChannel,
 } from "../../utils/channels";
+import { postMessageToSingleChannelGuestsInChannels } from "../../utils/users";
 import { slackWorkspaceUrl } from "../../common/constants";
 import { SlackLogger } from "../../classes/SlackLogger";
 import { loggingChannel } from "../../common/constants";
 import ObjectSet from "../../classes/ObjectSet";
 
+export enum NotifyType {
+  CHANNEL,
+  CHANNEL_PING,
+  DM_SINGLE_CHANNEL_GUESTS,
+}
+
 export type NotifyParameters = {
   messageUrl: string;
-  pingChannels: boolean;
   includeDefaultChannels: boolean;
+  notifyType: NotifyType;
   channels: SlackChannel[];
 };
 
@@ -50,9 +57,7 @@ export default async function notifyCommandHandler({
     return;
   }
 
-  const { channels, includeDefaultChannels, messageUrl, pingChannels } = notifyParams;
-
-  const message = pingChannels ? `<!channel>\n${messageUrl}` : messageUrl;
+  const { channels, includeDefaultChannels, messageUrl, notifyType } = notifyParams;
   const channelSet = new ObjectSet<SlackChannel>((c) => c.id);
 
   if (includeDefaultChannels) {
@@ -68,21 +73,34 @@ export default async function notifyCommandHandler({
     channelSet.add(channel);
   }
 
+  const message = generateNotifyMessage(messageUrl, notifyType);
+
+  let singleChannelGuestsMessaged = 0;
   try {
-    for (const channel of channelSet.values()) {
-      await postMessage(client, channel, message);
+    if (notifyType == NotifyType.DM_SINGLE_CHANNEL_GUESTS) {
+      singleChannelGuestsMessaged = await postMessageToSingleChannelGuestsInChannels(
+        client,
+        channelSet.values(),
+        message,
+      );
+    } else {
+      for (const channel of channelSet.values()) {
+        await postMessage(client, channel, message);
+      }
     }
   } catch (e) {
     await postEphemeralMessage(
       client,
       command.channel_id,
       command.user_id,
-      `An error occurred while notifying the channels. Check <#${loggingChannel.id}> for more details.`,
+      `An error occurred while notifying. Check <#${loggingChannel.id}> for more details.`,
     );
     return;
   }
 
-  const responseMessage = `Notified channels ${channelSet
+  const responseMessage = `Notified ${
+    notifyType == NotifyType.DM_SINGLE_CHANNEL_GUESTS ? `${singleChannelGuestsMessaged} single-channel guests in` : ""
+  } channels ${channelSet
     .values()
     .map((c) => `\`${c.name}\``)
     .join(", ")} about message \`${messageUrl}\``;
@@ -111,10 +129,18 @@ export function parseNotifyCommand(command: string): NotifyParameters {
     throw new Error("Please provide a valid message URL from this Slack workspace as the first argument.");
   }
 
-  let pingChannels = false;
+  let notifyType: NotifyType = NotifyType.DM_SINGLE_CHANNEL_GUESTS;
 
-  if (tokens.length > 0 && tokens[0] == "ping") {
-    pingChannels = true;
+  if (tokens.length > 0) {
+    if (tokens[0] == "copy-ping") {
+      notifyType = NotifyType.CHANNEL_PING;
+      tokens.shift();
+    }
+
+    if (tokens[0] == "ping") {
+      notifyType = NotifyType.CHANNEL_PING;
+    }
+
     tokens.shift();
   }
 
@@ -140,5 +166,23 @@ export function parseNotifyCommand(command: string): NotifyParameters {
     }
   }
 
-  return { messageUrl, includeDefaultChannels, pingChannels, channels };
+  return { messageUrl, includeDefaultChannels, channels, notifyType };
+}
+
+/**
+ * Generates the notification message for the given parameters
+ * @param messageUrl The URL of the message to notify about
+ * @param notifyType The type of notification to generate
+ * @returns The notification message
+ */
+export function generateNotifyMessage(messageUrl: string, notifyType: NotifyType): string {
+  let message = messageUrl;
+
+  if (notifyType == NotifyType.CHANNEL_PING) {
+    message = `<!channel>\n${message}`;
+  } else if (notifyType == NotifyType.DM_SINGLE_CHANNEL_GUESTS) {
+    message = `${message}\n_You have been sent this message because you are a single channel guest who might have otherwise missed this alert._`;
+  }
+
+  return message;
 }
