@@ -83,6 +83,10 @@ export async function postMessageToSingleChannelGuestsInChannels(
   text: string,
   allUsersInWorkspace?: SlackUser[],
 ): Promise<number> {
+  if (allUsersInWorkspace == undefined) {
+    allUsersInWorkspace = await getAllSlackUsers(client);
+  }
+
   const allSingleChannelGuestsInChannels = await getAllSingleChannelGuestsInChannels(
     client,
     channels,

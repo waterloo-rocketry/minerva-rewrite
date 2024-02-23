@@ -1,8 +1,9 @@
 import { WebClient } from "@slack/web-api";
 import SlackChannel from "../classes/SlackChannel";
 import ObjectSet from "../classes/ObjectSet";
-import { defaultSlackChannels } from "../common/constants";
+import { defaultSlackChannelNames } from "../common/constants";
 import { SlackLogger } from "../classes/SlackLogger";
+import { slackWorkspaceUrl } from "../common/constants";
 
 /**
  * Filters a Slack channel from an array of channels based on its name.
@@ -61,7 +62,7 @@ export function filterSlackChannelsFromNames(names: string[], channels: SlackCha
  * @returns An array of filtered default Slack channels.
  */
 export function filterDefaultSlackChannels(channels: SlackChannel[]): SlackChannel[] {
-  return filterSlackChannelsFromNames(defaultSlackChannels, channels);
+  return filterSlackChannelsFromNames(defaultSlackChannelNames, channels);
 }
 
 /**
@@ -102,4 +103,39 @@ export async function getDefaultSlackChannels(client: WebClient): Promise<SlackC
   const allChannels = await getAllSlackChannels(client);
   const defaultChannels = filterDefaultSlackChannels(allChannels);
   return defaultChannels;
+}
+
+/**
+ * Parses the escaped channel text from a Slack command and returns the Slack channel. Escaped channels are in the format <#C12345678|channel-name>
+ * @param text The escaped channel text
+ * @returns The Slack channel
+ */
+export function parseEscapedSlashCommandChannel(text: string): SlackChannel {
+  // Escaped channel text is in the format <#C12345678|channel-name>
+  const matches = text.match(/<#(C\w+)\|(.+)>/);
+  if (matches == null) {
+    throw new Error(`could not parse escaped channel text: ${text}`);
+  }
+
+  const id = matches[1];
+  const name = matches[2];
+  return new SlackChannel(name, id);
+}
+
+/**
+ * Extracts the channel ID from a message link.
+ * @param messageLink The message link
+ * @returns The channel ID
+ */
+export function extractChannelIdFromMessageLink(messageLink: string): string {
+  if (!messageLink.startsWith(`${slackWorkspaceUrl}/archives/`)) {
+    throw new Error(`link ${messageLink} is not a valid message link from this Slack workspace`);
+  }
+
+  const matches = messageLink.match(/\/archives\/(\w+)\/p\w+/);
+  if (matches == null) {
+    throw new Error(`could not parse message link: ${messageLink}`);
+  }
+
+  return matches[1];
 }
