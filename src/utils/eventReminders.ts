@@ -97,10 +97,10 @@ export async function remindUpcomingEvent(
     return;
   }
 
-  const DmReminderText = generateEventReminderDMText(messageUrl);
   // If event is not set up to DM single channel guests, singleChannelGuestsMessaged will be -1 to indicate that it was not messaged
   let singleChannelGuestsMessaged = -1;
   if (event.minervaEventMetadata.DMSingleChannelGuests) {
+    const DmReminderText = generateEventReminderDMText(messageUrl);
     singleChannelGuestsMessaged = await postReminderToDMs(
       client,
       channel,
