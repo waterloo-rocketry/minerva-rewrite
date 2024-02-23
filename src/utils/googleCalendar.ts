@@ -16,6 +16,7 @@ export async function getEvents(auth: OAuth2Client): Promise<calendar_v3.Schema$
   const getNextEvents = await calendar.events.list({
     auth: auth,
     calendarId: "primary",
+    eventTypes: ["default"],
     timeMin: currentTime.toISOString(),
     timeMax: next24Hours.toISOString(),
     singleEvents: true,
