@@ -16,7 +16,7 @@ import { SlackLogger } from "../../classes/SlackLogger";
  * @param obj.client The Bolt app client
  * @param googleAuth The OAuth2Client for Google Calendar
  */
-export async function meetingReminderCommandHandler(
+export default async function meetingReminderCommandHandler(
   { command, ack, client }: SlackCommandMiddlewareArgs & AllMiddlewareArgs,
   googleAuth: OAuth2Client,
 ): Promise<void> {
