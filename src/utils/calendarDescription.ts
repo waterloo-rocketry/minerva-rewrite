@@ -11,7 +11,7 @@ import { filterSlackChannelFromName } from "../utils/channels";
  */
 export function splitDescription(description: string): {
   descriptionText: string;
-  channelName?: string;
+  channels?: string;
   meetingLink?: string;
 } {
   // Split the description by line
@@ -19,13 +19,13 @@ export function splitDescription(description: string): {
   // If there are multiple lines, the first 1-2 lines can contain the metadata
   // Check the first two lines for this metadata
   let descriptionStartLineNumber = 0;
-  let channelName: string | undefined;
+  let channels: string | undefined;
   let meetingLink: string | undefined;
 
   for (let i = 0; i < Math.min(lines.length, 2); i++) {
     // If one of the first two lines starts with `#`, it is the channel
     if (lines[i].startsWith("#")) {
-      channelName = lines[i].replace("#", "").trim();
+      channels = lines[i].replace("#", "").trim();
       descriptionStartLineNumber = i + 1;
     }
     // If one of the first two lines is a valid URL it is the meeting link
@@ -40,7 +40,7 @@ export function splitDescription(description: string): {
 
   return {
     descriptionText,
-    channelName,
+    channels,
     meetingLink,
   };
 }
@@ -74,23 +74,26 @@ export function parseDescription(
   workspaceChannels: SlackChannel[],
 ): { description: string; minervaEventMetadata?: EventMetadata } {
   const plainDescription = parseDescriptionFromHtml(description);
-  const { descriptionText, channelName, meetingLink } = splitDescription(plainDescription);
+  const { descriptionText, channels: channelLine, meetingLink } = splitDescription(plainDescription);
 
   // Short-circuit if there is no metadata
-  if (channelName == undefined && meetingLink == undefined) {
+  if (channelLine == undefined && meetingLink == undefined) {
     return { description: descriptionText };
   }
 
-  if (channelName == undefined) {
+  if (channelLine == undefined) {
     throw new Error("channel name not specified");
   }
 
+  const [channelName, ...modifiers] = channelLine.split(" ");
+
   const channel = filterSlackChannelFromName(channelName, workspaceChannels);
-  if (channel == undefined) throw new Error(`channel "${channelName}" not found`);
+  if (channel == undefined) throw new Error(`channel "${channelLine}" not found`);
 
   const minervaEventMetadata = {
     channel,
     meetingLink,
+    DMSingleChannelGuests: !modifiers.includes("no-dm"),
   };
 
   return { description: descriptionText, minervaEventMetadata };

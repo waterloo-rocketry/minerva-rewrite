@@ -98,13 +98,17 @@ export async function remindUpcomingEvent(
   }
 
   const DmReminderText = generateEventReminderDMText(messageUrl);
-  const singleChannelGuestsMessaged = await postReminderToDMs(
-    client,
-    channel,
-    DmReminderText,
-    defaultSlackChannels,
-    allSlackUsersInWorkspace,
-  );
+  // If event is not set up to DM single channel guests, singleChannelGuestsMessaged will be -1 to indicate that it was not messaged
+  let singleChannelGuestsMessaged = -1;
+  if (event.minervaEventMetadata.DMSingleChannelGuests) {
+    singleChannelGuestsMessaged = await postReminderToDMs(
+      client,
+      channel,
+      DmReminderText,
+      defaultSlackChannels,
+      allSlackUsersInWorkspace,
+    );
+  }
 
   const reminderTypeStrings = {
     [EventReminderType.MANUAL]: "manually triggered",
@@ -116,9 +120,9 @@ export async function remindUpcomingEvent(
   SlackLogger.getInstance().info(
     `Sent ${reminderTypeStrings[reminderType]} reminder for event \`${
       event.title
-    }\` at \`${event.start.toISOString()}\` to channel \`${
-      event.minervaEventMetadata.channel.name
-    }\` and ${singleChannelGuestsMessaged} single channel guests`,
+    }\` at \`${event.start.toISOString()}\` to channel \`${event.minervaEventMetadata.channel.name}\` ${
+      singleChannelGuestsMessaged != -1 ? `and ${singleChannelGuestsMessaged} single channel guests` : ""
+    }`,
   );
 }
 

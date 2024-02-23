@@ -15,6 +15,7 @@ describe("utils/googleCalendar", () => {
           minervaEventMetadata: {
             channel: slackChannels[0],
             meetingLink: "https://example.com",
+            DMSingleChannelGuests: true,
           },
           location: googleCalendarEvent.location,
           start: new Date(googleCalendarEvent.start.dateTime),
@@ -34,6 +35,7 @@ describe("utils/googleCalendar", () => {
     event.minervaEventMetadata = {
       channel: slackChannels[0],
       meetingLink: "https://example.com",
+      DMSingleChannelGuests: true,
     };
 
     it("should parse a Google Calendar event with one channel specified", () => {
