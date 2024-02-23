@@ -11,7 +11,7 @@ import { filterSlackChannelFromName } from "../utils/channels";
  */
 export function splitDescription(description: string): {
   descriptionText: string;
-  channels?: string;
+  channelLine?: string;
   meetingLink?: string;
 } {
   // Split the description by line
@@ -19,13 +19,13 @@ export function splitDescription(description: string): {
   // If there are multiple lines, the first 1-2 lines can contain the metadata
   // Check the first two lines for this metadata
   let descriptionStartLineNumber = 0;
-  let channels: string | undefined;
+  let channelLine: string | undefined;
   let meetingLink: string | undefined;
 
   for (let i = 0; i < Math.min(lines.length, 2); i++) {
     // If one of the first two lines starts with `#`, it is the channel
     if (lines[i].startsWith("#")) {
-      channels = lines[i].replace("#", "").trim();
+      channelLine = lines[i].replace("#", "").trim();
       descriptionStartLineNumber = i + 1;
     }
     // If one of the first two lines is a valid URL it is the meeting link
@@ -40,7 +40,7 @@ export function splitDescription(description: string): {
 
   return {
     descriptionText,
-    channels,
+    channelLine,
     meetingLink,
   };
 }
@@ -74,7 +74,7 @@ export function parseDescription(
   workspaceChannels: SlackChannel[],
 ): { description: string; minervaEventMetadata?: EventMetadata } {
   const plainDescription = parseDescriptionFromHtml(description);
-  const { descriptionText, channels: channelLine, meetingLink } = splitDescription(plainDescription);
+  const { descriptionText, channelLine, meetingLink } = splitDescription(plainDescription);
 
   // Short-circuit if there is no metadata
   if (channelLine == undefined && meetingLink == undefined) {
