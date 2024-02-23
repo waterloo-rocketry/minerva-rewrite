@@ -18,7 +18,7 @@ export enum LogLevel {
  */
 export class SlackLogger {
   private static instance: SlackLogger;
-  slackClient: WebClient;
+  private slackClient: WebClient;
 
   /**
    * Singleton constructor for SlackLogger
@@ -125,6 +125,18 @@ export class SlackLogger {
    * @returns The formatted code block content
    */
   private static formatCodeBlockContent(codeBlockContent: unknown): string {
+    if (codeBlockContent instanceof Error) {
+      // Recursively get the causes of the error
+      let errorContent = `${codeBlockContent}`;
+      let cause = (codeBlockContent as Error).cause;
+      while (cause) {
+        errorContent += `\t[cause]: ${cause}`;
+
+        cause = (cause as Error)?.cause;
+      }
+      return `\`\`\`${errorContent}\`\`\``;
+    }
+
     return `\`\`\`${codeBlockContent}\`\`\``;
   }
 }

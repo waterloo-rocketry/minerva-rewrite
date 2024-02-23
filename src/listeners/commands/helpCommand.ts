@@ -3,6 +3,7 @@ import { StringIndexed } from "@slack/bolt/dist/types/helpers";
 
 import { logCommandUsed } from "../../utils/logging";
 import { postEphemeralMessage } from "../../utils/slack";
+import { SlackLogger } from "../../classes/SlackLogger";
 
 const message = `For more information, check out <https://github.com/waterloo-rocketry/minerva-rewrite/blob/main/README.md|minerva's README>.`;
 
@@ -22,5 +23,9 @@ export default async function helpCommandHandler({
   await ack();
   await logCommandUsed(command);
 
-  await postEphemeralMessage(client, command.channel_id, command.user_id, message);
+  try {
+    await postEphemeralMessage(client, command.channel_id, command.user_id, message);
+  } catch (error) {
+    SlackLogger.getInstance().error("Failed to send help message", error);
+  }
 }
