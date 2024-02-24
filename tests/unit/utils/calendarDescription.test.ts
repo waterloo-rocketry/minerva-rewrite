@@ -181,7 +181,10 @@ describe("utils/calendarDescription", () => {
 
     it("should throw an error if no channel is specified", () => {
       const description = `<a href="https://example.com">https://example.com</a><br>This is a description<br>Yep it is.`;
-      expect(() => parseDescription(description, slackChannels)).toThrow("channel name not specified");
+      const result = parseDescription(description, slackChannels);
+      expect(result).toEqual({
+        description: "https://example.com\nThis is a description\nYep it is.",
+      });
     });
   });
 });

@@ -216,10 +216,12 @@ export async function remindUpcomingEvents(client: WebClient, events: CalendarEv
   const defaultSlackChannels = await getDefaultSlackChannels(client);
   const allSlackUsersInWorkspace = await getAllSlackUsers(client);
 
-  events.forEach((event) => {
-    const reminderType = getEventReminderType(event);
-    remindUpcomingEvent(event, client, reminderType, defaultSlackChannels, allSlackUsersInWorkspace);
-  });
+  events
+    .filter((event) => event.minervaEventMetadata != undefined)
+    .forEach((event) => {
+      const reminderType = getEventReminderType(event);
+      remindUpcomingEvent(event, client, reminderType, defaultSlackChannels, allSlackUsersInWorkspace);
+    });
 }
 
 /**

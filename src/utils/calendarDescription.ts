@@ -81,8 +81,9 @@ export function parseDescription(
     return { description: descriptionText };
   }
 
+  // If channel not found, the meeting url is prepended to the description
   if (channelLine == undefined) {
-    throw new Error("channel name not specified");
+    return { description: `${meetingLink}\n${descriptionText}` };
   }
 
   const [channelName, ...modifiers] = channelLine.split(" ");
