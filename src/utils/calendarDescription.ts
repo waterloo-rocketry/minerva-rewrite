@@ -81,7 +81,7 @@ export function parseDescription(
     return { description: descriptionText };
   }
 
-  // If channel not found, the meeting url is prepended to the description
+  // If description contains no line with channel, the meeting url is prepended to the description
   if (channelLine == undefined) {
     return { description: `${meetingLink}\n${descriptionText}` };
   }
