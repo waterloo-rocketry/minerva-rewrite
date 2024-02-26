@@ -139,7 +139,7 @@ describe("parseNotifyCommand", () => {
   it("throws an error when the command is empty", () => {
     const commandArgs = "";
     expect(() => parseNotifyCommand(commandArgs)).toThrow(
-      "Please provide a message to send. Usage: `/notify <messageURL>`",
+      "Please provide a message to send. Usage: `/notify LINK {copy | copy-ping} [default] [#channel1 #channel2 …]`",
     );
   });
 
