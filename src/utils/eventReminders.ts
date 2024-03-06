@@ -161,16 +161,18 @@ export async function postReminderToChannel(
   const timestamp = res.ts;
 
   if (reactEmojis !== undefined) {
-    reactEmojis.forEach(async (emoji) => {
-      try {
-        await addReactionToMessage(client, channel.id, emoji, timestamp);
-      } catch (error) {
-        SlackLogger.getInstance().error(
-          `Failed to add reaction \`${emoji}\` to message \`${timestamp}\` in \`${channel.name}\` with error:`,
-          error,
-        );
-      }
-    });
+    try {
+      const [emoji1, emoji2] = reactEmojis;
+      await addReactionToMessage(client, channel.id, emoji1, timestamp);
+      // Add small manual delay to ensure sequential reactions
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      await addReactionToMessage(client, channel.id, emoji2, timestamp);
+    } catch (error) {
+      SlackLogger.getInstance().error(
+        `Failed to add reactions \`${reactEmojis}\` to message \`${timestamp}\` in \`${channel.name}\` with error:`,
+        error,
+      );
+    }
   }
   const messageUrl = getMessagePermalink(client, channel.id, res.ts);
   return messageUrl;

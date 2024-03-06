@@ -184,7 +184,7 @@ export async function getChannelMembers(client: WebClient, channelId: string): P
  * @param timestamp The timestamp of the message to react to, as a string or number.
  * @returns A promise that resolves to the response from the Slack API.
  */
-export function addReactionToMessage(
+export async function addReactionToMessage(
   client: WebClient,
   channel: string,
   emoji: string,
@@ -194,7 +194,7 @@ export function addReactionToMessage(
   const timestampStr = typeof timestamp === "number" ? timestamp.toString() : timestamp;
 
   try {
-    return client.reactions.add({
+    return await client.reactions.add({
       channel,
       name: emoji,
       timestamp: timestampStr,
