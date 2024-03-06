@@ -20,8 +20,6 @@ export function determineUserType(user: Member): UserType {
     return UserType.BOT;
   } else if (user.is_admin) {
     return UserType.ADMIN;
-  } else if (user.is_restricted) {
-    return UserType.RESTRICTED;
   } else if (user.is_ultra_restricted) {
     return UserType.ULTRA_RESTRICTED;
   } else if (user.is_restricted) {

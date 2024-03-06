@@ -5,7 +5,10 @@ import { logCommandUsed } from "../../utils/logging";
 import { postEphemeralMessage } from "../../utils/slack";
 import { SlackLogger } from "../../classes/SlackLogger";
 
-const message = `For more information, check out <https://github.com/waterloo-rocketry/minerva-rewrite/blob/main/README.md|minerva's README>.`;
+const message = `For instructions on how to use minerva's functionality, check out the feature reference guides in the Google Drive (<https://drive.google.com/drive/u/1/folders/1h7FZKuF3Zvv8EygjB8pSTk2aGuHHpBtj|link>) 
+• <https://docs.google.com/document/d/1KbeJtU06Uosjpd3XlvEGtElOx5lAZz9vDe8yzHyFhvU/edit#heading=h.g3pdvke98aqf|Meeting Reminders>
+• <https://docs.google.com/document/d/1otYHtmFHzkN8g7089EGQpxi9-7C_iKFhDt2L2tuwxHs/edit#heading=h.8w6auka00s3p|Message Notifications>
+`;
 
 /**
  * Handles the /help command

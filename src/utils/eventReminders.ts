@@ -97,14 +97,18 @@ export async function remindUpcomingEvent(
     return;
   }
 
-  const DmReminderText = generateEventReminderDMText(messageUrl);
-  const singleChannelGuestsMessaged = await postReminderToDMs(
-    client,
-    channel,
-    DmReminderText,
-    defaultSlackChannels,
-    allSlackUsersInWorkspace,
-  );
+  // If event is not set up to DM single channel guests, singleChannelGuestsMessaged will be -1 to indicate that it was not messaged
+  let singleChannelGuestsMessaged = -1;
+  if (event.minervaEventMetadata.DMSingleChannelGuests) {
+    const DmReminderText = generateEventReminderDMText(messageUrl);
+    singleChannelGuestsMessaged = await postReminderToDMs(
+      client,
+      channel,
+      DmReminderText,
+      defaultSlackChannels,
+      allSlackUsersInWorkspace,
+    );
+  }
 
   const reminderTypeStrings = {
     [EventReminderType.MANUAL]: "manually triggered",
@@ -116,9 +120,9 @@ export async function remindUpcomingEvent(
   SlackLogger.getInstance().info(
     `Sent ${reminderTypeStrings[reminderType]} reminder for event \`${
       event.title
-    }\` at \`${event.start.toISOString()}\` to channel \`${
-      event.minervaEventMetadata.channel.name
-    }\` and ${singleChannelGuestsMessaged} single channel guests`,
+    }\` at \`${event.start.toISOString()}\` to channel \`${event.minervaEventMetadata.channel.name}\` ${
+      singleChannelGuestsMessaged != -1 ? `and ${singleChannelGuestsMessaged} single channel guests` : ""
+    }`,
   );
 }
 
@@ -157,16 +161,18 @@ export async function postReminderToChannel(
   const timestamp = res.ts;
 
   if (reactEmojis !== undefined) {
-    reactEmojis.forEach(async (emoji) => {
-      try {
-        await addReactionToMessage(client, channel.id, emoji, timestamp);
-      } catch (error) {
-        SlackLogger.getInstance().error(
-          `Failed to add reaction \`${emoji}\` to message \`${timestamp}\` in \`${channel.name}\` with error:`,
-          error,
-        );
-      }
-    });
+    try {
+      const [emoji1, emoji2] = reactEmojis;
+      await addReactionToMessage(client, channel.id, emoji1, timestamp);
+      // Add small manual delay to ensure sequential reactions
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      await addReactionToMessage(client, channel.id, emoji2, timestamp);
+    } catch (error) {
+      SlackLogger.getInstance().error(
+        `Failed to add reactions \`${reactEmojis}\` to message \`${timestamp}\` in \`${channel.name}\` with error:`,
+        error,
+      );
+    }
   }
   const messageUrl = getMessagePermalink(client, channel.id, res.ts);
   return messageUrl;
@@ -212,10 +218,12 @@ export async function remindUpcomingEvents(client: WebClient, events: CalendarEv
   const defaultSlackChannels = await getDefaultSlackChannels(client);
   const allSlackUsersInWorkspace = await getAllSlackUsers(client);
 
-  events.forEach((event) => {
-    const reminderType = getEventReminderType(event);
-    remindUpcomingEvent(event, client, reminderType, defaultSlackChannels, allSlackUsersInWorkspace);
-  });
+  events
+    .filter((event) => event.minervaEventMetadata != undefined)
+    .forEach((event) => {
+      const reminderType = getEventReminderType(event);
+      remindUpcomingEvent(event, client, reminderType, defaultSlackChannels, allSlackUsersInWorkspace);
+    });
 }
 
 /**

@@ -13,6 +13,7 @@ describe("classes/CalendarEvent", () => {
         minervaEventMetadata: {
           channel: slackChannels[0],
           meetingLink: "https://example.com",
+          DMSingleChannelGuests: true,
         },
         location: googleCalendarEvent.location,
         start: new Date(googleCalendarEvent.start.dateTime),
