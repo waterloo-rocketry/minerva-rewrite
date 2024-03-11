@@ -35,7 +35,7 @@ export async function seedMessageReactions(
   timestamp: string | number,
 ): Promise<void> {
   const response = await addReactionToMessage(client, channel, emojis[0], timestamp);
-
+  await new Promise((resolve) => setTimeout(resolve, 500));
   if (response.ok) {
     await addReactionToMessage(client, channel, emojis[1], timestamp);
   }
