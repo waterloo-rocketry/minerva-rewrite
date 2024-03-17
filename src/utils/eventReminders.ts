@@ -2,9 +2,9 @@ import { WebClient, ChatPostMessageResponse } from "@slack/web-api";
 import moment from "moment-timezone";
 
 import CalendarEvent from "../classes/CalendarEvent";
-import { postMessage, addReactionToMessage, getMessagePermalink, getAllSlackUsers } from "./slack";
+import { postMessage, getMessagePermalink, getAllSlackUsers } from "./slack";
 import { getDefaultSlackChannels } from "./channels";
-import { generateEmojiPair } from "./slackEmojis";
+import { generateEmojiPair, seedMessageReactions } from "./slackEmojis";
 import SlackChannel from "../classes/SlackChannel";
 import SlackUser from "../classes/SlackUser";
 import { postMessageToSingleChannelGuestsInChannels } from "./users";
@@ -160,13 +160,9 @@ export async function postReminderToChannel(
 
   const timestamp = res.ts;
 
-  if (reactEmojis !== undefined) {
+  if (reactEmojis != undefined && reactEmojis.length > 0) {
     try {
-      const [emoji1, emoji2] = reactEmojis;
-      await addReactionToMessage(client, channel.id, emoji1, timestamp);
-      // Add small manual delay to ensure sequential reactions
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      await addReactionToMessage(client, channel.id, emoji2, timestamp);
+      await seedMessageReactions(client, channel.id, reactEmojis, timestamp);
     } catch (error) {
       SlackLogger.getInstance().error(
         `Failed to add reactions \`${reactEmojis}\` to message \`${timestamp}\` in \`${channel.name}\` with error:`,
