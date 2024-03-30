@@ -9,7 +9,7 @@ describe("utils/calendarDescription", () => {
       const result = splitDescription(description);
       expect(result).toEqual({
         descriptionText: "This is a description",
-        channelName: slackChannels[0].name,
+        channelLine: slackChannels[0].name,
         meetingLink: "https://example.com",
       });
     });
@@ -18,7 +18,7 @@ describe("utils/calendarDescription", () => {
       const result = splitDescription(description);
       expect(result).toEqual({
         descriptionText: "This is a description",
-        channelName: slackChannels[0].name,
+        channelLine: slackChannels[0].name,
         meetingLink: "https://example.com",
       });
     });
@@ -41,7 +41,7 @@ describe("utils/calendarDescription", () => {
       const result = splitDescription(description);
       expect(result).toEqual({
         descriptionText: "This is a description\nWith multiple lines",
-        channelName: slackChannels[0].name,
+        channelLine: slackChannels[0].name,
         meetingLink: "https://example.com",
       });
     });
@@ -50,7 +50,7 @@ describe("utils/calendarDescription", () => {
       const result = splitDescription(description);
       expect(result).toEqual({
         descriptionText: "This is a description",
-        channelName: slackChannels[0].name,
+        channelLine: slackChannels[0].name,
       });
     });
     it("should split the description containing just channel and meeting link", () => {
@@ -58,7 +58,7 @@ describe("utils/calendarDescription", () => {
       const result = splitDescription(description);
       expect(result).toEqual({
         descriptionText: "",
-        channelName: slackChannels[0].name,
+        channelLine: slackChannels[0].name,
         meetingLink: "https://example.com",
       });
     });
@@ -67,7 +67,7 @@ describe("utils/calendarDescription", () => {
       const result = splitDescription(description);
       expect(result).toEqual({
         descriptionText: "",
-        channelName: slackChannels[0].name,
+        channelLine: slackChannels[0].name,
       });
     });
     it("should handle an empty description properly", () => {
@@ -82,7 +82,7 @@ describe("utils/calendarDescription", () => {
       const result = splitDescription(description);
       expect(result).toEqual({
         descriptionText: "This is a description\n#sotruebestie",
-        channelName: slackChannels[0].name,
+        channelLine: slackChannels[0].name,
       });
     });
     it("should parse the metadata values even if they are out of order", () => {
@@ -90,7 +90,7 @@ describe("utils/calendarDescription", () => {
       const result = splitDescription(description);
       expect(result).toEqual({
         descriptionText: "This is a description",
-        channelName: slackChannels[0].name,
+        channelLine: slackChannels[0].name,
         meetingLink: "https://example.com",
       });
     });
@@ -137,9 +137,24 @@ describe("utils/calendarDescription", () => {
         minervaEventMetadata: {
           channel: slackChannels[0],
           meetingLink: "https://example.com",
+          DMSingleChannelGuests: true,
         },
       });
     });
+
+    it("should parse the no-dm modifier", () => {
+      const description = `#${slackChannels[0].name} no-dm<br><a href="https://example.com">https://example.com</a><br>This is a description<br>Yep it is.`;
+      const result = parseDescription(description, slackChannels);
+      expect(result).toEqual({
+        description: "This is a description\nYep it is.",
+        minervaEventMetadata: {
+          channel: slackChannels[0],
+          meetingLink: "https://example.com",
+          DMSingleChannelGuests: false,
+        },
+      });
+    });
+
     it("should parse the description when metadata does not exist", () => {
       const description = `This is a description<br>Yep it is.`;
       const result = parseDescription(description, slackChannels);
@@ -154,6 +169,7 @@ describe("utils/calendarDescription", () => {
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
           channel: slackChannels[0],
+          DMSingleChannelGuests: true,
         },
       });
     });
@@ -165,7 +181,10 @@ describe("utils/calendarDescription", () => {
 
     it("should throw an error if no channel is specified", () => {
       const description = `<a href="https://example.com">https://example.com</a><br>This is a description<br>Yep it is.`;
-      expect(() => parseDescription(description, slackChannels)).toThrow("channel name not specified");
+      const result = parseDescription(description, slackChannels);
+      expect(result).toEqual({
+        description: "https://example.com\nThis is a description\nYep it is.",
+      });
     });
   });
 });

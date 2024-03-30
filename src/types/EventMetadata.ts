@@ -12,4 +12,8 @@ export type EventMetadata = {
    * The meeting link for the event, if it exists
    */
   meetingLink?: string;
+  /**
+   * Whether to notify single channel guests in the default channels for this event
+   */
+  DMSingleChannelGuests: boolean;
 };

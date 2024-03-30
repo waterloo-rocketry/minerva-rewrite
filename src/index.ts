@@ -27,7 +27,7 @@ const app = new App({
 });
 
 // Register listeners
-registerListeners(app);
+registerListeners(app, auth);
 
 // Schedule tasks
 scheduleTasks(app.client, auth);

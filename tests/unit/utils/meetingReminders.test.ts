@@ -177,6 +177,41 @@ Ways to attend:
       );
     });
 
+    it("should generate a manually triggered reminder with the meeting link and location provided", () => {
+      jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
+      event.location = "Test location";
+      event.minervaEventMetadata = {
+        channel: slackChannels[0],
+        meetingLink: "https://example.com",
+      };
+      const result = generateEventReminderChannelText(event, EventReminderType.MANUAL);
+
+      expect(result).toBe(
+        `Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
+<https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
+Ways to attend:
+\t:office: In person @ Test location
+\t:globe_with_meridians: Online @ https://example.com`,
+      );
+    });
+
+    it("should generate a manually triggered reminder with a ping with the meeting link and location provided", () => {
+      jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
+      event.location = "Test location";
+      event.minervaEventMetadata = {
+        channel: slackChannels[0],
+        meetingLink: "https://example.com",
+      };
+      const result = generateEventReminderChannelText(event, EventReminderType.MANUAL_PING);
+
+      expect(result).toBe(`<!channel>
+Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
+<https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
+Ways to attend:
+\t:office: In person @ Test location
+\t:globe_with_meridians: Online @ https://example.com`);
+    });
+
     it("should generate a reminder for 6 hours with no meeting link or location provided", () => {
       jest.useFakeTimers().setSystemTime(new Date("2023-01-01T00:00:00.000Z").getTime());
       event.minervaEventMetadata = {

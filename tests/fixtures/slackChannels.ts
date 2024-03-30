@@ -1,5 +1,5 @@
 import SlackChannel from "../../src/classes/SlackChannel";
-import { defaultSlackChannels as defaultSlackChannelNames } from "../../src/common/constants";
+import { defaultSlackChannelNames } from "../../src/common/constants";
 
 export const slackChannels: SlackChannel[] = [
   new SlackChannel("admin", "C015DCM3JPN"),
