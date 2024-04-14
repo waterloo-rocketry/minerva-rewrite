@@ -27,7 +27,7 @@ export async function getEvents(auth: OAuth2Client): Promise<calendar_v3.Schema$
 }
 
 /**
- * Parses events fetched from the Google API into a list of CalendarEvents.
+ * Parses events fetched from the Google API into a list of CalendarEvents. Ignores all-day events
  * @param events The list of events to be parsed.
  * @param channels The array of SlackChannels to associate with the events.
  * @returns A promise that resolves to the list of parsed CalendarEvents.
@@ -35,14 +35,16 @@ export async function getEvents(auth: OAuth2Client): Promise<calendar_v3.Schema$
 export function parseEvents(events: calendar_v3.Schema$Events, channels: SlackChannel[]): CalendarEvent[] {
   const eventsList: CalendarEvent[] = [];
   if (events.items) {
-    events.items.forEach((event) => {
-      try {
-        const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(event, channels);
-        eventsList.push(calendarEvent);
-      } catch (error) {
-        SlackLogger.getInstance().error(`Failed to parse Google Calendar event:`, error);
-      }
-    });
+    events.items
+      .filter((event) => event.start?.dateTime && event.end?.dateTime) // All-day events don't have these properties
+      .forEach((event) => {
+        try {
+          const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(event, channels);
+          eventsList.push(calendarEvent);
+        } catch (error) {
+          SlackLogger.getInstance().error(`Failed to parse Google Calendar event:`, error);
+        }
+      });
 
     return eventsList;
   } else {

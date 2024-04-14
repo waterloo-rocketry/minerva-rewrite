@@ -23,6 +23,16 @@ describe("utils/googleCalendar", () => {
         },
       ]);
     });
+
+    it("should ignore all-day events", () => {
+      const allDayEvent = {
+        ...googleCalendarEvent,
+        start: { date: "2021-10-10" },
+        end: { date: "2021-10-11" },
+      };
+
+      expect(parseEvents({ items: [allDayEvent] }, slackChannels)).toEqual([]);
+    });
   });
 
   describe("parseEventsOfChannels", () => {
