@@ -3,6 +3,7 @@ import { slackChannels } from "../../fixtures/slackChannels";
 import CalendarEvent from "../../../src/classes/CalendarEvent";
 import googleCalendarEvent from "../../fixtures/googleCalendarEvent.json";
 import googleCalendarEvents from "../../fixtures/googleCalendarEvents.json";
+import { calendar_v3 } from "googleapis";
 
 describe("utils/googleCalendar", () => {
   describe("parseEvents", () => {
@@ -22,6 +23,16 @@ describe("utils/googleCalendar", () => {
           end: new Date(googleCalendarEvent.end.dateTime),
         },
       ]);
+    });
+
+    it("should ignore all-day events", () => {
+      const allDayEvent: calendar_v3.Schema$Event = {
+        ...googleCalendarEvent,
+        start: { date: "2021-10-10" },
+        end: { date: "2021-10-11" },
+      };
+
+      expect(parseEvents({ items: [allDayEvent] }, slackChannels)).toEqual([]);
     });
   });
 
