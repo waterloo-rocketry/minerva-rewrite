@@ -13,7 +13,15 @@ The original repo for Minerva can be found at https://github.com/waterloo-rocket
 
 ## Usage
 
-(This section is intentionally left blank)
+For a guide on using Minerva's features, you can see the corresponding pages on the Waterloo Rocketry Google Drive.
+-   [Message Notify](https://docs.google.com/document/d/1otYHtmFHzkN8g7089EGQpxi9-7C_iKFhDt2L2tuwxHs/edit#heading=h.8w6auka00s3p)
+-   [Meetings (Calendar Events)](https://docs.google.com/document/d/1KbeJtU06Uosjpd3XlvEGtElOx5lAZz9vDe8yzHyFhvU/edit#heading=h.g3pdvke98aqf)
+
+## Development
+
+For detailed instructions on how to onboard and develop Minerva, refer to the following guides:
+- [Minerva Developer Onboarding Guide](https://docs.google.com/document/d/1Ln9ldKIFPOmMxLfW3iFzAfW-HCECqbwqHC7oJxRYEqo/edit#heading=h.140h72nwd7xz)
+- [Minerva Developer Reference Guide](https://docs.google.com/document/d/1vz9b3J8ghjsyqJtUuTTT1KHH7F9GhhCrGC5Nmy-X3rQ/edit#heading=h.groaoi1xvvzs)
 
 ## Contributing
 
