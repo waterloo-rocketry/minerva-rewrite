@@ -230,7 +230,8 @@ export async function remindUpcomingEvents(client: WebClient, events: CalendarEv
  */
 export function generateEventReminderChannelText(event: CalendarEvent, reminderType: EventReminderType): string {
   let message = `${
-    reminderType == EventReminderType.FIVE_MINUTES || reminderType == EventReminderType.MANUAL_PING
+    !event.cancelled &&
+    (reminderType == EventReminderType.FIVE_MINUTES || reminderType == EventReminderType.MANUAL_PING)
       ? "<!channel>\n"
       : ""
   }Reminder: *${event.title}* is occurring`;

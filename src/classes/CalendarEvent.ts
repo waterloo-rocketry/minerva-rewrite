@@ -12,6 +12,10 @@ export default class CalendarEvent {
    */
   title: string;
   /**
+   * Cancelled status of the event
+   */
+  cancelled?: boolean;
+  /**
    * The description of the event
    */
   description?: string;
@@ -48,6 +52,7 @@ export default class CalendarEvent {
       throw new Error("Event summary is undefined");
     }
     const title = event.summary;
+    const cancelled = title.includes("CANCELLED");
     if (event.start?.dateTime == undefined) {
       throw new Error(`Event start is undefined for event "${event.summary}"`);
     }
@@ -65,6 +70,7 @@ export default class CalendarEvent {
 
     parsedEvent.location = event.location ?? undefined;
     parsedEvent.url = event.htmlLink ?? undefined;
+    parsedEvent.cancelled = cancelled;
 
     if (event?.description != undefined) {
       try {
