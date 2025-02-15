@@ -8,6 +8,7 @@ describe("classes/CalendarEvent", () => {
       const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(googleCalendarEvent, slackChannels);
       expect(calendarEvent).toEqual({
         title: googleCalendarEvent.summary,
+        cancelled: true,
         url: googleCalendarEvent.htmlLink,
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
@@ -27,6 +28,7 @@ describe("classes/CalendarEvent", () => {
       const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(calendarEventJson, slackChannels);
       expect(calendarEvent).toEqual({
         title: googleCalendarEvent.summary,
+        cancelled: true,
         url: googleCalendarEvent.htmlLink,
         description: "This is a description\nYep it is.",
         location: googleCalendarEvent.location,

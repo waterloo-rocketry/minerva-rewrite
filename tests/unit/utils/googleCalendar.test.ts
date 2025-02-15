@@ -10,6 +10,7 @@ describe("utils/googleCalendar", () => {
       expect(parseEvents(googleCalendarEvents, slackChannels)).toEqual([
         {
           title: googleCalendarEvent.summary,
+          cancelled: true,
           url: googleCalendarEvent.htmlLink,
           description: "This is a description\nYep it is.",
           minervaEventMetadata: {
