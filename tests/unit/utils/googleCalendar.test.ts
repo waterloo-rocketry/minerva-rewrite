@@ -10,7 +10,7 @@ describe("utils/googleCalendar", () => {
       expect(parseEvents(googleCalendarEvents, slackChannels)).toEqual([
         {
           title: googleCalendarEvent.summary,
-          cancelled: true,
+          is_cancelled: false,
           url: googleCalendarEvent.htmlLink,
           description: "This is a description\nYep it is.",
           minervaEventMetadata: {
@@ -23,6 +23,15 @@ describe("utils/googleCalendar", () => {
           end: new Date(googleCalendarEvent.end.dateTime),
         },
       ]);
+    });
+
+    it("should parse a cancelled Google Calendar event", () => {
+      const cancelledEvent = {
+        ...googleCalendarEvent,
+        summary: "[cancelled]" + googleCalendarEvent.summary,
+      };
+      const parsedEvent = parseEvents({ items: [cancelledEvent] }, slackChannels)[0];
+      expect(parsedEvent.is_cancelled).toBe(true);
     });
 
     it("should ignore all-day events", () => {
