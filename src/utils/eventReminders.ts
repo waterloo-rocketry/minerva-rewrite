@@ -243,6 +243,10 @@ export function generateEventReminderChannelText(event: CalendarEvent, reminderT
     message += ` at *${moment(event.start).tz("America/Toronto").format("MMMM Do, YYYY [at] h:mm A")}*`;
   }
 
+  if (event.is_cancelled) {
+    message += " has been cancelled";
+  }
+
   if (event.url) {
     message += `\n<${event.url}|Event Details>`;
   }
