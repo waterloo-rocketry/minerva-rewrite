@@ -234,17 +234,21 @@ export function generateEventReminderChannelText(event: CalendarEvent, reminderT
     (reminderType == EventReminderType.FIVE_MINUTES || reminderType == EventReminderType.MANUAL_PING)
       ? "<!channel>\n"
       : ""
-  }Reminder: *${event.title}* is occurring`;
+  }Reminder: *${event.title}*`;
+
+  let timeUntilEventMessage: string;
 
   if (reminderType === EventReminderType.FIVE_MINUTES) {
     const timeUntilEvent = event.start.getTime() - new Date().getTime();
-    message += ` in *${Math.ceil(timeUntilEvent / 1000 / 60)} minutes*`;
+    timeUntilEventMessage = `in *${Math.ceil(timeUntilEvent / 1000 / 60)} minutes*`;
   } else {
-    message += ` at *${moment(event.start).tz("America/Toronto").format("MMMM Do, YYYY [at] h:mm A")}*`;
+    timeUntilEventMessage = `at *${moment(event.start).tz("America/Toronto").format("MMMM Do, YYYY [at] h:mm A")}*`;
   }
 
   if (event.is_cancelled) {
-    message += " has been cancelled";
+    message += ` that was supposed to occur ${timeUntilEventMessage} *has been cancelled*`;
+  } else {
+    message += ` is occurring ${timeUntilEventMessage}`;
   }
 
   if (event.url) {
