@@ -8,6 +8,7 @@ describe("classes/CalendarEvent", () => {
       const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(googleCalendarEvent, slackChannels);
       expect(calendarEvent).toEqual({
         title: googleCalendarEvent.summary,
+        is_cancelled: false,
         url: googleCalendarEvent.htmlLink,
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
@@ -21,12 +22,22 @@ describe("classes/CalendarEvent", () => {
       });
     });
 
+    it("should create a cancelled CalendarEvent from a Google Calendar event", () => {
+      const cancelledEvent = {
+        ...googleCalendarEvent,
+        summary: "[Cancelled]" + googleCalendarEvent.summary,
+      };
+      const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(cancelledEvent, slackChannels);
+      expect(calendarEvent.is_cancelled).toBe(true);
+    });
+
     it("should create a CalendarEvent from a Google Calendar event when there's no metadata", () => {
       const calendarEventJson = JSON.parse(JSON.stringify(googleCalendarEvent));
       calendarEventJson.description = "This is a description<br>Yep it is.";
       const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(calendarEventJson, slackChannels);
       expect(calendarEvent).toEqual({
         title: googleCalendarEvent.summary,
+        is_cancelled: false,
         url: googleCalendarEvent.htmlLink,
         description: "This is a description\nYep it is.",
         location: googleCalendarEvent.location,
