@@ -87,6 +87,34 @@ describe("buildIssueRequestModal", () => {
     expect(JSON.stringify(description)).toContain(`"initial_value":"${"x".repeat(3000)}"`);
   });
 
+  it("stays within Slack's Block Kit limits, which Slack enforces by rejecting views.open", () => {
+    // https://api.slack.com/reference/surfaces/views and https://api.slack.com/reference/block-kit/composition-objects
+    const modal = buildIssueRequestModal(REPO, { channelId: "C123", messageTs: "1.2", permalink: PERMALINK }, "x");
+
+    expect(modal.title.text.length).toBeLessThanOrEqual(24);
+    expect(modal.submit?.text.length).toBeLessThanOrEqual(24);
+    expect(modal.close?.text.length).toBeLessThanOrEqual(24);
+    expect((modal.private_metadata as string).length).toBeLessThanOrEqual(3000);
+    expect(modal.blocks.length).toBeLessThanOrEqual(100);
+
+    for (const block of modal.blocks) {
+      if (block.type != "input") continue;
+      expect(block.label.text.length).toBeLessThanOrEqual(2000);
+      const element = block.element as {
+        placeholder?: { text: string };
+        max_length?: number;
+        options?: { text: { text: string }; value: string }[];
+      };
+      expect((element.placeholder?.text ?? "").length).toBeLessThanOrEqual(150);
+      expect(element.max_length ?? 0).toBeLessThanOrEqual(3000);
+      expect((element.options ?? []).length).toBeLessThanOrEqual(100);
+      for (const opt of element.options ?? []) {
+        expect(opt.text.text.length).toBeLessThanOrEqual(75);
+        expect(opt.value.length).toBeLessThanOrEqual(150);
+      }
+    }
+  });
+
   it("only mentions the linked message when there is one", () => {
     expect(JSON.stringify(buildIssueRequestModal(REPO))).not.toContain("this Slack message");
     expect(JSON.stringify(buildIssueRequestModal(REPO, { permalink: PERMALINK }))).toContain(PERMALINK);
