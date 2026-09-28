@@ -8,6 +8,7 @@ import { SlackLogger } from "../../classes/SlackLogger";
 const message = `For instructions on how to use minerva's functionality, check out the feature reference guides in the Google Drive (<https://drive.google.com/drive/u/1/folders/1h7FZKuF3Zvv8EygjB8pSTk2aGuHHpBtj|link>) 
 • <https://docs.google.com/document/d/1KbeJtU06Uosjpd3XlvEGtElOx5lAZz9vDe8yzHyFhvU/edit#heading=h.g3pdvke98aqf|Meeting Reminders>
 • <https://docs.google.com/document/d/1otYHtmFHzkN8g7089EGQpxi9-7C_iKFhDt2L2tuwxHs/edit#heading=h.8w6auka00s3p|Message Notifications>
+• *Requesting something from Software:* use \`/request\`, or pick *Create software issue* from the \`⋮\` menu on any message. This files a GitHub issue for the software team.
 `;
 
 /**
