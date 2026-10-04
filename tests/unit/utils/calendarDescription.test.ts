@@ -1,5 +1,6 @@
 import { splitDescription, parseDescriptionFromHtml, parseDescription } from "../../../src/utils/calendarDescription";
 
+import SlackChannel from "../../../src/classes/SlackChannel";
 import { slackChannels } from "../../fixtures/slackChannels";
 
 describe("utils/calendarDescription", () => {
@@ -153,6 +154,13 @@ describe("utils/calendarDescription", () => {
           DMSingleChannelGuests: false,
         },
       });
+    });
+
+    it("should not DM single channel guests for events in a private channel", () => {
+      const leadsChannel = new SlackChannel("leads", "C0LEADS0001", true);
+      const description = `#leads<br>Leads meeting`;
+      const result = parseDescription(description, [...slackChannels, leadsChannel]);
+      expect(result.minervaEventMetadata?.DMSingleChannelGuests).toBe(false);
     });
 
     it("should parse the description when metadata does not exist", () => {
