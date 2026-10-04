@@ -94,7 +94,8 @@ export function parseDescription(
   const minervaEventMetadata = {
     channel,
     meetingLink,
-    DMSingleChannelGuests: !modifiers.includes("no-dm"),
+    // Guests of the default channels can't open a message in a private channel, so never DM them about one
+    DMSingleChannelGuests: !modifiers.includes("no-dm") && !channel.isPrivate,
   };
 
   return { description: descriptionText, minervaEventMetadata };
