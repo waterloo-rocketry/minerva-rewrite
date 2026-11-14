@@ -283,7 +283,7 @@ export function generateMeetingLink(event: CalendarEvent): string {
       .slice(0, 40)
       .replace(/_+$/, "") || "meeting";
   const hash = createHash("sha256").update(event.url).digest("hex").slice(0, 6);
-  return `https://meet.waterloorocketry.com/${slug}_${hash}`;
+  return `https://meet.waterloorocketry.com/bay_area_${slug}_${hash}`;
 }
 
 /**
