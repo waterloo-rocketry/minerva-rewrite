@@ -3,6 +3,7 @@ import {
   isTimeWithinBounds,
   EventReminderType,
   generateEventReminderChannelText,
+  generateMeetingLink,
   TIME_CHECK_INTERVAL,
 } from "../../../src/utils/eventReminders";
 import CalendarEvent from "../../../src/classes/CalendarEvent";
@@ -129,6 +130,38 @@ describe("utils/eventReminders", () => {
       expect(result).toBeNull();
     });
   });
+  describe("generateMeetingLink", () => {
+    const makeEvent = (title: string, url: string) =>
+      new CalendarEvent(title, new Date("2023-01-01T06:00:00.000Z"), new Date("2023-01-01T07:00:00.000Z"), url, false);
+
+    it("should use the event title as the room name", () => {
+      const link = generateMeetingLink(makeEvent("Software Meeting: Q&A!", "https://example.com/a"));
+      expect(link).toMatch(/^https:\/\/meet\.waterloorocketry\.com\/software_meeting_q_a_[0-9a-f]{6}$/);
+    });
+
+    it("should give the same link every time for the same event", () => {
+      const a = generateMeetingLink(makeEvent("Software Meeting", "https://example.com/a"));
+      const b = generateMeetingLink(makeEvent("Software Meeting", "https://example.com/a"));
+      expect(a).toBe(b);
+    });
+
+    it("should give different links to events with the same title", () => {
+      const a = generateMeetingLink(makeEvent("Software Meeting", "https://example.com/a"));
+      const b = generateMeetingLink(makeEvent("Software Meeting", "https://example.com/b"));
+      expect(a).not.toBe(b);
+    });
+
+    it("should fall back to 'meeting' if the title has no letters or numbers", () => {
+      const link = generateMeetingLink(makeEvent("!!!", "https://example.com/a"));
+      expect(link).toMatch(/^https:\/\/meet\.waterloorocketry\.com\/meeting_[0-9a-f]{6}$/);
+    });
+
+    it("should cap long titles at 40 characters", () => {
+      const link = generateMeetingLink(makeEvent("a".repeat(100), "https://example.com/a"));
+      expect(link).toMatch(new RegExp(`/${"a".repeat(40)}_[0-9a-f]{6}$`));
+    });
+  });
+
   describe("generateEventReminderText", () => {
     let event: CalendarEvent;
     beforeEach(() => {
@@ -223,7 +256,7 @@ Ways to attend:
         `Reminder: *Test event* is occurring at *January 1st, 2023 at 1:00 AM*
 <https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
 Ways to attend:
-\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/bay_area`,
+\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/test_event_89ef16`,
       );
     });
 
@@ -239,7 +272,7 @@ Ways to attend:
 Reminder: *Test event* is occurring in *5 minutes*
 <https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
 Ways to attend:
-\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/bay_area`,
+\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/test_event_89ef16`,
       );
     });
 
@@ -256,7 +289,7 @@ Ways to attend:
 <https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
 Ways to attend:
 \t:office: In person @ Test location
-\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/bay_area`,
+\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/test_event_89ef16`,
       );
     });
 
@@ -274,7 +307,7 @@ Reminder: *Test event* is occurring in *5 minutes*
 <https://www.google.com/calendar/event?eid=MGJyczFiMjJuZHJjZzRnZmx0Z2c1OGRocmkgdXdhdGVybG9vLnJvY2tldHJ5LmRxxxxx|Event Details>
 Ways to attend:
 \t:office: In person @ Test location
-\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/bay_area`,
+\t:globe_with_meridians: Online @ https://meet.waterloorocketry.com/test_event_89ef16`,
       );
     });
 

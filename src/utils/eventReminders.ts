@@ -1,5 +1,6 @@
 import { WebClient, ChatPostMessageResponse } from "@slack/web-api";
 import moment from "moment-timezone";
+import { createHash } from "crypto";
 
 import CalendarEvent from "../classes/CalendarEvent";
 import { postMessage, getMessagePermalink, getAllSlackUsers } from "./slack";
@@ -261,10 +262,28 @@ export function generateEventReminderChannelText(event: CalendarEvent, reminderT
   }
 
   message += `\n\t:globe_with_meridians: Online @ ${
-    event.minervaEventMetadata?.meetingLink ?? "https://meet.waterloorocketry.com/bay_area"
+    event.minervaEventMetadata?.meetingLink ?? generateMeetingLink(event)
   }`;
 
   return message;
+}
+
+/**
+ * Generates a meeting link with its own room for an event, so overlapping meetings don't end up in the same room.
+ * The room is derived from the event's URL, so every reminder for the same event gets the same link.
+ * @param event The event to generate the meeting link for
+ * @returns The meeting link for the event
+ */
+export function generateMeetingLink(event: CalendarEvent): string {
+  const slug =
+    event.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 40)
+      .replace(/_+$/, "") || "meeting";
+  const hash = createHash("sha256").update(event.url).digest("hex").slice(0, 6);
+  return `https://meet.waterloorocketry.com/${slug}_${hash}`;
 }
 
 /**
