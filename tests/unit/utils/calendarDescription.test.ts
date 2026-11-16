@@ -85,12 +85,37 @@ describe("utils/calendarDescription", () => {
         channelLine: slackChannels[0].name,
       });
     });
+    it("should only read metadata from the top of the description", () => {
+      const description = `This is a description\n#${slackChannels[0].name}\nhttps://example.com`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: `This is a description\n#${slackChannels[0].name}\nhttps://example.com`,
+      });
+    });
     it("should parse the metadata values even if they are out of order", () => {
       const description = `https://example.com\n#${slackChannels[0].name}\nThis is a description`;
       const result = splitDescription(description);
       expect(result).toEqual({
         descriptionText: "This is a description",
         channelLine: slackChannels[0].name,
+        meetingLink: "https://example.com",
+      });
+    });
+
+    it("should combine channels on separate lines into one channel line", () => {
+      const description = `#electrical\n#controls\n#payload\nThis is a description`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description",
+        channelLine: "electrical #controls #payload",
+      });
+    });
+    it("should combine channel lines after the meeting link", () => {
+      const description = `#electrical\nhttps://example.com\n#payload\nThis is a description`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description",
+        channelLine: "electrical #payload",
         meetingLink: "https://example.com",
       });
     });
@@ -136,6 +161,7 @@ describe("utils/calendarDescription", () => {
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
           channel: slackChannels[0],
+          additionalChannels: [],
           meetingLink: "https://example.com",
           DMSingleChannelGuests: true,
         },
@@ -149,6 +175,7 @@ describe("utils/calendarDescription", () => {
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
           channel: slackChannels[0],
+          additionalChannels: [],
           meetingLink: "https://example.com",
           DMSingleChannelGuests: false,
         },
@@ -169,9 +196,64 @@ describe("utils/calendarDescription", () => {
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
           channel: slackChannels[0],
+          additionalChannels: [],
           DMSingleChannelGuests: true,
         },
       });
+    });
+
+    it.each([
+      ["on one line", `#electrical #airframe #payload<br>This is a description`],
+      ["with commas", `#electrical, #airframe, #payload<br>This is a description`],
+      ["on separate lines", `#electrical<br>#airframe<br>#payload<br>This is a description`],
+      ["in separate paragraphs", `<p>#electrical</p><p>#airframe</p><p>#payload</p><p>This is a description</p>`],
+    ])("should parse multiple channels %s", (_, description) => {
+      const result = parseDescription(description, slackChannels);
+      expect(result).toEqual({
+        description: "This is a description",
+        minervaEventMetadata: {
+          channel: slackChannels[2],
+          additionalChannels: [slackChannels[1], slackChannels[5]],
+          DMSingleChannelGuests: true,
+        },
+      });
+    });
+
+    it("should parse modifiers alongside multiple channels and ignore repeated channels", () => {
+      const description = `#electrical #payload no-dm #electrical #payload<br>This is a description`;
+      const result = parseDescription(description, slackChannels);
+      expect(result).toEqual({
+        description: "This is a description",
+        minervaEventMetadata: {
+          channel: slackChannels[2],
+          additionalChannels: [slackChannels[5]],
+          DMSingleChannelGuests: false,
+        },
+      });
+    });
+
+    it("should ignore `#` words on the channel line that aren't channels", () => {
+      const description = `#electrical #1 #payload priority<br>This is a description`;
+      const result = parseDescription(description, slackChannels);
+      expect(result).toEqual({
+        description: "This is a description",
+        minervaEventMetadata: {
+          channel: slackChannels[2],
+          additionalChannels: [slackChannels[5]],
+          DMSingleChannelGuests: true,
+        },
+      });
+    });
+
+    it.each([
+      ["right after the metadata", `#electrical<br>https://example.com<br>#1 priority<br>This is a description`],
+      ["after a blank line", `#electrical<br><br>#1 priority<br>This is a description`],
+      ["on the second line", `#electrical<br>#1 priority<br>This is a description`],
+    ])("should keep a `#` line that isn't a channel in the description when it is %s", (_, description) => {
+      const result = parseDescription(description, slackChannels);
+      expect(result.minervaEventMetadata?.channel).toEqual(slackChannels[2]);
+      expect(result.minervaEventMetadata?.additionalChannels).toEqual([]);
+      expect(result.description).toBe("#1 priority\nThis is a description");
     });
 
     it("should throw an error if the the channel specified does not exist", () => {
