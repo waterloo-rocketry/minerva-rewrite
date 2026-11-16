@@ -11,3 +11,10 @@ export const googleAccountSecret = process.env.GOOGLE_ACCOUNT_SECRET;
 export const googleAccountToken = process.env.GOOGLE_ACCOUNT_TOKEN;
 export const googleAccountOauthRedirect = process.env.GOOGLE_ACCOUNT_OAUTH_REDIRECT;
 export const deploymentCommitHash = process.env.DEPLOY_COMMIT_SHA;
+export const githubAppId = process.env.GH_APP_ID;
+// Base64-encoded so the multi-line PEM key survives being echoed into .env by the deploy workflows
+export const githubAppPrivateKeyBase64 = process.env.GH_APP_PRIVATE_KEY_BASE64;
+export const githubAppInstallationId = process.env.GH_APP_INSTALLATION_ID;
+// The "owner/repo" that issue requests from Slack are filed in. Changes every design cycle.
+// `||` rather than `??` because the deploy workflows write an empty value when the variable is unset
+export const githubIssuesRepo = process.env.GH_ISSUES_REPO || "waterloo-rocketry/2026-2027-software-issues";

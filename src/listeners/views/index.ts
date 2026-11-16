@@ -1,8 +1,9 @@
 import { App } from "@slack/bolt";
+import issueRequestSubmitHandler from "./issueRequestSubmit";
+import { ISSUE_REQUEST_VIEW_ID } from "../../utils/issueRequests";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const register = (app: App): void => {
-  //   app.view('sample_view_id', sampleViewCallback);
+  app.view(ISSUE_REQUEST_VIEW_ID, issueRequestSubmitHandler);
 };
 
 export default { register };
