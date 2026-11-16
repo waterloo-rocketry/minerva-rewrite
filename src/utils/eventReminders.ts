@@ -91,8 +91,11 @@ export async function remindUpcomingEvent(
     reminderText += `\nReact with :${reactEmojis[0]}: if you're coming, or :${reactEmojis[1]}: if you're not!`;
   }
 
-  const channel = event.minervaEventMetadata.channel;
-  const messageUrl = await postReminderToChannel(client, channel, reminderText, reactEmojis);
+  const channels = [event.minervaEventMetadata.channel, ...(event.minervaEventMetadata.additionalChannels ?? [])];
+  const messageUrls = await Promise.all(
+    channels.map((channel) => postReminderToChannel(client, channel, reminderText, reactEmojis)),
+  );
+  const messageUrl = messageUrls.find((url) => url != undefined);
 
   if (messageUrl == undefined) {
     return;
@@ -104,7 +107,7 @@ export async function remindUpcomingEvent(
     const DmReminderText = generateEventReminderDMText(messageUrl);
     singleChannelGuestsMessaged = await postReminderToDMs(
       client,
-      channel,
+      channels,
       DmReminderText,
       defaultSlackChannels,
       allSlackUsersInWorkspace,
@@ -121,7 +124,7 @@ export async function remindUpcomingEvent(
   SlackLogger.getInstance().info(
     `Sent ${reminderTypeStrings[reminderType]} reminder for event \`${
       event.title
-    }\` at \`${event.start.toISOString()}\` to channel \`${event.minervaEventMetadata.channel.name}\` ${
+    }\` at \`${event.start.toISOString()}\` to ${channels.map((channel) => `\`${channel.name}\``).join(", ")} ${
       singleChannelGuestsMessaged != -1 ? `and ${singleChannelGuestsMessaged} single channel guests` : ""
     }`,
   );
@@ -178,7 +181,7 @@ export async function postReminderToChannel(
 /**
  * Posts a reminder for the given event to the DMs of all single channel guests in the given channels
  * @param client Slack Web API client
- * @param eventChannel The channel the event is associated with
+ * @param eventChannels The channels the event is associated with
  * @param reminderText The text of the reminder
  * @param defaultSlackChannels The default Slack channels to post reminders to. If not provided, the default channels will be fetched from the Slack API
  * @param allSlackUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
@@ -186,7 +189,7 @@ export async function postReminderToChannel(
  */
 export async function postReminderToDMs(
   client: WebClient,
-  eventChannel: SlackChannel,
+  eventChannels: SlackChannel[],
   reminderText: string,
   defaultSlackChannels?: SlackChannel[],
   allSlackUsersInWorkspace?: SlackUser[],
@@ -195,7 +198,9 @@ export async function postReminderToDMs(
     defaultSlackChannels = await getDefaultSlackChannels(client);
   }
 
-  const slackChannels = defaultSlackChannels.filter((channel) => channel != eventChannel);
+  const slackChannels = defaultSlackChannels.filter(
+    (channel) => !eventChannels.some((eventChannel) => eventChannel.id == channel.id),
+  );
   const singleChannelGuestsMessaged = await postMessageToSingleChannelGuestsInChannels(
     client,
     slackChannels,

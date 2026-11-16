@@ -17,15 +17,23 @@ export function splitDescription(description: string): {
   // Split the description by line
   const lines = description.split("\n");
   // If there are multiple lines, the first 1-2 lines can contain the metadata
-  // Check the first two lines for this metadata
+  // Check the first two lines for this metadata, plus any more channel lines right after them
   let descriptionStartLineNumber = 0;
-  let channelLine: string | undefined;
+  const channelLines: string[] = [];
   let meetingLink: string | undefined;
 
-  for (let i = 0; i < Math.min(lines.length, 2); i++) {
-    // If one of the first two lines starts with `#`, it is the channel
+  for (let i = 0; i < lines.length; i++) {
+    // Skip blank lines between channel lines, e.g. from channels written in separate paragraphs
+    if (lines[i].trim() == "" && channelLines.length > 0 && descriptionStartLineNumber == i) {
+      descriptionStartLineNumber = i + 1;
+      continue;
+    }
+    if (i >= 2 && !(descriptionStartLineNumber == i && lines[i].startsWith("#"))) {
+      break;
+    }
+    // If one of the first two lines starts with `#`, it is a channel line
     if (lines[i].startsWith("#")) {
-      channelLine = lines[i].replace("#", "").trim();
+      channelLines.push(lines[i].replace("#", "").trim());
       descriptionStartLineNumber = i + 1;
     }
     // If one of the first two lines is a valid URL it is the meeting link
@@ -34,6 +42,9 @@ export function splitDescription(description: string): {
       descriptionStartLineNumber = i + 1;
     }
   }
+
+  // Channels on separate lines are treated the same as channels on one line, e.g. `general #software`
+  const channelLine = channelLines.length > 0 ? channelLines.join(" #") : undefined;
 
   // Remove the meeting link and channel lines from the description and then join the lines back together
   const descriptionText = lines.slice(descriptionStartLineNumber).join("\n").trim();
@@ -86,13 +97,26 @@ export function parseDescription(
     return { description: `${meetingLink}\n${descriptionText}` };
   }
 
-  const [channelName, ...modifiers] = channelLine.split(" ");
+  // The first word is the main channel. Any other `#channel` also gets the reminder, and anything else is a modifier
+  const [channelName, ...words] = channelLine.split(/[\s,]+/).filter((word) => word != "");
+  const modifiers = words.filter((word) => !word.startsWith("#"));
+  const additionalChannelNames = words
+    .filter((word) => word.startsWith("#"))
+    .map((word) => word.replace("#", ""))
+    .filter((name, i, names) => name != channelName && names.indexOf(name) == i);
 
   const channel = filterSlackChannelFromName(channelName, workspaceChannels);
   if (channel == undefined) throw new Error(`channel "${channelName}" not found`);
 
+  const additionalChannels = additionalChannelNames.map((name) => {
+    const additionalChannel = filterSlackChannelFromName(name, workspaceChannels);
+    if (additionalChannel == undefined) throw new Error(`channel "${name}" not found`);
+    return additionalChannel;
+  });
+
   const minervaEventMetadata = {
     channel,
+    additionalChannels,
     meetingLink,
     DMSingleChannelGuests: !modifiers.includes("no-dm"),
   };

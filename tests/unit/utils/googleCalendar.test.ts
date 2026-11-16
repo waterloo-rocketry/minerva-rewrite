@@ -15,6 +15,7 @@ describe("utils/googleCalendar", () => {
           description: "This is a description\nYep it is.",
           minervaEventMetadata: {
             channel: slackChannels[0],
+            additionalChannels: [],
             meetingLink: "https://example.com",
             DMSingleChannelGuests: true,
           },
@@ -54,12 +55,29 @@ describe("utils/googleCalendar", () => {
     );
     event.minervaEventMetadata = {
       channel: slackChannels[0],
+      additionalChannels: [],
       meetingLink: "https://example.com",
       DMSingleChannelGuests: true,
     };
 
     it("should parse a Google Calendar event with one channel specified", () => {
       expect(filterEventsForChannels([event], [slackChannels[0].name])).toEqual([event]);
+    });
+
+    it("should match events by any of their channels", () => {
+      const multiChannelEvent = new CalendarEvent(
+        "Test Event",
+        new Date("2021-10-10T10:00:00.000Z"),
+        new Date("2021-10-10T11:00:00.000Z"),
+        "https://example.com",
+        false,
+      );
+      multiChannelEvent.minervaEventMetadata = {
+        channel: slackChannels[0],
+        additionalChannels: [slackChannels[2]],
+        DMSingleChannelGuests: true,
+      };
+      expect(filterEventsForChannels([multiChannelEvent], [slackChannels[2].name])).toEqual([multiChannelEvent]);
     });
 
     it("should return empty if no calendar events match the specified channel", () => {

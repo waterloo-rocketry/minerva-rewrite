@@ -13,6 +13,7 @@ describe("classes/CalendarEvent", () => {
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
           channel: slackChannels[0],
+          additionalChannels: [],
           meetingLink: "https://example.com",
           DMSingleChannelGuests: true,
         },

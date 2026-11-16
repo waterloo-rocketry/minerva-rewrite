@@ -9,6 +9,10 @@ export type EventMetadata = {
    */
   channel: SlackChannel;
   /**
+   * Any other channels that event reminders should also be posted to
+   */
+  additionalChannels?: SlackChannel[];
+  /**
    * The meeting link for the event, if it exists
    */
   meetingLink?: string;

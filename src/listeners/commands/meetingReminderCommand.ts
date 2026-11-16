@@ -36,6 +36,16 @@ export default async function meetingReminderCommandHandler(
 
       const commandText = command.text.trim().toLowerCase();
 
+      // Only remind the channel the command was run in, not every channel the event is in
+      const commandChannel = slackChannels.find((channel) => channel.id == command.channel_id);
+      if (soonestEvent.minervaEventMetadata && commandChannel) {
+        soonestEvent.minervaEventMetadata = {
+          ...soonestEvent.minervaEventMetadata,
+          channel: commandChannel,
+          additionalChannels: [],
+        };
+      }
+
       await remindUpcomingEvent(
         soonestEvent,
         client,

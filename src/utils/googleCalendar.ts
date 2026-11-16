@@ -62,7 +62,9 @@ export function filterEventsForChannels(calendarEvents: CalendarEvent[], channel
   const filteredEvents = calendarEvents.filter((event) => {
     const metadata = event.minervaEventMetadata;
     if (metadata && metadata.channel) {
-      return channelNames.includes(metadata.channel.name);
+      return [metadata.channel, ...(metadata.additionalChannels ?? [])].some((channel) =>
+        channelNames.includes(channel.name),
+      );
     }
     return false;
   });

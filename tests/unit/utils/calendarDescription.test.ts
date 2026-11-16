@@ -94,6 +94,24 @@ describe("utils/calendarDescription", () => {
         meetingLink: "https://example.com",
       });
     });
+
+    it("should combine channels on separate lines into one channel line", () => {
+      const description = `#electrical\n#controls\n#payload\nThis is a description`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description",
+        channelLine: "electrical #controls #payload",
+      });
+    });
+    it("should combine channel lines after the meeting link", () => {
+      const description = `#electrical\nhttps://example.com\n#payload\nThis is a description`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: "This is a description",
+        channelLine: "electrical #payload",
+        meetingLink: "https://example.com",
+      });
+    });
   });
 
   describe("parseDescriptionFromHtml", () => {
@@ -136,6 +154,7 @@ describe("utils/calendarDescription", () => {
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
           channel: slackChannels[0],
+          additionalChannels: [],
           meetingLink: "https://example.com",
           DMSingleChannelGuests: true,
         },
@@ -149,6 +168,7 @@ describe("utils/calendarDescription", () => {
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
           channel: slackChannels[0],
+          additionalChannels: [],
           meetingLink: "https://example.com",
           DMSingleChannelGuests: false,
         },
@@ -169,9 +189,47 @@ describe("utils/calendarDescription", () => {
         description: "This is a description\nYep it is.",
         minervaEventMetadata: {
           channel: slackChannels[0],
+          additionalChannels: [],
           DMSingleChannelGuests: true,
         },
       });
+    });
+
+    it.each([
+      ["on one line", `#electrical #airframe #payload<br>This is a description`],
+      ["with commas", `#electrical, #airframe, #payload<br>This is a description`],
+      ["on separate lines", `#electrical<br>#airframe<br>#payload<br>This is a description`],
+      ["in separate paragraphs", `<p>#electrical</p><p>#airframe</p><p>#payload</p><p>This is a description</p>`],
+    ])("should parse multiple channels %s", (_, description) => {
+      const result = parseDescription(description, slackChannels);
+      expect(result).toEqual({
+        description: "This is a description",
+        minervaEventMetadata: {
+          channel: slackChannels[2],
+          additionalChannels: [slackChannels[1], slackChannels[5]],
+          DMSingleChannelGuests: true,
+        },
+      });
+    });
+
+    it("should parse modifiers alongside multiple channels and ignore repeated channels", () => {
+      const description = `#electrical #payload no-dm #electrical #payload<br>This is a description`;
+      const result = parseDescription(description, slackChannels);
+      expect(result).toEqual({
+        description: "This is a description",
+        minervaEventMetadata: {
+          channel: slackChannels[2],
+          additionalChannels: [slackChannels[5]],
+          DMSingleChannelGuests: false,
+        },
+      });
+    });
+
+    it("should throw an error if an additional channel does not exist", () => {
+      const description = `#electrical #foodstuffs<br>This is a description`;
+      expect(() => parseDescription(description, slackChannels)).toThrow(
+        `could not find channel with name "foodstuffs"`,
+      );
     });
 
     it("should throw an error if the the channel specified does not exist", () => {
