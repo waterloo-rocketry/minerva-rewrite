@@ -85,6 +85,13 @@ describe("utils/calendarDescription", () => {
         channelLine: slackChannels[0].name,
       });
     });
+    it("should only read metadata from the top of the description", () => {
+      const description = `This is a description\n#${slackChannels[0].name}\nhttps://example.com`;
+      const result = splitDescription(description);
+      expect(result).toEqual({
+        descriptionText: `This is a description\n#${slackChannels[0].name}\nhttps://example.com`,
+      });
+    });
     it("should parse the metadata values even if they are out of order", () => {
       const description = `https://example.com\n#${slackChannels[0].name}\nThis is a description`;
       const result = splitDescription(description);

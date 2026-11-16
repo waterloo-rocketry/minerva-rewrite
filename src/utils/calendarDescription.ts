@@ -7,7 +7,7 @@ import { filterSlackChannelFromName } from "../utils/channels";
 /**
  * Splits the given description into its components.
  * @param description - The description to split.
- * @param isChannel - Whether a name is a real channel. Extra channel lines only count if their channel is real.
+ * @param isChannel - Whether a name is a real channel. Channel lines after the first only count if their channel is real.
  * @returns An object containing the split components of the description.
  */
 export function splitDescription(
@@ -20,40 +20,26 @@ export function splitDescription(
 } {
   // Split the description by line
   const lines = description.split("\n");
-  // If there are multiple lines, the first 1-2 lines can contain the metadata
-  // Check the first two lines for this metadata, plus any more channel lines right after them
+  // The metadata is the block of lines at the top of the description: the channel line(s) and the meeting link, in
+  // any order. The first line that isn't metadata starts the description text, so `#` lines further down stay in it
   let descriptionStartLineNumber = 0;
   const channelLines: string[] = [];
   let meetingLink: string | undefined;
 
-  for (let i = 0; i < lines.length; i++) {
-    // Skip blank lines between channel lines, e.g. from channels written in separate paragraphs
-    if (lines[i].trim() == "" && channelLines.length > 0 && descriptionStartLineNumber == i) {
-      descriptionStartLineNumber = i + 1;
-      continue;
-    }
-    // Lines after the first channel line only count as more channels if they start with a real channel,
-    // so description text like `#1 priority` right under the metadata stays in the description
-    const isExtraChannelLine =
-      lines[i].startsWith("#") && channelLines.length > 0 && isChannel(lines[i].replace("#", "").split(/[\s,]+/)[0]);
-    if (i >= 2 && !(descriptionStartLineNumber == i && isExtraChannelLine)) {
+  for (const line of lines.map((line) => line.trim())) {
+    // The first `#` line is the channel line. Later `#` lines only count as more channels if they start with a real
+    // channel, so description text like `#1 priority` right under the metadata stays in the description
+    const isChannelLine =
+      line.startsWith("#") && (channelLines.length == 0 || isChannel(line.replace("#", "").split(/[\s,]+/)[0]));
+
+    if (isChannelLine) {
+      channelLines.push(line.replace("#", "").trim());
+    } else if (line.startsWith("http") && meetingLink == undefined) {
+      meetingLink = line;
+    } else if (line != "") {
       break;
     }
-    // If one of the first two lines starts with `#`, it is the channel line
-    if (lines[i].startsWith("#") && channelLines.length == 0) {
-      channelLines.push(lines[i].replace("#", "").trim());
-      descriptionStartLineNumber = i + 1;
-    } else if (isExtraChannelLine) {
-      channelLines.push(lines[i].replace("#", "").trim());
-      descriptionStartLineNumber = i + 1;
-    } else if (lines[i].startsWith("#")) {
-      break;
-    }
-    // If one of the first two lines is a valid URL it is the meeting link
-    else if (lines[i].startsWith("http")) {
-      meetingLink = lines[i].trim();
-      descriptionStartLineNumber = i + 1;
-    }
+    descriptionStartLineNumber++;
   }
 
   // Channels on separate lines are treated the same as channels on one line, e.g. `general #software`
