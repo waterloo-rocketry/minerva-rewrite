@@ -3,27 +3,54 @@ import { google, calendar_v3 } from "googleapis";
 import CalendarEvent from "../classes/CalendarEvent";
 import SlackChannel from "../classes/SlackChannel";
 import { SlackLogger } from "../classes/SlackLogger";
+import { googleCalendarIds } from "./env";
 
 /**
- * Fetches all events in the next 24 hours from the Rocketry calendar.
+ * Fetches all events in the next 24 hours from the given calendars, merged in start time order.
+ * A calendar that fails to fetch (e.g. it isn't shared with Minerva) is logged and skipped so the others still work.
  * @param auth The OAuth2 client instance for authentication.
+ * @param calendarIds The IDs of the calendars to fetch from. Defaults to the GOOGLE_CALENDAR_IDS env variable.
  * @returns A promise that resolves to the list of events.
  */
-export async function getEvents(auth: OAuth2Client): Promise<calendar_v3.Schema$Events> {
+export async function getEvents(
+  auth: OAuth2Client,
+  calendarIds: string[] = googleCalendarIds,
+): Promise<calendar_v3.Schema$Events> {
   const currentTime = new Date();
   const next24Hours = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000);
   const calendar = google.calendar("v3");
-  const getNextEvents = await calendar.events.list({
-    auth: auth,
-    calendarId: "primary",
-    eventTypes: ["default"],
-    timeMin: currentTime.toISOString(),
-    timeMax: next24Hours.toISOString(),
-    singleEvents: true,
-    orderBy: "startTime",
+
+  const results = await Promise.allSettled(
+    calendarIds.map((calendarId) =>
+      calendar.events.list({
+        auth: auth,
+        calendarId: calendarId,
+        eventTypes: ["default"],
+        timeMin: currentTime.toISOString(),
+        timeMax: next24Hours.toISOString(),
+        singleEvents: true,
+        orderBy: "startTime",
+      }),
+    ),
+  );
+
+  const items: calendar_v3.Schema$Event[] = [];
+  results.forEach((result, i) => {
+    if (result.status == "fulfilled") {
+      items.push(...(result.value.data.items ?? []));
+    } else {
+      SlackLogger.getInstance().error(
+        `Failed to fetch events from Google Calendar \`${calendarIds[i]}\`:`,
+        result.reason,
+      );
+    }
   });
 
-  return getNextEvents.data;
+  const startTime = (event: calendar_v3.Schema$Event): number =>
+    new Date(event.start?.dateTime ?? event.start?.date ?? 0).getTime();
+  items.sort((a, b) => startTime(a) - startTime(b));
+
+  return { items };
 }
 
 /**

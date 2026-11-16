@@ -10,10 +10,15 @@ export default class SlackChannel {
    * The id of the channel
    */
   id: string;
+  /**
+   * Whether the channel is private. Minerva can only see private channels it has been invited to
+   */
+  isPrivate: boolean;
 
-  constructor(name: string, id: string) {
+  constructor(name: string, id: string, isPrivate = false) {
     this.name = name;
     this.id = id;
+    this.isPrivate = isPrivate;
   }
 
   equals(other: SlackChannel): boolean {

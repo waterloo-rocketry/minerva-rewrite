@@ -10,4 +10,10 @@ export const googleAccountClient = process.env.GOOGLE_ACCOUNT_CLIENT;
 export const googleAccountSecret = process.env.GOOGLE_ACCOUNT_SECRET;
 export const googleAccountToken = process.env.GOOGLE_ACCOUNT_TOKEN;
 export const googleAccountOauthRedirect = process.env.GOOGLE_ACCOUNT_OAUTH_REDIRECT;
+// Comma-separated IDs of the Google calendars to send reminders for. Each must be shared with Minerva's Google account.
+// `||` rather than `??` because the deploy workflows write an empty value when the variable is unset
+export const googleCalendarIds = (process.env.GOOGLE_CALENDAR_IDS || "primary")
+  .split(",")
+  .map((id) => id.trim())
+  .filter((id) => id.length > 0);
 export const deploymentCommitHash = process.env.DEPLOY_COMMIT_SHA;

@@ -1,10 +1,51 @@
-import { parseEvents, filterEventsForChannels } from "../../../src/utils/googleCalendar";
+import { OAuth2Client } from "google-auth-library";
+import { getEvents, parseEvents, filterEventsForChannels } from "../../../src/utils/googleCalendar";
 import { slackChannels } from "../../fixtures/slackChannels";
 import CalendarEvent from "../../../src/classes/CalendarEvent";
 import googleCalendarEvent from "../../fixtures/googleCalendarEvent.json";
 import googleCalendarEvents from "../../fixtures/googleCalendarEvents.json";
 
+const mockEventsList = jest.fn();
+jest.mock("googleapis", () => ({
+  google: { calendar: (): unknown => ({ events: { list: mockEventsList } }) },
+}));
+
 describe("utils/googleCalendar", () => {
+  describe("getEvents", () => {
+    const auth = {} as OAuth2Client;
+    const eventAt = (id: string, dateTime: string): object => ({ id, start: { dateTime } });
+
+    it("should fetch from every calendar and merge the events in start time order", async () => {
+      mockEventsList.mockImplementation(async ({ calendarId }) => ({
+        data: {
+          items:
+            calendarId == "primary"
+              ? [eventAt("a", "2021-10-10T10:00:00Z"), eventAt("c", "2021-10-10T12:00:00Z")]
+              : [eventAt("b", "2021-10-10T11:00:00Z")],
+        },
+      }));
+
+      const events = await getEvents(auth, ["primary", "leads@group.calendar.google.com"]);
+
+      expect(mockEventsList.mock.calls.map(([params]) => params.calendarId)).toEqual([
+        "primary",
+        "leads@group.calendar.google.com",
+      ]);
+      expect(events.items?.map((event) => event.id)).toEqual(["a", "b", "c"]);
+    });
+
+    it("should still return the other calendars' events when one calendar fails", async () => {
+      mockEventsList.mockImplementation(async ({ calendarId }) => {
+        if (calendarId == "not-shared") throw new Error("Not Found");
+        return { data: { items: [eventAt("a", "2021-10-10T10:00:00Z")] } };
+      });
+
+      const events = await getEvents(auth, ["primary", "not-shared"]);
+
+      expect(events.items?.map((event) => event.id)).toEqual(["a"]);
+    });
+  });
+
   describe("parseEvents", () => {
     it("should parse a Google Calendar event", () => {
       expect(parseEvents(googleCalendarEvents, slackChannels)).toEqual([
