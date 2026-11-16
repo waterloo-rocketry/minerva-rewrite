@@ -225,11 +225,28 @@ describe("utils/calendarDescription", () => {
       });
     });
 
-    it("should throw an error if an additional channel does not exist", () => {
-      const description = `#electrical #foodstuffs<br>This is a description`;
-      expect(() => parseDescription(description, slackChannels)).toThrow(
-        `could not find channel with name "foodstuffs"`,
-      );
+    it("should ignore `#` words on the channel line that aren't channels", () => {
+      const description = `#electrical #1 #payload priority<br>This is a description`;
+      const result = parseDescription(description, slackChannels);
+      expect(result).toEqual({
+        description: "This is a description",
+        minervaEventMetadata: {
+          channel: slackChannels[2],
+          additionalChannels: [slackChannels[5]],
+          DMSingleChannelGuests: true,
+        },
+      });
+    });
+
+    it.each([
+      ["right after the metadata", `#electrical<br>https://example.com<br>#1 priority<br>This is a description`],
+      ["after a blank line", `#electrical<br><br>#1 priority<br>This is a description`],
+      ["on the second line", `#electrical<br>#1 priority<br>This is a description`],
+    ])("should keep a `#` line that isn't a channel in the description when it is %s", (_, description) => {
+      const result = parseDescription(description, slackChannels);
+      expect(result.minervaEventMetadata?.channel).toEqual(slackChannels[2]);
+      expect(result.minervaEventMetadata?.additionalChannels).toEqual([]);
+      expect(result.description).toBe("#1 priority\nThis is a description");
     });
 
     it("should throw an error if the the channel specified does not exist", () => {

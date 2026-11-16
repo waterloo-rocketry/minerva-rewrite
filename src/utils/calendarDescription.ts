@@ -7,9 +7,13 @@ import { filterSlackChannelFromName } from "../utils/channels";
 /**
  * Splits the given description into its components.
  * @param description - The description to split.
+ * @param isChannel - Whether a name is a real channel. Extra channel lines only count if their channel is real.
  * @returns An object containing the split components of the description.
  */
-export function splitDescription(description: string): {
+export function splitDescription(
+  description: string,
+  isChannel: (name: string) => boolean = (): boolean => true,
+): {
   descriptionText: string;
   channelLine?: string;
   meetingLink?: string;
@@ -28,13 +32,22 @@ export function splitDescription(description: string): {
       descriptionStartLineNumber = i + 1;
       continue;
     }
-    if (i >= 2 && !(descriptionStartLineNumber == i && lines[i].startsWith("#"))) {
+    // Lines after the first channel line only count as more channels if they start with a real channel,
+    // so description text like `#1 priority` right under the metadata stays in the description
+    const isExtraChannelLine =
+      lines[i].startsWith("#") && channelLines.length > 0 && isChannel(lines[i].replace("#", "").split(/[\s,]+/)[0]);
+    if (i >= 2 && !(descriptionStartLineNumber == i && isExtraChannelLine)) {
       break;
     }
-    // If one of the first two lines starts with `#`, it is a channel line
-    if (lines[i].startsWith("#")) {
+    // If one of the first two lines starts with `#`, it is the channel line
+    if (lines[i].startsWith("#") && channelLines.length == 0) {
       channelLines.push(lines[i].replace("#", "").trim());
       descriptionStartLineNumber = i + 1;
+    } else if (isExtraChannelLine) {
+      channelLines.push(lines[i].replace("#", "").trim());
+      descriptionStartLineNumber = i + 1;
+    } else if (lines[i].startsWith("#")) {
+      break;
     }
     // If one of the first two lines is a valid URL it is the meeting link
     else if (lines[i].startsWith("http")) {
@@ -85,7 +98,8 @@ export function parseDescription(
   workspaceChannels: SlackChannel[],
 ): { description: string; minervaEventMetadata?: EventMetadata } {
   const plainDescription = parseDescriptionFromHtml(description);
-  const { descriptionText, channelLine, meetingLink } = splitDescription(plainDescription);
+  const isChannel = (name: string): boolean => workspaceChannels.some((channel) => channel.name == name);
+  const { descriptionText, channelLine, meetingLink } = splitDescription(plainDescription, isChannel);
 
   // Short-circuit if there is no metadata
   if (channelLine == undefined && meetingLink == undefined) {
@@ -97,13 +111,14 @@ export function parseDescription(
     return { description: `${meetingLink}\n${descriptionText}` };
   }
 
-  // The first word is the main channel. Any other `#channel` also gets the reminder, and anything else is a modifier
+  // The first word is the main channel. Any other `#channel` that is a real channel also gets the reminder.
+  // Other `#` words are ignored, and anything else is a modifier
   const [channelName, ...words] = channelLine.split(/[\s,]+/).filter((word) => word != "");
   const modifiers = words.filter((word) => !word.startsWith("#"));
   const additionalChannelNames = words
     .filter((word) => word.startsWith("#"))
     .map((word) => word.replace("#", ""))
-    .filter((name, i, names) => name != channelName && names.indexOf(name) == i);
+    .filter((name, i, names) => isChannel(name) && name != channelName && names.indexOf(name) == i);
 
   const channel = filterSlackChannelFromName(channelName, workspaceChannels);
   if (channel == undefined) throw new Error(`channel "${channelName}" not found`);
