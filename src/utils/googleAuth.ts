@@ -1,13 +1,13 @@
 import { JWT, OAuth2Client } from "google-auth-library";
 
-// Must be a scope the service account's domain-wide delegation grant includes, or Google rejects the token request
-const calendarScope = "https://www.googleapis.com/auth/calendar.events";
+// The service account reads the calendar as itself, so it needs no domain-wide delegation grant for this scope
+const calendarReadScope = "https://www.googleapis.com/auth/calendar.events.readonly";
 
 export interface GoogleAuthConfig {
   /** The service account's JSON key. Preferred over the OAuth refresh token when set. */
   serviceAccountKey?: string;
-  /** The Workspace user the service account acts as through domain-wide delegation. */
-  impersonatedUser?: string;
+  /** The calendar to read. Required with a service account, which has no primary calendar of its own to fall back to. */
+  calendarId?: string;
   oauth: {
     clientId?: string;
     clientSecret?: string;
@@ -21,20 +21,11 @@ export interface GoogleAuthConfig {
  * OAuth refresh token.
  * @param config The credentials available in the environment.
  * @returns The credential to pass to the Google APIs.
- * @throws Error if only one of the service account key and impersonated user is set, or the key is malformed. The key is never included in the message.
+ * @throws Error if the service account key is malformed or has no calendar ID to read. The key is never included in the message.
  */
 export function createGoogleAuth(config: GoogleAuthConfig): OAuth2Client {
-  const { serviceAccountKey, impersonatedUser } = config;
-
-  // Setting only half of the pair is a misconfiguration; falling back would hide it behind the old credential
-  if (serviceAccountKey && !impersonatedUser) {
-    throw new Error("MINERVA_GOOGLE_IMPERSONATED_USER is required when MINERVA_GOOGLE_SERVICE_ACCOUNT is set");
-  }
-  if (impersonatedUser && !serviceAccountKey) {
-    throw new Error("MINERVA_GOOGLE_SERVICE_ACCOUNT is required when MINERVA_GOOGLE_IMPERSONATED_USER is set");
-  }
-  if (serviceAccountKey && impersonatedUser) {
-    return createServiceAccountAuth(serviceAccountKey, impersonatedUser);
+  if (config.serviceAccountKey) {
+    return createServiceAccountAuth(config.serviceAccountKey, config.calendarId);
   }
 
   const auth = new OAuth2Client({
@@ -47,12 +38,17 @@ export function createGoogleAuth(config: GoogleAuthConfig): OAuth2Client {
 }
 
 /**
- * Builds the service account credential that acts as the impersonated user through domain-wide delegation.
+ * Builds the credential for the service account acting as itself, which can read the calendars shared with it.
  * @param serviceAccountKey The service account's JSON key.
- * @param impersonatedUser The Workspace user to act as.
+ * @param calendarId The calendar shared with the service account.
  * @returns The service account credential.
  */
-function createServiceAccountAuth(serviceAccountKey: string, impersonatedUser: string): JWT {
+function createServiceAccountAuth(serviceAccountKey: string, calendarId?: string): JWT {
+  // Without this the "primary" fallback would silently read the service account's own empty calendar
+  if (!calendarId) {
+    throw new Error("MINERVA_GOOGLE_CALENDAR_ID is required when MINERVA_GOOGLE_SERVICE_ACCOUNT is set");
+  }
+
   let key: { client_email?: string; private_key?: string };
   try {
     key = JSON.parse(serviceAccountKey);
@@ -64,10 +60,5 @@ function createServiceAccountAuth(serviceAccountKey: string, impersonatedUser: s
     throw new Error("MINERVA_GOOGLE_SERVICE_ACCOUNT must contain client_email and private_key");
   }
 
-  return new JWT({
-    email: key.client_email,
-    key: key.private_key,
-    scopes: [calendarScope],
-    subject: impersonatedUser,
-  });
+  return new JWT({ email: key.client_email, key: key.private_key, scopes: [calendarReadScope] });
 }

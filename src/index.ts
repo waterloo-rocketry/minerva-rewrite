@@ -9,7 +9,7 @@ import { SlackLogger } from "./classes/SlackLogger";
 // Set up Google credentials: the service account if configured, otherwise the OAuth refresh token
 const auth = createGoogleAuth({
   serviceAccountKey: environment.minervaGoogleServiceAccount,
-  impersonatedUser: environment.minervaGoogleImpersonatedUser,
+  calendarId: environment.minervaGoogleCalendarId,
   oauth: {
     clientId: environment.googleAccountClient,
     clientSecret: environment.googleAccountSecret,
