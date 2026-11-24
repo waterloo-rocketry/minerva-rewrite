@@ -26,11 +26,13 @@ jobs:
         env:
           MINERVA_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.MINERVA_GOOGLE_SERVICE_ACCOUNT }}
           MINERVA_GOOGLE_CALENDAR_ID: ${{ vars.MINERVA_GOOGLE_CALENDAR_ID }}
+          MINERVA_GOOGLE_IMPERSONATED_USER: ${{ vars.MINERVA_GOOGLE_IMPERSONATED_USER }}
         run: |
           touch .env
           # Single quotes keep dotenv from treating the JSON's `#` or `\n` specially; printf avoids shell re-parsing it
           printf "MINERVA_GOOGLE_SERVICE_ACCOUNT='%s'\n" "$MINERVA_GOOGLE_SERVICE_ACCOUNT" >> .env
           printf 'MINERVA_GOOGLE_CALENDAR_ID=%s\n' "$MINERVA_GOOGLE_CALENDAR_ID" >> .env
+          printf 'MINERVA_GOOGLE_IMPERSONATED_USER=%s\n' "$MINERVA_GOOGLE_IMPERSONATED_USER" >> .env
           echo NODE_ENV=development >> .env
           echo GOOGLE_ACCOUNT_CLIENT=${{ secrets.GOOGLE_ACCOUNT_CLIENT }} >> .env
           echo GOOGLE_ACCOUNT_SECRET=${{ secrets.GOOGLE_ACCOUNT_SECRET }} >> .env
