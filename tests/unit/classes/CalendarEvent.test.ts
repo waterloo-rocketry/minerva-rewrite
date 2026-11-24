@@ -7,6 +7,7 @@ describe("classes/CalendarEvent", () => {
     it("should create a CalendarEvent from a Google Calendar event", () => {
       const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(googleCalendarEvent, slackChannels);
       expect(calendarEvent).toEqual({
+        id: googleCalendarEvent.id,
         title: googleCalendarEvent.summary,
         is_cancelled: false,
         url: googleCalendarEvent.htmlLink,
@@ -37,6 +38,7 @@ describe("classes/CalendarEvent", () => {
       calendarEventJson.description = "This is a description<br>Yep it is.";
       const calendarEvent = CalendarEvent.fromGoogleCalendarEvent(calendarEventJson, slackChannels);
       expect(calendarEvent).toEqual({
+        id: googleCalendarEvent.id,
         title: googleCalendarEvent.summary,
         is_cancelled: false,
         url: googleCalendarEvent.htmlLink,

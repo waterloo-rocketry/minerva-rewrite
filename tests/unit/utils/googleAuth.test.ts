@@ -21,6 +21,7 @@ describe("utils/googleAuth", () => {
       expect(auth).toBeInstanceOf(JWT);
       expect((auth as JWT).email).toBe("minerva@project.iam.gserviceaccount.com");
       expect((auth as JWT).subject).toBeUndefined();
+      expect((auth as JWT).scopes).toEqual(["https://www.googleapis.com/auth/calendar.events"]);
     });
 
     it("falls back to the OAuth refresh token when no service account key is set", () => {

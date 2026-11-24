@@ -4,6 +4,21 @@ import { parseDescription } from "../utils/calendarDescription";
 import { EventMetadata } from "../types/EventMetadata";
 
 /**
+ * The private extended property of a Google Calendar event where Minerva stores the meeting link it attached
+ */
+export const minervaMeetingLinkProperty = "minervaMeetingLink";
+
+/**
+ * Finds the meeting link a person attached through Google Calendar's own conference field
+ * @param event The google calendar event
+ * @returns The link to join by video, if the event has one
+ */
+function getConferenceLink(event: calendar_v3.Schema$Event): string | undefined {
+  const videoEntryPoint = event.conferenceData?.entryPoints?.find((entryPoint) => entryPoint.entryPointType == "video");
+  return videoEntryPoint?.uri ?? event.hangoutLink ?? undefined;
+}
+
+/**
  * Class representing a google calendar event
  */
 export default class CalendarEvent {
@@ -31,6 +46,18 @@ export default class CalendarEvent {
    * The location of the event
    */
   location?: string;
+  /**
+   * The Google Calendar ID of the event. Each occurrence of a recurring event has its own.
+   */
+  id?: string;
+  /**
+   * A meeting link attached to the event through Google Calendar's own conference field, such as Meet or Zoom
+   */
+  conferenceLink?: string;
+  /**
+   * The meeting link Minerva created and attached to the event, as opposed to one a person added
+   */
+  minervaMeetingLink?: string;
   /**
    * The start time of the event
    */
@@ -68,6 +95,9 @@ export default class CalendarEvent {
 
     const parsedEvent = new CalendarEvent(title, start, end, url, is_cancelled);
 
+    parsedEvent.id = event.id ?? undefined;
+    parsedEvent.conferenceLink = getConferenceLink(event);
+    parsedEvent.minervaMeetingLink = event.extendedProperties?.private?.[minervaMeetingLinkProperty];
     parsedEvent.location = event.location ?? undefined;
     parsedEvent.url = event.htmlLink ?? undefined;
 
