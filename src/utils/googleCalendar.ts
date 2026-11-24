@@ -1,6 +1,7 @@
 import { OAuth2Client } from "google-auth-library";
 import { google, calendar_v3 } from "googleapis";
 import CalendarEvent from "../classes/CalendarEvent";
+import * as environment from "./env";
 import SlackChannel from "../classes/SlackChannel";
 import { SlackLogger } from "../classes/SlackLogger";
 
@@ -15,7 +16,7 @@ export async function getEvents(auth: OAuth2Client): Promise<calendar_v3.Schema$
   const calendar = google.calendar("v3");
   const getNextEvents = await calendar.events.list({
     auth: auth,
-    calendarId: "primary",
+    calendarId: environment.minervaGoogleCalendarId ?? "primary",
     eventTypes: ["default"],
     timeMin: currentTime.toISOString(),
     timeMax: next24Hours.toISOString(),
