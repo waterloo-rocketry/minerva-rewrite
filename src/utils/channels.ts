@@ -72,8 +72,9 @@ export function filterDefaultSlackChannels(channels: SlackChannel[]): SlackChann
  */
 export async function getAllSlackChannels(client: WebClient): Promise<SlackChannel[]> {
   // Excludes archived channels and has a maximum limit of 1000 channels.
+  // Private channels are only listed if Minerva has been invited to them (requires the groups:read scope).
   const channels = await client.conversations.list({
-    types: "public_channel",
+    types: "public_channel,private_channel",
     exclude_archived: true,
     limit: 1000, // This is the max limit
   });
@@ -88,7 +89,7 @@ export async function getAllSlackChannels(client: WebClient): Promise<SlackChann
       continue;
     }
 
-    res.push(new SlackChannel(channel.name, channel.id));
+    res.push(new SlackChannel(channel.name, channel.id, channel.is_private ?? false));
   }
 
   return res;
