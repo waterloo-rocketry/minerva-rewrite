@@ -1,21 +1,21 @@
 import { App } from "@slack/bolt";
 import * as environment from "./utils/env";
 import registerListeners from "./listeners";
-import { OAuth2Client } from "google-auth-library";
+import { createGoogleAuth } from "./utils/googleAuth";
 import scheduleTasks from "./scheduled";
 
 import { SlackLogger } from "./classes/SlackLogger";
 
-// Set up Google OAuth2 client
-const auth = new OAuth2Client({
-  clientId: environment.googleAccountClient,
-  clientSecret: environment.googleAccountSecret,
-  redirectUri: environment.googleAccountOauthRedirect,
-});
-
-// Set up OAuth2 credentials
-auth.setCredentials({
-  refresh_token: environment.googleAccountToken,
+// Set up Google credentials: the service account if configured, otherwise the OAuth refresh token
+const auth = createGoogleAuth({
+  serviceAccountKey: environment.minervaGoogleServiceAccount,
+  calendarId: environment.minervaGoogleCalendarId,
+  oauth: {
+    clientId: environment.googleAccountClient,
+    clientSecret: environment.googleAccountSecret,
+    redirectUri: environment.googleAccountOauthRedirect,
+    refreshToken: environment.googleAccountToken,
+  },
 });
 
 // Initialize app

@@ -10,4 +10,6 @@ export const googleAccountClient = process.env.GOOGLE_ACCOUNT_CLIENT;
 export const googleAccountSecret = process.env.GOOGLE_ACCOUNT_SECRET;
 export const googleAccountToken = process.env.GOOGLE_ACCOUNT_TOKEN;
 export const googleAccountOauthRedirect = process.env.GOOGLE_ACCOUNT_OAUTH_REDIRECT;
+export const minervaGoogleServiceAccount = process.env.MINERVA_GOOGLE_SERVICE_ACCOUNT;
+export const minervaGoogleCalendarId = process.env.MINERVA_GOOGLE_CALENDAR_ID;
 export const deploymentCommitHash = process.env.DEPLOY_COMMIT_SHA;
