@@ -1,7 +1,11 @@
 import { App } from "@slack/bolt";
 import * as environment from "./utils/env";
 import registerListeners from "./listeners";
-import { createGoogleAuth } from "./utils/googleAuth";
+import { createGoogleAuth, createMeetAuth } from "./utils/googleAuth";
+import { attachMeetingLink } from "./utils/googleCalendar";
+import { createMeetingSpace } from "./utils/googleMeet";
+import { generateMeetingLink } from "./utils/eventReminders";
+import { createMeetingLinkProvider, findExistingMeetingLink, MeetingLinkProvider } from "./utils/meetingLinks";
 import scheduleTasks from "./scheduled";
 
 import { SlackLogger } from "./classes/SlackLogger";
@@ -18,6 +22,18 @@ const auth = createGoogleAuth({
   },
 });
 
+// Create Meet links for events without one if Meet is configured. Otherwise keep generating the default link
+const meetAuth = createMeetAuth({
+  serviceAccountKey: environment.minervaGoogleServiceAccount,
+  impersonatedUser: environment.minervaGoogleImpersonatedUser,
+});
+const getMeetingLink: MeetingLinkProvider = meetAuth
+  ? createMeetingLinkProvider(
+      () => createMeetingSpace(meetAuth),
+      (event, meetingLink) => attachMeetingLink(auth, event, meetingLink),
+    )
+  : async (event): Promise<string | undefined> => findExistingMeetingLink(event) ?? generateMeetingLink(event);
+
 // Initialize app
 const app = new App({
   token: environment.slackBotToken,
@@ -27,10 +43,10 @@ const app = new App({
 });
 
 // Register listeners
-registerListeners(app, auth);
+registerListeners(app, auth, getMeetingLink);
 
 // Schedule tasks
-scheduleTasks(app.client, auth);
+scheduleTasks(app.client, auth, getMeetingLink);
 
 // Start app
 (async (): Promise<void> => {

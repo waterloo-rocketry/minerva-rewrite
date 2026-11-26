@@ -7,10 +7,11 @@ import events from "./events";
 import messages from "./messages";
 import shortcuts from "./shortcuts";
 import views from "./views";
+import { MeetingLinkProvider } from "../utils/meetingLinks";
 
-const registerListeners = (app: App, googleClient: OAuth2Client): void => {
+const registerListeners = (app: App, googleClient: OAuth2Client, getMeetingLink: MeetingLinkProvider): void => {
   actions.register(app);
-  commands.register(app, googleClient);
+  commands.register(app, googleClient, getMeetingLink);
   events.register(app);
   messages.register(app);
   shortcuts.register(app);
