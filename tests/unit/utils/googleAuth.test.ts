@@ -1,5 +1,5 @@
 import { JWT, OAuth2Client } from "google-auth-library";
-import { createGoogleAuth } from "../../../src/utils/googleAuth";
+import { createGoogleAuth, createMeetAuth } from "../../../src/utils/googleAuth";
 
 const oauth = {
   clientId: "client-id",
@@ -62,6 +62,40 @@ describe("utils/googleAuth", () => {
       expect(() => createGoogleAuth({ serviceAccountKey: key, calendarId, oauth })).toThrow(
         "client_email and private_key",
       );
+    });
+  });
+
+  describe("createMeetAuth", () => {
+    it("acts as the impersonated user to create meetings", () => {
+      const auth = createMeetAuth({ serviceAccountKey, impersonatedUser: "admin@example.com" });
+
+      expect(auth).toBeInstanceOf(JWT);
+      expect(auth?.email).toBe("minerva@project.iam.gserviceaccount.com");
+      expect(auth?.subject).toBe("admin@example.com");
+      expect(auth?.scopes).toEqual(["https://www.googleapis.com/auth/meetings.space.created"]);
+    });
+
+    it.each([undefined, ""])("is unavailable when neither value is set (%p)", (unset) => {
+      expect(createMeetAuth({ serviceAccountKey: unset, impersonatedUser: unset })).toBeUndefined();
+    });
+
+    it.each([undefined, ""])("rejects a service account key with impersonated user %p", (impersonatedUser) => {
+      expect(() => createMeetAuth({ serviceAccountKey, impersonatedUser })).toThrow(
+        "MINERVA_GOOGLE_IMPERSONATED_USER is required",
+      );
+    });
+
+    it.each([undefined, ""])("rejects an impersonated user with service account key %p", (key) => {
+      expect(() => createMeetAuth({ serviceAccountKey: key, impersonatedUser: "admin@example.com" })).toThrow(
+        "MINERVA_GOOGLE_SERVICE_ACCOUNT is required",
+      );
+    });
+
+    it("rejects a key that is not JSON without echoing it", () => {
+      const config = { serviceAccountKey: "secret-not-json", impersonatedUser: "admin@example.com" };
+
+      expect(() => createMeetAuth(config)).toThrow("not valid JSON");
+      expect(() => createMeetAuth(config)).not.toThrow(/secret-not-json/);
     });
   });
 });

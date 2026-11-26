@@ -3,6 +3,16 @@ import { JWT, OAuth2Client } from "google-auth-library";
 // The service account reads the calendar as itself, so it needs no domain-wide delegation grant for this scope
 const calendarReadScope = "https://www.googleapis.com/auth/calendar.events.readonly";
 
+// Creating meetings needs a delegated user, so this must be in the service account's domain-wide delegation grant
+const meetCreateScope = "https://www.googleapis.com/auth/meetings.space.created";
+
+export interface MeetAuthConfig {
+  /** The service account's JSON key. */
+  serviceAccountKey?: string;
+  /** The Workspace user the service account acts as through domain-wide delegation, and who owns the meetings. */
+  impersonatedUser?: string;
+}
+
 export interface GoogleAuthConfig {
   /** The service account's JSON key. Preferred over the OAuth refresh token when set. */
   serviceAccountKey?: string;
@@ -49,6 +59,42 @@ function createServiceAccountAuth(serviceAccountKey: string, calendarId?: string
     throw new Error("MINERVA_GOOGLE_CALENDAR_ID is required when MINERVA_GOOGLE_SERVICE_ACCOUNT is set");
   }
 
+  const { client_email, private_key } = parseServiceAccountKey(serviceAccountKey);
+  return new JWT({ email: client_email, key: private_key, scopes: [calendarReadScope] });
+}
+
+/**
+ * Creates the credential for creating Google Meet meetings. Meet only accepts user credentials, so the service
+ * account acts as the impersonated user through domain-wide delegation.
+ * @param config The service account key and the user to act as.
+ * @returns The credential, or undefined if neither is configured, in which case Minerva can't create meetings.
+ * @throws Error if only one of the two is set, or the key is malformed. The key is never included in the message.
+ */
+export function createMeetAuth(config: MeetAuthConfig): JWT | undefined {
+  const { serviceAccountKey, impersonatedUser } = config;
+
+  // Setting only half of the pair is a misconfiguration; staying silent would hide it
+  if (serviceAccountKey && !impersonatedUser) {
+    throw new Error("MINERVA_GOOGLE_IMPERSONATED_USER is required when MINERVA_GOOGLE_SERVICE_ACCOUNT is set");
+  }
+  if (impersonatedUser && !serviceAccountKey) {
+    throw new Error("MINERVA_GOOGLE_SERVICE_ACCOUNT is required when MINERVA_GOOGLE_IMPERSONATED_USER is set");
+  }
+  if (!serviceAccountKey || !impersonatedUser) {
+    return undefined;
+  }
+
+  const { client_email, private_key } = parseServiceAccountKey(serviceAccountKey);
+  return new JWT({ email: client_email, key: private_key, scopes: [meetCreateScope], subject: impersonatedUser });
+}
+
+/**
+ * Parses and checks the service account's JSON key.
+ * @param serviceAccountKey The service account's JSON key.
+ * @returns The key's email and private key.
+ * @throws Error if the key is not JSON or is missing a field. The key is never included in the message.
+ */
+function parseServiceAccountKey(serviceAccountKey: string): { client_email: string; private_key: string } {
   let key: { client_email?: string; private_key?: string };
   try {
     key = JSON.parse(serviceAccountKey);
@@ -59,6 +105,5 @@ function createServiceAccountAuth(serviceAccountKey: string, calendarId?: string
   if (!key.client_email || !key.private_key) {
     throw new Error("MINERVA_GOOGLE_SERVICE_ACCOUNT must contain client_email and private_key");
   }
-
-  return new JWT({ email: key.client_email, key: key.private_key, scopes: [calendarReadScope] });
+  return { client_email: key.client_email, private_key: key.private_key };
 }
