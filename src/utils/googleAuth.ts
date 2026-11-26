@@ -1,7 +1,7 @@
 import { JWT, OAuth2Client } from "google-auth-library";
 
-// The service account reads the calendar as itself, so it needs no domain-wide delegation grant for this scope
-const calendarReadScope = "https://www.googleapis.com/auth/calendar.events.readonly";
+// The service account reads and edits events as itself, so it needs no domain-wide delegation grant for this scope
+const calendarEventsScope = "https://www.googleapis.com/auth/calendar.events";
 
 // Creating meetings needs a delegated user, so this must be in the service account's domain-wide delegation grant
 const meetCreateScope = "https://www.googleapis.com/auth/meetings.space.created";
@@ -48,7 +48,7 @@ export function createGoogleAuth(config: GoogleAuthConfig): OAuth2Client {
 }
 
 /**
- * Builds the credential for the service account acting as itself, which can read the calendars shared with it.
+ * Builds the credential for the service account acting as itself, which can read and edit events on the calendars shared with it.
  * @param serviceAccountKey The service account's JSON key.
  * @param calendarId The calendar shared with the service account.
  * @returns The service account credential.
@@ -60,7 +60,7 @@ function createServiceAccountAuth(serviceAccountKey: string, calendarId?: string
   }
 
   const { client_email, private_key } = parseServiceAccountKey(serviceAccountKey);
-  return new JWT({ email: client_email, key: private_key, scopes: [calendarReadScope] });
+  return new JWT({ email: client_email, key: private_key, scopes: [calendarEventsScope] });
 }
 
 /**

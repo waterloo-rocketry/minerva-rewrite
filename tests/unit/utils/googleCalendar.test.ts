@@ -9,6 +9,7 @@ describe("utils/googleCalendar", () => {
     it("should parse a Google Calendar event", () => {
       expect(parseEvents(googleCalendarEvents, slackChannels)).toEqual([
         {
+          id: googleCalendarEvent.id,
           title: googleCalendarEvent.summary,
           is_cancelled: false,
           url: googleCalendarEvent.htmlLink,
@@ -33,6 +34,49 @@ describe("utils/googleCalendar", () => {
       };
       const parsedEvent = parseEvents({ items: [cancelledEvent] }, slackChannels)[0];
       expect(parsedEvent.is_cancelled).toBe(true);
+    });
+
+    it("should find a meeting link attached through Google Calendar's conference field", () => {
+      const eventWithMeet = {
+        ...googleCalendarEvent,
+        conferenceData: {
+          entryPoints: [
+            { entryPointType: "phone", uri: "tel:+1-555-0100" },
+            { entryPointType: "video", uri: "https://meet.google.com/abc-mnop-xyz" },
+          ],
+        },
+      };
+
+      const parsedEvent = parseEvents({ items: [eventWithMeet] }, slackChannels)[0];
+
+      expect(parsedEvent.conferenceLink).toBe("https://meet.google.com/abc-mnop-xyz");
+    });
+
+    it("should fall back to the hangout link when there is no conference data", () => {
+      const eventWithHangout = { ...googleCalendarEvent, hangoutLink: "https://meet.google.com/old-link" };
+
+      const parsedEvent = parseEvents({ items: [eventWithHangout] }, slackChannels)[0];
+
+      expect(parsedEvent.conferenceLink).toBe("https://meet.google.com/old-link");
+    });
+
+    it("should find the meeting link Minerva attached to the event", () => {
+      const eventWithAttachedLink = {
+        ...googleCalendarEvent,
+        extendedProperties: { private: { minervaMeetingLink: "https://meet.google.com/minerva-made" } },
+      };
+
+      const parsedEvent = parseEvents({ items: [eventWithAttachedLink] }, slackChannels)[0];
+
+      expect(parsedEvent.minervaMeetingLink).toBe("https://meet.google.com/minerva-made");
+      expect(parsedEvent.conferenceLink).toBeUndefined();
+    });
+
+    it("should report no extra links for an event without any", () => {
+      const parsedEvent = parseEvents(googleCalendarEvents, slackChannels)[0];
+
+      expect(parsedEvent.conferenceLink).toBeUndefined();
+      expect(parsedEvent.minervaMeetingLink).toBeUndefined();
     });
 
     it("should ignore all-day events", () => {
