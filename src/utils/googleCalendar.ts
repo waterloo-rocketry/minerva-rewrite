@@ -1,6 +1,7 @@
 import { OAuth2Client } from "google-auth-library";
 import { google, calendar_v3 } from "googleapis";
-import CalendarEvent from "../classes/CalendarEvent";
+import CalendarEvent, { minervaMeetingLinkProperty } from "../classes/CalendarEvent";
+import * as environment from "./env";
 import SlackChannel from "../classes/SlackChannel";
 import { SlackLogger } from "../classes/SlackLogger";
 
@@ -15,7 +16,7 @@ export async function getEvents(auth: OAuth2Client): Promise<calendar_v3.Schema$
   const calendar = google.calendar("v3");
   const getNextEvents = await calendar.events.list({
     auth: auth,
-    calendarId: "primary",
+    calendarId: environment.minervaGoogleCalendarId ?? "primary",
     eventTypes: ["default"],
     timeMin: currentTime.toISOString(),
     timeMax: next24Hours.toISOString(),
@@ -24,6 +25,29 @@ export async function getEvents(auth: OAuth2Client): Promise<calendar_v3.Schema$
   });
 
   return getNextEvents.data;
+}
+
+/**
+ * Attaches the meeting link Minerva created to the event, in a property attendees can't see, so every later reminder
+ * can find the same link.
+ * @param auth The OAuth2 client instance for authentication.
+ * @param event The event to attach the link to.
+ * @param meetingLink The link to attach.
+ * @throws Error if the event has no ID or Google rejects the update.
+ */
+export async function attachMeetingLink(auth: OAuth2Client, event: CalendarEvent, meetingLink: string): Promise<void> {
+  if (event.id == undefined) {
+    throw new Error(`Cannot attach a meeting link to event "${event.title}" without an event ID`);
+  }
+
+  await google.calendar("v3").events.patch({
+    auth: auth,
+    calendarId: environment.minervaGoogleCalendarId ?? "primary",
+    eventId: event.id,
+    // Attendees shouldn't get an email for Minerva's bookkeeping
+    sendUpdates: "none",
+    requestBody: { extendedProperties: { private: { [minervaMeetingLinkProperty]: meetingLink } } },
+  });
 }
 
 /**

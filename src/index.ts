@@ -1,22 +1,38 @@
 import { App } from "@slack/bolt";
 import * as environment from "./utils/env";
 import registerListeners from "./listeners";
-import { OAuth2Client } from "google-auth-library";
+import { createGoogleAuth, createMeetAuth } from "./utils/googleAuth";
+import { attachMeetingLink } from "./utils/googleCalendar";
+import { createMeetingSpace } from "./utils/googleMeet";
+import { generateMeetingLink } from "./utils/eventReminders";
+import { createMeetingLinkProvider, findExistingMeetingLink, MeetingLinkProvider } from "./utils/meetingLinks";
 import scheduleTasks from "./scheduled";
 
 import { SlackLogger } from "./classes/SlackLogger";
 
-// Set up Google OAuth2 client
-const auth = new OAuth2Client({
-  clientId: environment.googleAccountClient,
-  clientSecret: environment.googleAccountSecret,
-  redirectUri: environment.googleAccountOauthRedirect,
+// Set up Google credentials: the service account if configured, otherwise the OAuth refresh token
+const auth = createGoogleAuth({
+  serviceAccountKey: environment.minervaGoogleServiceAccount,
+  calendarId: environment.minervaGoogleCalendarId,
+  oauth: {
+    clientId: environment.googleAccountClient,
+    clientSecret: environment.googleAccountSecret,
+    redirectUri: environment.googleAccountOauthRedirect,
+    refreshToken: environment.googleAccountToken,
+  },
 });
 
-// Set up OAuth2 credentials
-auth.setCredentials({
-  refresh_token: environment.googleAccountToken,
+// Create Meet links for events without one if Meet is configured. Otherwise keep generating the default link
+const meetAuth = createMeetAuth({
+  serviceAccountKey: environment.minervaGoogleServiceAccount,
+  impersonatedUser: environment.minervaGoogleImpersonatedUser,
 });
+const getMeetingLink: MeetingLinkProvider = meetAuth
+  ? createMeetingLinkProvider(
+      () => createMeetingSpace(meetAuth),
+      (event, meetingLink) => attachMeetingLink(auth, event, meetingLink),
+    )
+  : async (event): Promise<string | undefined> => findExistingMeetingLink(event) ?? generateMeetingLink(event);
 
 // Initialize app
 const app = new App({
@@ -27,10 +43,10 @@ const app = new App({
 });
 
 // Register listeners
-registerListeners(app, auth);
+registerListeners(app, auth, getMeetingLink);
 
 // Schedule tasks
-scheduleTasks(app.client, auth);
+scheduleTasks(app.client, auth, getMeetingLink);
 
 // Start app
 (async (): Promise<void> => {

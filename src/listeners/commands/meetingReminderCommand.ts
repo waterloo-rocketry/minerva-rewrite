@@ -7,6 +7,7 @@ import { logCommandUsed } from "../../utils/logging";
 import { postEphemeralMessage } from "../../utils/slack";
 import { EventReminderType, remindUpcomingEvent } from "../../utils/eventReminders";
 import { SlackLogger } from "../../classes/SlackLogger";
+import { MeetingLinkProvider } from "../../utils/meetingLinks";
 
 /**
  * Handler for the /meeting_reminder command
@@ -15,10 +16,12 @@ import { SlackLogger } from "../../classes/SlackLogger";
  * @param obj.command The command payload
  * @param obj.client The Bolt app client
  * @param googleAuth The OAuth2Client for Google Calendar
+ * @param getMeetingLink Finds the meeting link to put in the reminder
  */
 export default async function meetingReminderCommandHandler(
   { command, ack, client }: SlackCommandMiddlewareArgs & AllMiddlewareArgs,
   googleAuth: OAuth2Client,
+  getMeetingLink: MeetingLinkProvider,
 ): Promise<void> {
   ack();
   logCommandUsed(command);
@@ -50,6 +53,7 @@ export default async function meetingReminderCommandHandler(
         soonestEvent,
         client,
         commandText == "ping" ? EventReminderType.MANUAL_PING : EventReminderType.MANUAL,
+        getMeetingLink,
       );
       await postEphemeralMessage(
         client,

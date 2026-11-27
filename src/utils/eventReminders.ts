@@ -10,6 +10,7 @@ import SlackChannel from "../classes/SlackChannel";
 import SlackUser from "../classes/SlackUser";
 import { postMessageToSingleChannelGuestsInChannels } from "./users";
 import { SlackLogger } from "../classes/SlackLogger";
+import { MeetingLinkProvider } from "./meetingLinks";
 
 /**
  * The interval in milliseconds at which the scheduled event checking task runs
@@ -63,6 +64,7 @@ export function getEventReminderType(event: CalendarEvent): EventReminderType | 
  * @param event The event to post a reminder for
  * @param client Slack Web API client
  * @param reminderType The type of reminder to post
+ * @param getMeetingLink Finds the meeting link to put in the reminder
  * @param defaultSlackChannels The default Slack channels to post reminders to. If not provided, the default channels will be fetched from the Slack API
  * @param allSlackUsersInWorkspace All Slack users in the workspace. If not provided, the users will be fetched from the Slack API
  */
@@ -70,6 +72,7 @@ export async function remindUpcomingEvent(
   event: CalendarEvent,
   client: WebClient,
   reminderType: EventReminderType | null,
+  getMeetingLink: MeetingLinkProvider,
   defaultSlackChannels?: SlackChannel[],
   allSlackUsersInWorkspace?: SlackUser[],
 ): Promise<void> {
@@ -82,7 +85,8 @@ export async function remindUpcomingEvent(
     return;
   }
 
-  let reminderText = generateEventReminderChannelText(event, reminderType);
+  const meetingLink = await getMeetingLink(event);
+  let reminderText = generateEventReminderChannelText(event, reminderType, meetingLink);
   let reactEmojis: string[] = [];
 
   if (reminderType === EventReminderType.SIX_HOURS) {
@@ -215,8 +219,13 @@ export async function postReminderToDMs(
  * Posts reminders for the given events to the channels they are associated with
  * @param client Slack Web API client
  * @param events The events to post reminders for
+ * @param getMeetingLink Finds the meeting link to put in each reminder
  */
-export async function remindUpcomingEvents(client: WebClient, events: CalendarEvent[]): Promise<void> {
+export async function remindUpcomingEvents(
+  client: WebClient,
+  events: CalendarEvent[],
+  getMeetingLink: MeetingLinkProvider,
+): Promise<void> {
   const defaultSlackChannels = await getDefaultSlackChannels(client);
   const allSlackUsersInWorkspace = await getAllSlackUsers(client);
 
@@ -224,7 +233,7 @@ export async function remindUpcomingEvents(client: WebClient, events: CalendarEv
     .filter((event) => event.minervaEventMetadata != undefined)
     .forEach((event) => {
       const reminderType = getEventReminderType(event);
-      remindUpcomingEvent(event, client, reminderType, defaultSlackChannels, allSlackUsersInWorkspace);
+      remindUpcomingEvent(event, client, reminderType, getMeetingLink, defaultSlackChannels, allSlackUsersInWorkspace);
     });
 }
 
@@ -232,9 +241,14 @@ export async function remindUpcomingEvents(client: WebClient, events: CalendarEv
  * Generates the text body for the event reminder message
  * @param event The event to generate the reminder text for
  * @param reminderType The type of reminder to generate the text for
+ * @param meetingLink The link to attend online. The online line is left out if there isn't one.
  * @returns The generated reminder text
  */
-export function generateEventReminderChannelText(event: CalendarEvent, reminderType: EventReminderType): string {
+export function generateEventReminderChannelText(
+  event: CalendarEvent,
+  reminderType: EventReminderType,
+  meetingLink?: string,
+): string {
   let message = `${
     !event.is_cancelled &&
     (reminderType == EventReminderType.FIVE_MINUTES || reminderType == EventReminderType.MANUAL_PING)
@@ -266,9 +280,9 @@ export function generateEventReminderChannelText(event: CalendarEvent, reminderT
     message += `\n\t:office: In person @ ${event.location}`;
   }
 
-  message += `\n\t:globe_with_meridians: Online @ ${
-    event.minervaEventMetadata?.meetingLink ?? generateMeetingLink(event)
-  }`;
+  if (meetingLink) {
+    message += `\n\t:globe_with_meridians: Online @ ${meetingLink}`;
+  }
 
   return message;
 }
